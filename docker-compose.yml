@@ -1,0 +1,16 @@
+version: '2'
+services:
+  link:
+    build: .
+    volumes:
+      - ./:/go/src/github.com/Scalingo/link
+    ports:
+      - 1313:1313
+    cap_add:
+      - NET_ADMIN
+    network_mode: 'host'
+    environment:
+      ETCD_HOSTS: http://172.17.0.1:2379
+      INTERFACE: eth10
+    command: reflex -r '\.go$$' -s -- sh -c 'go install -race && /go/bin/link'
+
