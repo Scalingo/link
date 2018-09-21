@@ -36,7 +36,7 @@ func (e etcdStorage) GetIPs(ctx context.Context) ([]IP, error) {
 
 	ctx, _ = context.WithTimeout(ctx, 5*time.Second)
 
-	resp, err := client.Get(ctx, fmt.Sprintf("%s/hosts/%s", ETCD_LINK_DIRECTORY, e.hostname))
+	resp, err := client.Get(ctx, fmt.Sprintf("%s/hosts/%s", ETCD_LINK_DIRECTORY, e.hostname), clientv3.WithPrefix())
 	if err != nil {
 		return nil, err
 	}
@@ -54,6 +54,17 @@ func (e etcdStorage) GetIPs(ctx context.Context) ([]IP, error) {
 }
 
 func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
+	ips, err := e.GetIPs(ctx)
+	if err != nil {
+		return ip, errors.Wrap(err, "fail to contact etcd")
+	}
+
+	for _, i := range ips {
+		if i.IP == ip.IP {
+			return ip, errors.New("already present")
+		}
+	}
+
 	client, closer, err := e.NewEtcdClient()
 	if err != nil {
 		return ip, errors.Wrap(err, "fail to get etcd client")
@@ -72,9 +83,6 @@ func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
 		return ip, errors.Wrap(err, "fail to marshal IP")
 	}
 	key := fmt.Sprintf("%s/hosts/%s/%s", ETCD_LINK_DIRECTORY, e.hostname, ip.ID)
-
-	fmt.Println(key)
-	fmt.Println(string(value))
 
 	ctx, _ = context.WithTimeout(ctx, 5*time.Second)
 	_, err = client.Put(ctx, key, string(value))

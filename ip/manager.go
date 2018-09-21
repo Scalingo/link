@@ -4,7 +4,6 @@ import (
 	"context"
 	"sync"
 
-	"github.com/Scalingo/go-etcd-lock/lock"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/network"
@@ -22,7 +21,7 @@ type manager struct {
 	networkInterface network.NetworkInterface
 	stateMachine     *fsm.FSM
 	ip               string
-	locker           lock.Locker
+	etcd             *clientv3.Client
 	stopMutex        sync.RWMutex
 	stopping         bool
 }
@@ -39,7 +38,7 @@ func NewManager(ctx context.Context, ip string, client *clientv3.Client) (*manag
 	m := &manager{
 		ip:               ip,
 		networkInterface: i,
-		locker:           lock.NewEtcdLocker(client),
+		etcd:             client,
 	}
 
 	m.newStateMachine(ctx)

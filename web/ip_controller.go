@@ -43,7 +43,6 @@ func (c IPController) List(w http.ResponseWriter, r *http.Request, p map[string]
 func (c IPController) Create(w http.ResponseWriter, r *http.Request, p map[string]string) error {
 	ctx := r.Context()
 	log := logger.Get(ctx)
-	log.Info("ADD IP")
 	var newIP models.IP
 	err := json.NewDecoder(r.Body).Decode(&newIP)
 	if err != nil {

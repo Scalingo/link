@@ -47,3 +47,13 @@ This is what the state machine looks like:
 - `GET /ips`: List all currently configured IPs
 - `POST /ips`: Add an IP
 - `DELETE /ips/:id`: Remove an IP
+
+## Dev environment
+
+To make it work in dev you might want to add a dummy interface:
+
+```
+modprobe dummy
+ip link add eth10 type dummy
+ip link set eth10 up
+```

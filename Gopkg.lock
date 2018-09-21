@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/Scalingo/go-etcd-lock"
-  packages = ["lock"]
-  revision = "60492ce8c163cdd7821ac69588eb4bb6e4d57363"
-  version = "v3.0.0"
-
-[[projects]]
   name = "github.com/Scalingo/go-handlers"
   packages = ["."]
   revision = "d30fbbd3adddda1d86e0dbeb261c607bfe31eda4"
@@ -27,7 +21,7 @@
 
 [[projects]]
   name = "github.com/coreos/etcd"
-  packages = ["auth/authpb","clientv3","clientv3/concurrency","etcdserver/api/v3rpc/rpctypes","etcdserver/etcdserverpb","mvcc/mvccpb","pkg/tlsutil","pkg/transport","pkg/types"]
+  packages = ["auth/authpb","clientv3","etcdserver/api/v3rpc/rpctypes","etcdserver/etcdserverpb","mvcc/mvccpb","pkg/tlsutil","pkg/transport","pkg/types"]
   revision = "fca8add78a9d926166eb739b8e4a124434025ba3"
   version = "v3.3.9"
 
@@ -147,6 +141,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a659a054031673814a67a62b13012bb64142a5012c843ef043e0420739169997"
+  inputs-digest = "e334d14d3739fb0bddbcc732e056287871a14e3ff24032abc36fa6cd8017ba34"
   solver-name = "gps-cdcl"
   solver-version = 1
