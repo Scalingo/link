@@ -10,6 +10,7 @@ import (
 	"github.com/coreos/etcd/clientv3"
 	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type Manager interface {
@@ -32,7 +33,9 @@ func NewManager(ctx context.Context, config config.Config, ip string, client *cl
 		return nil, errors.Wrap(err, "fail to instantiate network interface")
 	}
 
-	log := logger.Get(ctx).WithField("ip", ip)
+	log := logger.Get(ctx).WithFields(logrus.Fields{
+		"ip": ip,
+	})
 	ctx = logger.ToCtx(ctx, log)
 
 	m := &manager{

@@ -41,11 +41,12 @@ func main() {
 	if len(ips) > 0 {
 		log.Info("Restarting IP schedulers...")
 		for _, ip := range ips {
-			log.WithFields(logrus.Fields{
+			log := log.WithFields(logrus.Fields{
 				"id": ip.ID,
 				"ip": ip.IP,
-			}).Info("Starting")
-			err := scheduler.Start(ctx, ip.ID, ip.IP)
+			})
+			log.Info("Starting")
+			err := scheduler.Start(logger.ToCtx(ctx, log), ip.ID, ip.IP)
 			if err != nil {
 				panic(err)
 			}

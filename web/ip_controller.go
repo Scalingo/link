@@ -9,6 +9,7 @@ import (
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/scheduler"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/vishvananda/netlink"
 )
 
@@ -63,6 +64,11 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 	if err != nil {
 		return errors.Wrap(err, "fail to save IP")
 	}
+
+	log = log.WithFields(logrus.Fields{
+		"id": newIP.ID,
+		"ip": newIP.IP,
+	})
 
 	ctx = logger.ToCtx(context.Background(), log)
 
