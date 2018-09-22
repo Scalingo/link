@@ -12,20 +12,23 @@ import (
 	"github.com/vishvananda/netlink"
 )
 
-type IPController struct {
+type ipController struct {
 	storage   models.Storage
 	scheduler scheduler.Scheduler
 }
 
-func NewIPController(storage models.Storage, scheduler scheduler.Scheduler) IPController {
-	return IPController{
+func NewIPController(storage models.Storage, scheduler scheduler.Scheduler) ipController {
+	return ipController{
 		storage:   storage,
 		scheduler: scheduler,
 	}
 }
 
-func (c IPController) List(w http.ResponseWriter, r *http.Request, p map[string]string) error {
+func (c ipController) List(w http.ResponseWriter, r *http.Request, p map[string]string) error {
 	ctx := r.Context()
+	log := logger.Get(ctx)
+	w.Header().Set("Content-Type", "application/json")
+
 	ips, err := c.storage.GetIPs(ctx)
 	if err != nil {
 		return errors.Wrap(err, "fail to get storage")
@@ -35,14 +38,16 @@ func (c IPController) List(w http.ResponseWriter, r *http.Request, p map[string]
 		"ips": ips,
 	})
 	if err != nil {
-		return errors.Wrap(err, "fail to encode ips")
+		log.WithError(err).Error(err, "fail to encode IPs")
 	}
 	return nil
 }
 
-func (c IPController) Create(w http.ResponseWriter, r *http.Request, p map[string]string) error {
+func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[string]string) error {
 	ctx := r.Context()
 	log := logger.Get(ctx)
+
+	w.Header().Set("Content-Type", "application/json")
 	var newIP models.IP
 	err := json.NewDecoder(r.Body).Decode(&newIP)
 	if err != nil {
@@ -66,13 +71,15 @@ func (c IPController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		return errors.Wrap(err, "fail to start IP manager")
 	}
 
+	w.WriteHeader(http.StatusCreated)
+
 	err = json.NewEncoder(w).Encode(newIP)
 	if err != nil {
-		return errors.Wrap(err, "fail to encode IP")
+		log.WithError(err).Error("fail to encode IP")
 	}
 	return nil
 }
-func (c IPController) Destroy(w http.ResponseWriter, r *http.Request, params map[string]string) error {
+func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	ctx := r.Context()
 	id := params["id"]
 	err := c.storage.RemoveIP(ctx, id)
@@ -84,6 +91,8 @@ func (c IPController) Destroy(w http.ResponseWriter, r *http.Request, params map
 	if err != nil {
 		return errors.Wrap(err, "fail to stop IP manager")
 	}
+
+	w.WriteHeader(http.StatusNoContent)
 
 	return nil
 }
