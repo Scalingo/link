@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Scalingo/go-utils/etcd"
+	"github.com/Scalingo/link/config"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
@@ -21,9 +22,9 @@ type etcdStorage struct {
 	hostname string
 }
 
-func NewETCDStorage(hostname string) etcdStorage {
+func NewETCDStorage(config config.Config) etcdStorage {
 	return etcdStorage{
-		hostname: hostname,
+		hostname: config.Hostname,
 	}
 }
 

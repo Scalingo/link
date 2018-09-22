@@ -1,8 +1,9 @@
 package config
 
-import "github.com/kelseyhightower/envconfig"
-
-var C Config
+import (
+	"github.com/kelseyhightower/envconfig"
+	"github.com/pkg/errors"
+)
 
 type Config struct {
 	Interface string `envconfig:"INTERFACE"`
@@ -10,9 +11,12 @@ type Config struct {
 	Port      int    `envconfig:"PORT" default:"1313"`
 }
 
-func Init() {
-	err := envconfig.Process("", &C)
+func Build() (Config, error) {
+	var config Config
+	err := envconfig.Process("", &config)
 	if err != nil {
-		panic(err)
+		return config, errors.Wrap(err, "fail to parse environment")
 	}
+
+	return config, nil
 }

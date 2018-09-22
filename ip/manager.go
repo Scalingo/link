@@ -26,8 +26,8 @@ type manager struct {
 	stopping         bool
 }
 
-func NewManager(ctx context.Context, ip string, client *clientv3.Client) (*manager, error) {
-	i, err := network.NewNetworkInterfaceFromName(config.C.Interface)
+func NewManager(ctx context.Context, config config.Config, ip string, client *clientv3.Client) (*manager, error) {
+	i, err := network.NewNetworkInterfaceFromName(config.Interface)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to instantiate network interface")
 	}

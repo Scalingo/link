@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/ip"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
@@ -18,18 +19,20 @@ type IPScheduler struct {
 	mapMutex   sync.Mutex
 	ipManagers map[string]ip.Manager
 	etcd       *clientv3.Client
+	config     config.Config
 }
 
-func NewIPScheduler(etcd *clientv3.Client) IPScheduler {
+func NewIPScheduler(config config.Config, etcd *clientv3.Client) IPScheduler {
 	return IPScheduler{
 		mapMutex:   sync.Mutex{},
 		ipManagers: make(map[string]ip.Manager),
 		etcd:       etcd,
+		config:     config,
 	}
 }
 
 func (s IPScheduler) Start(ctx context.Context, id, ipAddr string) error {
-	manager, err := ip.NewManager(ctx, ipAddr, s.etcd)
+	manager, err := ip.NewManager(ctx, s.config, ipAddr, s.etcd)
 	if err != nil {
 		return errors.Wrap(err, "fail to initialize manager")
 	}

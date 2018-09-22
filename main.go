@@ -16,7 +16,11 @@ import (
 )
 
 func main() {
-	config.Init()
+	config, err := config.Build()
+	if err != nil {
+		panic(err)
+	}
+
 	log := logger.Default()
 	log.SetLevel(logrus.InfoLevel)
 	ctx := logger.ToCtx(context.Background(), log)
@@ -26,8 +30,8 @@ func main() {
 		panic(err)
 	}
 
-	storage := models.NewETCDStorage(config.C.Hostname)
-	scheduler := scheduler.NewIPScheduler(etcd)
+	storage := models.NewETCDStorage(config)
+	scheduler := scheduler.NewIPScheduler(config, etcd)
 
 	ips, err := storage.GetIPs(ctx)
 	if err != nil {
@@ -55,8 +59,8 @@ func main() {
 	r.HandleFunc("/ips", controller.Create).Methods("POST")
 	r.HandleFunc("/ips/{id}", controller.Destroy).Methods("DELETE")
 
-	log.Infof("Listening on %v", config.C.Port)
-	err = http.ListenAndServe(fmt.Sprintf(":%v", config.C.Port), r)
+	log.Infof("Listening on %v", config.Port)
+	err = http.ListenAndServe(fmt.Sprintf(":%v", config.Port), r)
 	if err != nil {
 		panic(err)
 	}
