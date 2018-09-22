@@ -35,6 +35,11 @@ func (c ipController) List(w http.ResponseWriter, r *http.Request, p map[string]
 		return errors.Wrap(err, "fail to get storage")
 	}
 
+	for i, ip := range ips {
+		ip.Status = c.scheduler.Status(ip.ID)
+		ips[i] = ip
+	}
+
 	err = json.NewEncoder(w).Encode(map[string][]models.IP{
 		"ips": ips,
 	})

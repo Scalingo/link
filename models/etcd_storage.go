@@ -79,6 +79,7 @@ func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
 
 	ip.ID = "vip-" + id.String()
 
+	ip.Status = ""
 	value, err := json.Marshal(ip)
 	if err != nil {
 		return ip, errors.Wrap(err, "fail to marshal IP")
