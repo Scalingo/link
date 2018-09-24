@@ -15,6 +15,7 @@ import (
 type Manager interface {
 	Start(context.Context)
 	Stop(context.Context)
+	Status() string
 }
 
 type manager struct {
@@ -87,4 +88,8 @@ func (m *manager) Stop(ctx context.Context) {
 	m.stopMutex.Lock()
 	defer m.stopMutex.Unlock()
 	m.stopping = true
+}
+
+func (u *manager) Status() string {
+	return u.stateMachine.Current()
 }

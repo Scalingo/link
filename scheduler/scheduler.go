@@ -14,6 +14,7 @@ import (
 type Scheduler interface {
 	Start(context.Context, string, string) error
 	Stop(context.Context, string) error
+	Status(string) string
 }
 
 type IPScheduler struct {
@@ -32,6 +33,16 @@ func NewIPScheduler(config config.Config, etcd *clientv3.Client, netInterface ne
 		config:       config,
 		netInterface: netInterface,
 	}
+}
+
+func (s IPScheduler) Status(id string) string {
+	s.mapMutex.Lock()
+	defer s.mapMutex.Unlock()
+	manager, ok := s.ipManagers[id]
+	if ok {
+		return manager.Status()
+	}
+	return ""
 }
 
 func (s IPScheduler) Start(ctx context.Context, id, ipAddr string) error {

@@ -79,6 +79,9 @@ func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
 
 	ip.ID = "vip-" + id.String()
 
+	// We do not want to store the status in database. This will always be STANDBY.
+	// So we set it to "" and let the omitempty do its job.
+	ip.Status = ""
 	value, err := json.Marshal(ip)
 	if err != nil {
 		return ip, errors.Wrap(err, "fail to marshal IP")
