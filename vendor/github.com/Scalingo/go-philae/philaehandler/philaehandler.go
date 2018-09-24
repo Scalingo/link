@@ -6,22 +6,23 @@ import (
 	"time"
 
 	"github.com/Scalingo/go-philae/prober"
+	"github.com/Scalingo/go-utils/logger"
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
 type PhilaeHandler struct {
 	prober *prober.Prober
-	logger logrus.FieldLogger
 }
 
 func (handler PhilaeHandler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
+	ctx := request.Context()
 	start := time.Now()
-	result := handler.prober.Check()
+	result := handler.prober.Check(ctx)
 	json.NewEncoder(response).Encode(result)
 	duration := time.Now().Sub(start)
 
-	l := handler.logger.WithFields(logrus.Fields{
+	l := logger.Get(ctx).WithFields(logrus.Fields{
 		"router":   "philae",
 		"duration": duration.String(),
 		"healthy":  result.Healthy,
@@ -34,24 +35,15 @@ func (handler PhilaeHandler) ServeHTTP(response http.ResponseWriter, request *ht
 	}
 }
 
-type HandlerOpts struct {
-	Logger logrus.FieldLogger
-}
-
-func NewHandler(prober *prober.Prober, opts HandlerOpts) http.Handler {
-	h := PhilaeHandler{
+func NewHandler(prober *prober.Prober) http.Handler {
+	return PhilaeHandler{
 		prober: prober,
-		logger: opts.Logger,
 	}
-	if h.logger == nil {
-		h.logger = logrus.New()
-	}
-	return h
 }
 
-func NewPhilaeRouter(router http.Handler, prober *prober.Prober, opts HandlerOpts) *mux.Router {
+func NewPhilaeRouter(router http.Handler, prober *prober.Prober) *mux.Router {
 	globalRouter := mux.NewRouter()
-	globalRouter.Handle("/_health", NewHandler(prober, opts))
+	globalRouter.Handle("/_health", NewHandler(prober))
 	globalRouter.Handle("/{any:.+}", router)
 	return globalRouter
 }

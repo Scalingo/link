@@ -1,5 +1,9 @@
 # Changelog
 
+## v4.0.0
+
+* Migrate to context embedded logger
+
 ## v3.1.0
 
 * tcpprobe: add tcpprobe

@@ -28,7 +28,7 @@ func TestPhilaeHandler(t *testing.T) {
 
 		Convey("the ServeHTTP method should render a healthy node", func() {
 			w := httptest.NewRecorder()
-			handler := NewHandler(probe, HandlerOpts{})
+			handler := NewHandler(probe)
 			handler.ServeHTTP(w, req)
 
 			resp := w.Result()
@@ -39,7 +39,7 @@ func TestPhilaeHandler(t *testing.T) {
 
 		Convey("the PhilaeRouter should route to the correct route", func() {
 			w := httptest.NewRecorder()
-			handler := NewPhilaeRouter(http.NotFoundHandler(), probe, HandlerOpts{})
+			handler := NewPhilaeRouter(http.NotFoundHandler(), probe)
 
 			handler.ServeHTTP(w, req)
 
@@ -50,7 +50,7 @@ func TestPhilaeHandler(t *testing.T) {
 		})
 		Convey("the PhilarRouter should route all the other routes to the other router", func() {
 			w := httptest.NewRecorder()
-			handler := NewPhilaeRouter(http.RedirectHandler("http://scalingo.com", 301), probe, HandlerOpts{})
+			handler := NewPhilaeRouter(http.RedirectHandler("http://scalingo.com", 301), probe)
 			req := httptest.NewRequest("GET", "http://example.foo/salut", nil)
 
 			handler.ServeHTTP(w, req)

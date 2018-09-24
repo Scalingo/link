@@ -1,6 +1,7 @@
 package prober
 
 import (
+	"context"
 	"errors"
 	"testing"
 	"time"
@@ -10,12 +11,13 @@ import (
 )
 
 func TestProber(t *testing.T) {
+	ctx := context.Background()
 	Convey("With healthy probes", t, func() {
 		p := NewProber()
 		p.AddProbe(sampleprobe.NewSampleProbe("a", true))
 		p.AddProbe(sampleprobe.NewSampleProbe("b", true))
 
-		res := p.Check()
+		res := p.Check(ctx)
 
 		So(res.Healthy, ShouldBeTrue)
 		So(len(res.Probes), ShouldEqual, 2)
@@ -28,7 +30,7 @@ func TestProber(t *testing.T) {
 		p.AddProbe(sampleprobe.NewSampleProbe("a", false))
 		p.AddProbe(sampleprobe.NewSampleProbe("b", false))
 
-		res := p.Check()
+		res := p.Check(ctx)
 
 		So(res.Healthy, ShouldBeFalse)
 		So(len(res.Probes), ShouldEqual, 2)
@@ -41,7 +43,7 @@ func TestProber(t *testing.T) {
 		p.AddProbe(sampleprobe.NewSampleProbe("a", true))
 		p.AddProbe(sampleprobe.NewSampleProbe("b", false))
 
-		res := p.Check()
+		res := p.Check(ctx)
 
 		So(res.Healthy, ShouldBeFalse)
 		So(len(res.Probes), ShouldEqual, 2)
@@ -56,7 +58,7 @@ func TestProber(t *testing.T) {
 		p.AddProbe(sampleprobe.NewTimedSampleProbe("test", true, 4*time.Second))
 		p.AddProbe(sampleprobe.NewTimedSampleProbe("test", true, 4*time.Second))
 		start := time.Now()
-		res := p.Check()
+		res := p.Check(ctx)
 		duration := time.Now().Sub(start)
 
 		So(duration, ShouldBeLessThan, 3*time.Second)

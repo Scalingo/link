@@ -1,9 +1,11 @@
 package prober
 
 import (
+	"context"
 	"errors"
-	"log"
 	"time"
+
+	"github.com/Scalingo/go-utils/logger"
 )
 
 // Probe define a minimal set of methods that a probe should implement
@@ -40,12 +42,12 @@ func (p *Prober) AddProbe(probe Probe) {
 }
 
 // Check will run the check of each probes added and return the result in a Result struct
-func (p *Prober) Check() *Result {
+func (p *Prober) Check(ctx context.Context) *Result {
 	probesResults := make([]*ProbeResult, len(p.probes))
 	healthy := true
 	resultChan := make(chan *ProbeResult, len(p.probes))
 	for _, probe := range p.probes {
-		go p.CheckOneProbe(probe, resultChan)
+		go p.CheckOneProbe(ctx, probe, resultChan)
 	}
 
 	for i := 0; i < len(p.probes); i++ {
@@ -62,7 +64,8 @@ func (p *Prober) Check() *Result {
 	}
 }
 
-func (p *Prober) CheckOneProbe(probe Probe, res chan *ProbeResult) {
+func (p *Prober) CheckOneProbe(ctx context.Context, probe Probe, res chan *ProbeResult) {
+	log := logger.Get(ctx)
 	probeRes := make(chan error)
 	var err error
 
@@ -82,7 +85,7 @@ func (p *Prober) CheckOneProbe(probe Probe, res chan *ProbeResult) {
 	if err != nil {
 		comment = err.Error()
 		probe_healthy = false
-		log.Printf("[PHILAE] Probe %s failed, reason: %s\n", probe.Name(), err.Error())
+		log.Infof("[PHILAE] Probe %s failed, reason: %s\n", probe.Name(), err.Error())
 	}
 	probeResult := &ProbeResult{
 		Name:    probe.Name(),

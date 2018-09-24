@@ -10,8 +10,8 @@
 [[projects]]
   name = "github.com/Scalingo/go-philae"
   packages = ["prober","tcpprobe"]
-  revision = "4cfff113786359435c62bbb37a6a805075375eb3"
-  version = "v3.1.0"
+  revision = "652ba1057536a4c8d303beb2dc8b6dce6ef991a9"
+  version = "v4.0.0"
 
 [[projects]]
   name = "github.com/Scalingo/go-utils"

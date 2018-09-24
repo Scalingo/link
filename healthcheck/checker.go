@@ -1,11 +1,15 @@
 package healthcheck
 
 import (
+	"context"
+	"io/ioutil"
 	"time"
 
 	"github.com/Scalingo/go-philae/prober"
 	"github.com/Scalingo/go-philae/tcpprobe"
+	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/models"
+	"github.com/sirupsen/logrus"
 )
 
 type Checker interface {
@@ -32,6 +36,13 @@ func FromChecks(checks []models.Healthcheck) checker {
 }
 
 func (c checker) Check() bool {
-	res := c.prober.Check()
+	ctx := context.Background()
+
+	// Custom logger to discard Philae output
+	log := logrus.New()
+	log.Out = ioutil.Discard
+	ctx = logger.ToCtx(ctx, log)
+
+	res := c.prober.Check(ctx)
 	return res.Healthy
 }
