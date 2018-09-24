@@ -6,9 +6,13 @@ import (
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/config"
+	"github.com/Scalingo/link/healthcheck"
+	"github.com/Scalingo/link/locker"
+	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/network"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/looplab/fsm"
+	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
 
@@ -22,12 +26,17 @@ type manager struct {
 	networkInterface network.NetworkInterface
 	stateMachine     *fsm.FSM
 	ip               string
-	etcd             *clientv3.Client
 	stopMutex        sync.RWMutex
 	stopping         bool
+	locker           locker.Locker
+	checker          healthcheck.Checker
 }
 
-func NewManager(ctx context.Context, config config.Config, ip string, client *clientv3.Client, netInterface network.NetworkInterface) (*manager, error) {
+func NewManager(ctx context.Context, config config.Config, ip models.IP, client *clientv3.Client) (*manager, error) {
+	i, err := network.NewNetworkInterfaceFromName(config.Interface)
+	if err != nil {
+		return nil, errors.Wrap(err, "fail to instantiate network interface")
+	}
 
 	log := logger.Get(ctx).WithFields(logrus.Fields{
 		"ip": ip,
@@ -35,16 +44,20 @@ func NewManager(ctx context.Context, config config.Config, ip string, client *cl
 	ctx = logger.ToCtx(ctx, log)
 
 	m := &manager{
-		ip:               ip,
-		networkInterface: netInterface,
-		etcd:             client,
+		networkInterface: i,
+		ip:               ip.IP,
+		locker:           locker.NewETCDLocker(client, ip.IP),
+		checker:          healthcheck.FromChecks(ip.Checks),
 	}
 
-	m.newStateMachine(ctx)
+	m.stateMachine = NewStateMachine(ctx, NewStateMachineOpts{
+		ActivatedCallback: m.setActivated,
+		StandbyCallback:   m.setStandBy,
+	})
 	return m, nil
 }
 
-func (m *manager) setActivated(ctx context.Context) {
+func (m *manager) setActivated(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: ACTIVATED")
 	err := m.networkInterface.EnsureIP(m.ip)
@@ -53,12 +66,27 @@ func (m *manager) setActivated(ctx context.Context) {
 	}
 }
 
-func (m *manager) setStandBy(ctx context.Context) {
+func (m *manager) setStandBy(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: STANDBY")
 	err := m.networkInterface.RemoveIP(m.ip)
 	if err != nil {
 		log.WithError(err).Error("Fail to de-activate IP")
+	}
+}
+
+func (m *manager) setFailing(ctx context.Context, _ *fsm.Event) {
+	log := logger.Get(ctx)
+	log.Info("New state: FAILING")
+
+	err := m.networkInterface.RemoveIP(m.ip)
+	if err != nil {
+		log.WithError(err).Error("Fail to de-activate IP")
+	}
+
+	err = m.locker.Stop(ctx)
+	if err != nil {
+		log.WithError(err).Error("Fail to stop locker")
 	}
 }
 
@@ -69,7 +97,8 @@ func (m *manager) Start(ctx context.Context) {
 	ctx = logger.ToCtx(ctx, log)
 	eventChan := make(chan string)
 
-	go m.lockRoutine(ctx, eventChan)
+	go m.eventManager(ctx, eventChan)
+	go m.healthChecker(ctx, eventChan)
 
 	for event := range eventChan {
 		err := m.stateMachine.Event(event)
@@ -82,12 +111,6 @@ func (m *manager) Start(ctx context.Context) {
 		}
 	}
 	log.Info("Manager stopped")
-}
-
-func (m *manager) Stop(ctx context.Context) {
-	m.stopMutex.Lock()
-	defer m.stopMutex.Unlock()
-	m.stopping = true
 }
 
 func (u *manager) Status() string {

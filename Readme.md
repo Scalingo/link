@@ -37,9 +37,12 @@ At some point three types of events can happen:
 - `fault`: There was some error when coordinating with other notes
 - `elected`: This machine was elected to own the IP
 - `demoted`: This machine just loosed ownership on the IP
+- `health_check_fail`: The health checks configured with this IP has failed.
+- `health_check_success`: The health checks configured with this IP has succeeded.
 
 
 This is what the state machine looks like:
+
 ![Sate Machine](./state_machine.png)
 
 ## Endpoints

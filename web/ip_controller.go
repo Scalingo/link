@@ -97,7 +97,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 
 	ctx = logger.ToCtx(context.Background(), log)
 
-	err = c.scheduler.Start(ctx, newIP.ID, newIP.IP)
+	err = c.scheduler.Start(ctx, newIP)
 	if err != nil {
 		return errors.Wrap(err, "fail to start IP manager")
 	}
