@@ -31,9 +31,13 @@ ip addr del MY_IP dev MY_INTERFACE
 
 ## State machine
 
-For each IP, the agent can either be `ACTIVATED` meaning that this machine owns the IP or `STANDBY` meaning that this machine does not own this IP yet.
+Each IP can be in any of these three states:
 
-At some point three types of events can happen:
+- `ACTIVATED`: This machine owns the IP
+- `STANDBY`: This machine does not own the IP bust is available for election
+- `FAILING`: Healthchecks for this IP failed, this machine is not available for election
+
+At any point three types of events can happen:
 - `fault`: There was some error when coordinating with other notes
 - `elected`: This machine was elected to own the IP
 - `demoted`: This machine just loosed ownership on the IP
