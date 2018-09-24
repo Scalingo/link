@@ -39,7 +39,7 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 	}
 
 	log := logger.Get(ctx).WithFields(logrus.Fields{
-		"ip": ip,
+		"ip": ip.IP,
 	})
 	ctx = logger.ToCtx(ctx, log)
 
@@ -53,6 +53,7 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 	m.stateMachine = NewStateMachine(ctx, NewStateMachineOpts{
 		ActivatedCallback: m.setActivated,
 		StandbyCallback:   m.setStandBy,
+		FailingCallback:   m.setFailing,
 	})
 	return m, nil
 }

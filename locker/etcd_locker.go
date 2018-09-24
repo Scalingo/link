@@ -18,16 +18,16 @@ type etcdLocker struct {
 	key       string
 }
 
-func NewETCDLocker(etcd *clientv3.Client, ip string) etcdLocker {
+func NewETCDLocker(etcd *clientv3.Client, ip string) *etcdLocker {
 	key := fmt.Sprintf("%s/default/%s", models.ETCD_LINK_DIRECTORY, strings.Replace(ip, "/", "_", -1))
-	return etcdLocker{
+	return &etcdLocker{
 		etcd:      etcd,
 		key:       key,
 		leaseTime: 5,
 	}
 }
 
-func (l etcdLocker) Refresh(ctx context.Context) error {
+func (l *etcdLocker) Refresh(ctx context.Context) error {
 	log := logger.Get(ctx)
 
 	if l.leaseID == 0 {
@@ -57,7 +57,7 @@ func (l etcdLocker) Refresh(ctx context.Context) error {
 	return nil
 }
 
-func (l etcdLocker) IsMaster(ctx context.Context) (bool, error) {
+func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
 	resp, err := l.etcd.Get(ctx, l.key)
 	if err != nil {
 		return false, errors.Wrap(err, "fail to get lock")
@@ -71,7 +71,7 @@ func (l etcdLocker) IsMaster(ctx context.Context) (bool, error) {
 	return resp.Kvs[0].Lease == int64(l.leaseID), nil
 }
 
-func (l etcdLocker) Stop(ctx context.Context) error {
+func (l *etcdLocker) Stop(ctx context.Context) error {
 	if l.leaseID == 0 {
 		return nil
 	}

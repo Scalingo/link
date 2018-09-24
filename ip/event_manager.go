@@ -46,6 +46,7 @@ func (m *manager) singleEtcdRun(ctx context.Context, eventChan chan string) {
 	err := m.locker.Refresh(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to refresh lock")
+		log.Info("FAULT")
 		eventChan <- FaultEvent
 		return
 	}
@@ -75,6 +76,6 @@ func (m *manager) healthChecker(ctx context.Context, eventChan chan string) {
 		} else {
 			eventChan <- HealthCheckFailEvent
 		}
-		time.Sleep(30 * time.Second)
+		time.Sleep(5 * time.Second)
 	}
 }

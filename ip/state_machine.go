@@ -49,7 +49,7 @@ func NewStateMachine(ctx context.Context, opts NewStateMachineOpts) *fsm.FSM {
 	}
 
 	return fsm.NewFSM(
-		STANDBY,
+		FAILING,
 		fsm.Events{
 			{Name: FaultEvent, Src: []string{ACTIVATED}, Dst: ACTIVATED},
 			{Name: FaultEvent, Src: []string{STANDBY}, Dst: ACTIVATED},
