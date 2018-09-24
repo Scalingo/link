@@ -10,6 +10,7 @@ import (
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/network"
 	"github.com/Scalingo/link/scheduler"
 	"github.com/Scalingo/link/web"
 	"github.com/sirupsen/logrus"
@@ -30,8 +31,13 @@ func main() {
 		panic(err)
 	}
 
+	netInterface, err := network.NewNetworkInterfaceFromName(config.Interface)
+	if err != nil {
+		panic(err)
+	}
+
 	storage := models.NewETCDStorage(config)
-	scheduler := scheduler.NewIPScheduler(config, etcd)
+	scheduler := scheduler.NewIPScheduler(config, etcd, netInterface)
 
 	ips, err := storage.GetIPs(ctx)
 	if err != nil {
@@ -53,7 +59,7 @@ func main() {
 		}
 	}
 
-	controller := web.NewIPController(storage, scheduler)
+	controller := web.NewIPController(storage, scheduler, netInterface)
 	r := handlers.NewRouter(log)
 	r.Use(handlers.ErrorMiddleware)
 	r.HandleFunc("/ips", controller.List).Methods("GET")

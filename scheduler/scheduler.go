@@ -6,6 +6,7 @@ import (
 
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/ip"
+	"github.com/Scalingo/link/network"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
 )
@@ -16,23 +17,25 @@ type Scheduler interface {
 }
 
 type IPScheduler struct {
-	mapMutex   sync.Mutex
-	ipManagers map[string]ip.Manager
-	etcd       *clientv3.Client
-	config     config.Config
+	mapMutex     sync.Mutex
+	ipManagers   map[string]ip.Manager
+	etcd         *clientv3.Client
+	config       config.Config
+	netInterface network.NetworkInterface
 }
 
-func NewIPScheduler(config config.Config, etcd *clientv3.Client) IPScheduler {
+func NewIPScheduler(config config.Config, etcd *clientv3.Client, netInterface network.NetworkInterface) IPScheduler {
 	return IPScheduler{
-		mapMutex:   sync.Mutex{},
-		ipManagers: make(map[string]ip.Manager),
-		etcd:       etcd,
-		config:     config,
+		mapMutex:     sync.Mutex{},
+		ipManagers:   make(map[string]ip.Manager),
+		etcd:         etcd,
+		config:       config,
+		netInterface: netInterface,
 	}
 }
 
 func (s IPScheduler) Start(ctx context.Context, id, ipAddr string) error {
-	manager, err := ip.NewManager(ctx, s.config, ipAddr, s.etcd)
+	manager, err := ip.NewManager(ctx, s.config, ipAddr, s.etcd, s.netInterface)
 	if err != nil {
 		return errors.Wrap(err, "fail to initialize manager")
 	}

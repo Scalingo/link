@@ -7,6 +7,7 @@ import (
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/network"
 	"github.com/Scalingo/link/scheduler"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -14,14 +15,16 @@ import (
 )
 
 type ipController struct {
-	storage   models.Storage
-	scheduler scheduler.Scheduler
+	storage      models.Storage
+	scheduler    scheduler.Scheduler
+	netInterface network.NetworkInterface
 }
 
-func NewIPController(storage models.Storage, scheduler scheduler.Scheduler) ipController {
+func NewIPController(storage models.Storage, scheduler scheduler.Scheduler, netInterface network.NetworkInterface) ipController {
 	return ipController{
-		storage:   storage,
-		scheduler: scheduler,
+		storage:      storage,
+		scheduler:    scheduler,
+		netInterface: netInterface,
 	}
 }
 
@@ -58,6 +61,23 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 	_, err = netlink.ParseAddr(newIP.IP)
 	if err != nil {
 		return errors.Wrap(err, "Invalid IP")
+	}
+
+	has, err := c.netInterface.HasIP(newIP.IP)
+	if err != nil {
+		return errors.Wrap(err, "fail to check if IP is already assigned")
+	}
+
+	if has {
+		w.WriteHeader(http.StatusBadRequest)
+		err := json.NewEncoder(w).Encode(map[string]string{
+			"error": "IP already assigned",
+		})
+
+		if err != nil {
+			log.WithError(err).Error("fail to send body")
+		}
+		return nil
 	}
 
 	newIP, err = c.storage.AddIP(ctx, newIP)
