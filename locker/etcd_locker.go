@@ -6,24 +6,26 @@ import (
 	"strings"
 
 	"github.com/Scalingo/go-utils/logger"
+	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/models"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
 )
 
 type etcdLocker struct {
-	etcd      *clientv3.Client
-	leaseID   clientv3.LeaseID
-	leaseTime int64
-	key       string
+	etcd    *clientv3.Client
+	leaseID clientv3.LeaseID
+	key     string
+	config  config.Config
 }
 
-func NewETCDLocker(etcd *clientv3.Client, ip string) *etcdLocker {
+func NewETCDLocker(config config.Config, etcd *clientv3.Client, ip string) *etcdLocker {
 	key := fmt.Sprintf("%s/default/%s", models.ETCD_LINK_DIRECTORY, strings.Replace(ip, "/", "_", -1))
 	return &etcdLocker{
-		etcd:      etcd,
-		key:       key,
-		leaseTime: 5,
+		etcd:    etcd,
+		key:     key,
+		leaseID: 0,
+		config:  config,
 	}
 }
 
@@ -31,7 +33,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	log := logger.Get(ctx)
 
 	if l.leaseID == 0 {
-		grant, err := l.etcd.Grant(ctx, l.leaseTime)
+		grant, err := l.etcd.Grant(ctx, int64(l.config.LeaseTime().Seconds()))
 		if err != nil {
 			return errors.Wrap(err, "fail to generate grant")
 		}
@@ -49,7 +51,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 		Then(clientv3.OpPut(l.key, "locked", clientv3.WithLease(l.leaseID))).
 		Commit()
 	if err != nil {
-		return errors.Wrap(err, "fail to refresh lock")
+		return errors.Wrapf(err, "fail to refresh lock (leaseID = %v)", l.leaseID)
 	}
 
 	_, err = l.etcd.KeepAliveOnce(ctx, l.leaseID)
