@@ -37,7 +37,7 @@ func main() {
 	}
 
 	storage := models.NewETCDStorage(config)
-	scheduler := scheduler.NewIPScheduler(config, etcd, netInterface)
+	scheduler := scheduler.NewIPScheduler(config, etcd)
 
 	ips, err := storage.GetIPs(ctx)
 	if err != nil {
@@ -52,7 +52,7 @@ func main() {
 				"ip": ip.IP,
 			})
 			log.Info("Starting")
-			err := scheduler.Start(logger.ToCtx(ctx, log), ip.ID, ip.IP)
+			err := scheduler.Start(logger.ToCtx(ctx, log), ip)
 			if err != nil {
 				panic(err)
 			}

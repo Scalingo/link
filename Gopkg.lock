@@ -8,6 +8,12 @@
   version = "v1.2.4"
 
 [[projects]]
+  name = "github.com/Scalingo/go-philae"
+  packages = ["prober","tcpprobe"]
+  revision = "652ba1057536a4c8d303beb2dc8b6dce6ef991a9"
+  version = "v4.0.0"
+
+[[projects]]
   name = "github.com/Scalingo/go-utils"
   packages = ["errors","etcd","logger"]
   revision = "5abb4781748e915d464a11ed7dbdccb46eecd02f"
@@ -141,6 +147,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e334d14d3739fb0bddbcc732e056287871a14e3ff24032abc36fa6cd8017ba34"
+  inputs-digest = "ab62254f989d73a05913dce2e1833d7dd22450719ff475a600c8dd8548929c26"
   solver-name = "gps-cdcl"
   solver-version = 1

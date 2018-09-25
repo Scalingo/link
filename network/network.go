@@ -45,7 +45,7 @@ func (i networkInterface) hasIP(addr *netlink.Addr) (bool, error) {
 	}
 
 	for _, a := range addrs {
-		if a.Contains(addr.IP) {
+		if a.IP.Equal(addr.IP) {
 			return true, nil
 		}
 	}
@@ -92,6 +92,15 @@ func (i networkInterface) RemoveIP(ip string) error {
 	addr, err := netlink.ParseAddr(ip)
 	if err != nil {
 		return errors.Wrapf(err, "invalid IP: %s", ip)
+	}
+
+	has, err := i.hasIP(addr)
+	if err != nil {
+		return errors.WithMessage(err, "fail to check if the IP is already present")
+	}
+
+	if !has {
+		return nil
 	}
 
 	err = netlink.AddrDel(i.link, addr)
