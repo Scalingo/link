@@ -30,6 +30,7 @@ type manager struct {
 	stopping         bool
 	locker           locker.Locker
 	checker          healthcheck.Checker
+	config           config.Config
 }
 
 func NewManager(ctx context.Context, config config.Config, ip models.IP, client *clientv3.Client) (*manager, error) {
@@ -46,8 +47,9 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 	m := &manager{
 		networkInterface: i,
 		ip:               ip.IP,
-		locker:           locker.NewETCDLocker(client, ip.IP),
-		checker:          healthcheck.FromChecks(ip.Checks),
+		locker:           locker.NewETCDLocker(config, client, ip.IP),
+		checker:          healthcheck.FromChecks(config, ip.Checks),
+		config:           config,
 	}
 
 	m.stateMachine = NewStateMachine(ctx, NewStateMachineOpts{

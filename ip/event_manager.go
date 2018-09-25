@@ -23,10 +23,10 @@ func (m *manager) eventManager(ctx context.Context, eventChan chan string) {
 	log := logger.Get(ctx).WithField("process", "event_manager")
 	for {
 		if m.isStopping() {
-			// Sleeping 10s (or twice the lease time) will ensure that we've lost our lease and another node was elected MASTER.
+			// Sleeping twice the lease time will ensure that we've lost our lease and another node was elected MASTER.
 			// So after this sleep, we can safely remove our IP.
-			log.Info("Stop order received, waiting 10s to remove IP")
-			time.Sleep(10 * time.Second)
+			log.Info("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
+			time.Sleep(2 * m.config.LeaseTime())
 			if m.stateMachine.Current() != FAILING {
 				eventChan <- DemotedEvent
 			}
@@ -39,7 +39,7 @@ func (m *manager) eventManager(ctx context.Context, eventChan chan string) {
 			m.singleEtcdRun(ctx, eventChan)
 		}
 
-		time.Sleep(3 * time.Second)
+		time.Sleep(m.config.KeepAliveInterval)
 	}
 }
 
@@ -81,6 +81,6 @@ func (m *manager) healthChecker(ctx context.Context, eventChan chan string) {
 		} else {
 			eventChan <- HealthCheckFailEvent
 		}
-		time.Sleep(5 * time.Second)
+		time.Sleep(m.config.HealthcheckInterval)
 	}
 }
