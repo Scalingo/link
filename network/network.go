@@ -1,7 +1,6 @@
 package network
 
 import (
-	"github.com/j-keck/arping"
 	"github.com/pkg/errors"
 	"github.com/vishvananda/netlink"
 )
@@ -15,6 +14,7 @@ type NetworkInterface interface {
 type networkInterface struct {
 	cardName string
 	link     netlink.Link
+	arp      *arp
 }
 
 func NewNetworkInterfaceFromName(name string) (networkInterface, error) {
@@ -26,6 +26,7 @@ func NewNetworkInterfaceFromName(name string) (networkInterface, error) {
 	return networkInterface{
 		cardName: name,
 		link:     link,
+		arp:      GetArp(),
 	}, nil
 }
 
@@ -72,7 +73,10 @@ func (i networkInterface) EnsureIP(ip string) error {
 		}
 	}
 	// Send the gratuitous ARP request (it wont hurt anyone)
-	err = arping.GratuitousArpOverIfaceByName(addr.IP, i.cardName)
+	err = i.arp.GratuitousArpRequest(GratuitousArpRequest{
+		IP:        addr.IP,
+		Interface: i.cardName,
+	})
 	if err != nil {
 		return errors.Wrapf(err, "fail to announce our IP")
 	}
