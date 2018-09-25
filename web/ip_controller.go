@@ -33,17 +33,9 @@ func (c ipController) List(w http.ResponseWriter, r *http.Request, p map[string]
 	log := logger.Get(ctx)
 	w.Header().Set("Content-Type", "application/json")
 
-	ips, err := c.storage.GetIPs(ctx)
-	if err != nil {
-		return errors.Wrap(err, "fail to get storage")
-	}
+	ips := c.scheduler.ConfiguredIPs(ctx)
 
-	for i, ip := range ips {
-		ip.Status = c.scheduler.Status(ip.ID)
-		ips[i] = ip
-	}
-
-	err = json.NewEncoder(w).Encode(map[string][]models.IP{
+	err := json.NewEncoder(w).Encode(map[string]interface{}{
 		"ips": ips,
 	})
 	if err != nil {

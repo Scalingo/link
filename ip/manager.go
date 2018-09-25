@@ -20,6 +20,7 @@ type Manager interface {
 	Start(context.Context)
 	Stop(context.Context)
 	Status() string
+	IP() models.IP
 }
 
 type manager struct {
@@ -86,4 +87,8 @@ func (m *manager) Start(ctx context.Context) {
 
 func (u *manager) Status() string {
 	return u.stateMachine.Current()
+}
+
+func (u *manager) IP() models.IP {
+	return u.ip
 }
