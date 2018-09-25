@@ -68,7 +68,7 @@ func (m *manager) singleEtcdRun(ctx context.Context, eventChan chan string) {
 
 func (m *manager) healthChecker(ctx context.Context, eventChan chan string) {
 	for {
-		check := m.checker.IsHealthy()
+		healthy := m.checker.IsHealthy()
 
 		// The eventManager will close the chan when we receive the Stop order and we do not want to send things on a close channel.
 		// Since the checker can take up to 5s to run his checks, this check must be done between the health check and sending the results.
@@ -76,7 +76,7 @@ func (m *manager) healthChecker(ctx context.Context, eventChan chan string) {
 			return
 		}
 
-		if check {
+		if healthy {
 			eventChan <- HealthCheckSuccessEvent
 		} else {
 			eventChan <- HealthCheckFailEvent
