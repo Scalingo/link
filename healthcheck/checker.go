@@ -13,7 +13,7 @@ import (
 )
 
 type Checker interface {
-	Check() bool
+	IsHealthy() bool
 }
 
 type checker struct {
@@ -35,7 +35,7 @@ func FromChecks(checks []models.Healthcheck) checker {
 	}
 }
 
-func (c checker) Check() bool {
+func (c checker) IsHealthy() bool {
 	ctx := context.Background()
 
 	// Custom logger to discard Philae output

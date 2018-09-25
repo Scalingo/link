@@ -72,14 +72,9 @@ func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
 }
 
 func (l *etcdLocker) Stop(ctx context.Context) error {
-	if l.leaseID == 0 {
-		return nil
-	}
-
-	_, err := l.etcd.Revoke(ctx, l.leaseID)
+	// Reset the lease and let the old lease die.
+	// Setting the leaseID to 0 will ensure that the next time `Refresh` is
+	// called, we will work with a new lease.
 	l.leaseID = 0
-	if err != nil {
-		return errors.Wrap(err, "fail to release lease")
-	}
 	return nil
 }

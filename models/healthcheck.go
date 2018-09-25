@@ -1,6 +1,9 @@
 package models
 
-import "fmt"
+import (
+	"net"
+	"strconv"
+)
 
 type HealthcheckType string
 
@@ -15,5 +18,5 @@ type Healthcheck struct {
 }
 
 func (h Healthcheck) Addr() string {
-	return fmt.Sprintf("%s:%v", h.Host, h.Port)
+	return net.JoinHostPort(h.Host, strconv.Itoa(h.Port))
 }

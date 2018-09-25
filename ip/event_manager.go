@@ -23,6 +23,8 @@ func (m *manager) eventManager(ctx context.Context, eventChan chan string) {
 	log := logger.Get(ctx).WithField("process", "event_manager")
 	for {
 		if m.isStopping() {
+			// Sleeping 10s (or twice the lease time) will ensure that we've lost our lease and another node was elected MASTER.
+			// So after this sleep, we can safely remove our IP.
 			log.Info("Stop order received, waiting 10s to remove IP")
 			time.Sleep(10 * time.Second)
 			if m.stateMachine.Current() != FAILING {
@@ -66,7 +68,10 @@ func (m *manager) singleEtcdRun(ctx context.Context, eventChan chan string) {
 
 func (m *manager) healthChecker(ctx context.Context, eventChan chan string) {
 	for {
-		check := m.checker.Check()
+		check := m.checker.IsHealthy()
+
+		// The eventManager will close the chan when we receive the Stop order and we do not want to send things on a close channel.
+		// Since the checker can take up to 5s to run his checks, this check must be done between the health check and sending the results.
 		if m.isStopping() {
 			return
 		}
