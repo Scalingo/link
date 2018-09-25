@@ -39,8 +39,13 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 		l.leaseID = grant.ID
 	}
 
+	// The goal of this transaction is to create the key with our leaseID only if this key does not exist
+	// We use a transaction to make sure that concurrent tries wont interfere with each others.
+
 	_, err := l.etcd.Txn(ctx).
+		// If the key does not exists (createRevision == 0)
 		If(clientv3.Compare(clientv3.CreateRevision(l.key), "=", 0)).
+		// Create it with our leaseID
 		Then(clientv3.OpPut(l.key, "locked", clientv3.WithLease(l.leaseID))).
 		Commit()
 	if err != nil {
