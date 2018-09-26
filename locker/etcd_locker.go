@@ -13,19 +13,21 @@ import (
 )
 
 type etcdLocker struct {
-	etcd    *clientv3.Client
-	leaseID clientv3.LeaseID
-	key     string
-	config  config.Config
+	kvEtcd    clientv3.KV
+	leaseEtcd clientv3.Lease
+	leaseID   clientv3.LeaseID
+	key       string
+	config    config.Config
 }
 
 func NewETCDLocker(config config.Config, etcd *clientv3.Client, ip string) *etcdLocker {
 	key := fmt.Sprintf("%s/default/%s", models.ETCD_LINK_DIRECTORY, strings.Replace(ip, "/", "_", -1))
 	return &etcdLocker{
-		etcd:    etcd,
-		key:     key,
-		leaseID: 0,
-		config:  config,
+		kvEtcd:    etcd,
+		leaseEtcd: etcd,
+		key:       key,
+		leaseID:   0,
+		config:    config,
 	}
 }
 
@@ -33,7 +35,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	log := logger.Get(ctx)
 
 	if l.leaseID == 0 {
-		grant, err := l.etcd.Grant(ctx, int64(l.config.LeaseTime().Seconds()))
+		grant, err := l.leaseEtcd.Grant(ctx, int64(l.config.LeaseTime().Seconds()))
 		if err != nil {
 			return errors.Wrap(err, "fail to generate grant")
 		}
@@ -44,7 +46,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	// The goal of this transaction is to create the key with our leaseID only if this key does not exist
 	// We use a transaction to make sure that concurrent tries wont interfere with each others.
 
-	_, err := l.etcd.Txn(ctx).
+	_, err := l.kvEtcd.Txn(ctx).
 		// If the key does not exists (createRevision == 0)
 		If(clientv3.Compare(clientv3.CreateRevision(l.key), "=", 0)).
 		// Create it with our leaseID
@@ -56,7 +58,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 		return errors.Wrapf(err, "fail to refresh lock (leaseID = %v)", l.leaseID)
 	}
 
-	_, err = l.etcd.KeepAliveOnce(ctx, l.leaseID)
+	_, err = l.leaseEtcd.KeepAliveOnce(ctx, l.leaseID)
 	if err != nil {
 		// We got an error while sending keepalive: Regenerate lease
 		l.leaseID = 0
@@ -67,7 +69,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 }
 
 func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
-	resp, err := l.etcd.Get(ctx, l.key)
+	resp, err := l.kvEtcd.Get(ctx, l.key)
 	if err != nil {
 		return false, errors.Wrap(err, "fail to get lock")
 	}
