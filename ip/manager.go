@@ -25,7 +25,7 @@ type Manager interface {
 type manager struct {
 	networkInterface network.NetworkInterface
 	stateMachine     *fsm.FSM
-	ip               string
+	ip               models.IP
 	stopMutex        sync.RWMutex
 	stopping         bool
 	locker           locker.Locker
@@ -46,7 +46,7 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 
 	m := &manager{
 		networkInterface: i,
-		ip:               ip.IP,
+		ip:               ip,
 		locker:           locker.NewETCDLocker(config, client, ip.IP),
 		checker:          healthcheck.FromChecks(config, ip.Checks),
 		config:           config,
@@ -60,41 +60,8 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 	return m, nil
 }
 
-func (m *manager) setActivated(ctx context.Context, _ *fsm.Event) {
-	log := logger.Get(ctx)
-	log.Info("New state: ACTIVATED")
-	err := m.networkInterface.EnsureIP(m.ip)
-	if err != nil {
-		log.WithError(err).Error("Fail to activate IP")
-	}
-}
-
-func (m *manager) setStandBy(ctx context.Context, _ *fsm.Event) {
-	log := logger.Get(ctx)
-	log.Info("New state: STANDBY")
-	err := m.networkInterface.RemoveIP(m.ip)
-	if err != nil {
-		log.WithError(err).Error("Fail to de-activate IP")
-	}
-}
-
-func (m *manager) setFailing(ctx context.Context, _ *fsm.Event) {
-	log := logger.Get(ctx)
-	log.Info("New state: FAILING")
-
-	err := m.networkInterface.RemoveIP(m.ip)
-	if err != nil {
-		log.WithError(err).Error("Fail to de-activate IP")
-	}
-
-	err = m.locker.Stop(ctx)
-	if err != nil {
-		log.WithError(err).Error("Fail to stop locker")
-	}
-}
-
 func (m *manager) Start(ctx context.Context) {
-	log := logger.Get(ctx).WithField("ip", m.ip)
+	log := logger.Get(ctx).WithField("ip", m.ip.IP)
 	log.Info("Starting manager")
 
 	ctx = logger.ToCtx(ctx, log)
@@ -102,6 +69,7 @@ func (m *manager) Start(ctx context.Context) {
 
 	go m.eventManager(ctx, eventChan)
 	go m.healthChecker(ctx, eventChan)
+	go m.startArpEnsure(ctx)
 
 	for event := range eventChan {
 		err := m.stateMachine.Event(event)

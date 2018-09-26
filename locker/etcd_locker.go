@@ -51,6 +51,8 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 		Then(clientv3.OpPut(l.key, "locked", clientv3.WithLease(l.leaseID))).
 		Commit()
 	if err != nil {
+		// We got an error, this can be because our leaseID is not valid anymore: Reset it
+		l.leaseID = 0
 		return errors.Wrapf(err, "fail to refresh lock (leaseID = %v)", l.leaseID)
 	}
 
