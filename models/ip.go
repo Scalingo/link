@@ -4,5 +4,5 @@ type IP struct {
 	ID     string        `json:"id"`
 	IP     string        `json:"ip"`
 	Status string        `json:"status,omitempty"`
-	Checks []Healthcheck `json:"checks"`
+	Checks []Healthcheck `json:"checks,omitempty"`
 }
