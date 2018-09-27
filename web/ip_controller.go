@@ -35,7 +35,7 @@ func (c ipController) List(w http.ResponseWriter, r *http.Request, p map[string]
 
 	ips := c.scheduler.ConfiguredIPs(ctx)
 
-	err := json.NewEncoder(w).Encode(map[string]interface{}{
+	err := json.NewEncoder(w).Encode(map[string][]scheduler.IP{
 		"ips": ips,
 	})
 	if err != nil {
