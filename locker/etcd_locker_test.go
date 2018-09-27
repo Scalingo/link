@@ -8,6 +8,7 @@ import (
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/etcdmock"
 	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -128,4 +129,65 @@ func TestRefresh(t *testing.T) {
 			assert.Equal(t, locker.leaseID, clientv3.LeaseID(example.ExpectedLeaseID))
 		})
 	}
+}
+
+func Test_IsMaster(t *testing.T) {
+
+	examples := []struct {
+		Name           string
+		OurLeaseID     clientv3.LeaseID
+		CurrentLeaseID clientv3.LeaseID
+		EtcdError      error
+		Expected       bool
+		ExpectedError  string
+	}{
+		{
+			Name:          "When there is an issue with ETCD",
+			EtcdError:     errors.New("NOP"),
+			ExpectedError: "NOP",
+		}, {
+			Name:           "when we are not master",
+			OurLeaseID:     10,
+			CurrentLeaseID: 11,
+			Expected:       false,
+		}, {
+			Name:           "when we are master",
+			OurLeaseID:     10,
+			CurrentLeaseID: 10,
+			Expected:       true,
+		},
+	}
+
+	for _, example := range examples {
+		t.Run(example.Name, func(t *testing.T) {
+			key := "/test"
+			ctx := context.Background()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			etcdMock := etcdmock.NewMockKV(ctrl)
+			etcdMock.EXPECT().Get(gomock.Any(), key).Return(&clientv3.GetResponse{
+				Kvs: []*mvccpb.KeyValue{
+					{Lease: int64(example.CurrentLeaseID)},
+				},
+			}, example.EtcdError)
+
+			locker := &etcdLocker{
+				kvEtcd:  etcdMock,
+				leaseID: example.OurLeaseID,
+				key:     key,
+			}
+
+			value, err := locker.IsMaster(ctx)
+			if len(example.ExpectedError) > 0 {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), example.ExpectedError)
+			} else {
+				assert.NoError(t, err)
+				assert.Equal(t, example.Expected, value)
+			}
+		})
+	}
+
 }
