@@ -9,7 +9,7 @@
 
 [[projects]]
   name = "github.com/Scalingo/go-philae"
-  packages = ["prober","tcpprobe"]
+  packages = ["prober","sampleprobe","tcpprobe"]
   revision = "652ba1057536a4c8d303beb2dc8b6dce6ef991a9"
   version = "v4.0.0"
 
@@ -32,9 +32,21 @@
   version = "v3.3.9"
 
 [[projects]]
+  name = "github.com/davecgh/go-spew"
+  packages = ["spew"]
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
+
+[[projects]]
   name = "github.com/gogo/protobuf"
   packages = ["gogoproto","proto","protoc-gen-gogo/descriptor"]
   revision = "636bf0302bc95575d69441b25a2603156ffdddf1"
+  version = "v1.1.1"
+
+[[projects]]
+  name = "github.com/golang/mock"
+  packages = ["gomock"]
+  revision = "c34cdb4725f4c3844d095133c6e40e448b86589b"
   version = "v1.1.1"
 
 [[projects]]
@@ -80,6 +92,12 @@
   version = "v0.8.0"
 
 [[projects]]
+  name = "github.com/pmezard/go-difflib"
+  packages = ["difflib"]
+  revision = "792786c7400a136282c1664665ae0a8db921c6c2"
+  version = "v1.0.0"
+
+[[projects]]
   name = "github.com/satori/go.uuid"
   packages = ["."]
   revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
@@ -89,6 +107,12 @@
   packages = ["."]
   revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
   version = "v1.0.6"
+
+[[projects]]
+  name = "github.com/stretchr/testify"
+  packages = ["assert","require"]
+  revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
+  version = "v1.2.2"
 
 [[projects]]
   name = "github.com/vishvananda/netlink"
@@ -147,6 +171,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ab62254f989d73a05913dce2e1833d7dd22450719ff475a600c8dd8548929c26"
+  inputs-digest = "9004d15afe8a83cd0d2ece998999955ba4b205d50a2154d8a140d14ff60a51c1"
   solver-name = "gps-cdcl"
   solver-version = 1
