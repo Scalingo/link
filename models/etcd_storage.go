@@ -35,7 +35,8 @@ func (e etcdStorage) GetIPs(ctx context.Context) ([]IP, error) {
 	}
 	defer closer.Close()
 
-	ctx, _ = context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
 	resp, err := client.Get(ctx, fmt.Sprintf("%s/hosts/%s", ETCD_LINK_DIRECTORY, e.hostname), clientv3.WithPrefix())
 	if err != nil {
@@ -88,7 +89,8 @@ func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
 	}
 	key := fmt.Sprintf("%s/hosts/%s/%s", ETCD_LINK_DIRECTORY, e.hostname, ip.ID)
 
-	ctx, _ = context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 	_, err = client.Put(ctx, key, string(value))
 	if err != nil {
 		return ip, errors.Wrapf(err, "fail to save IP")
@@ -104,7 +106,8 @@ func (e etcdStorage) RemoveIP(ctx context.Context, id string) error {
 	}
 	defer closer.Close()
 
-	ctx, _ = context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
 
 	_, err = client.Delete(ctx, fmt.Sprintf("%s/hosts/%s/%s", ETCD_LINK_DIRECTORY, e.hostname, id))
 	if err != nil {

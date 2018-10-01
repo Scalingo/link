@@ -52,12 +52,16 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 	var newIP models.IP
 	err := json.NewDecoder(r.Body).Decode(&newIP)
 	if err != nil {
-		return errors.Wrap(err, "invalid json")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"msg": "invalid json"}`))
+		return nil
 	}
 
 	_, err = netlink.ParseAddr(newIP.IP)
 	if err != nil {
-		return errors.Wrap(err, "Invalid IP")
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(`{"msg": "invalid IP"}`))
+		return nil
 	}
 
 	has, err := c.netInterface.HasIP(newIP.IP)
@@ -67,13 +71,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 
 	if has {
 		w.WriteHeader(http.StatusBadRequest)
-		err := json.NewEncoder(w).Encode(map[string]string{
-			"error": "IP already assigned",
-		})
-
-		if err != nil {
-			log.WithError(err).Error("fail to send body")
-		}
+		w.Write([]byte(`{"msg": "IP already assigned"}`))
 		return nil
 	}
 

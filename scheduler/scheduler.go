@@ -30,8 +30,8 @@ type IP struct {
 	Status string `json:"status"`
 }
 
-func NewIPScheduler(config config.Config, etcd *clientv3.Client) IPScheduler {
-	return IPScheduler{
+func NewIPScheduler(config config.Config, etcd *clientv3.Client) *IPScheduler {
+	return &IPScheduler{
 		mapMutex:   sync.Mutex{},
 		ipManagers: make(map[string]ip.Manager),
 		etcd:       etcd,
@@ -39,7 +39,7 @@ func NewIPScheduler(config config.Config, etcd *clientv3.Client) IPScheduler {
 	}
 }
 
-func (s IPScheduler) Status(id string) string {
+func (s *IPScheduler) Status(id string) string {
 	s.mapMutex.Lock()
 	defer s.mapMutex.Unlock()
 	manager, ok := s.ipManagers[id]
@@ -49,7 +49,7 @@ func (s IPScheduler) Status(id string) string {
 	return ""
 }
 
-func (s IPScheduler) Start(ctx context.Context, ipAddr models.IP) error {
+func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) error {
 	manager, err := ip.NewManager(ctx, s.config, ipAddr, s.etcd)
 	if err != nil {
 		return errors.Wrap(err, "fail to initialize manager")
@@ -63,7 +63,7 @@ func (s IPScheduler) Start(ctx context.Context, ipAddr models.IP) error {
 	return nil
 }
 
-func (s IPScheduler) Stop(ctx context.Context, id string) error {
+func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 	s.mapMutex.Lock()
 	defer s.mapMutex.Unlock()
 
@@ -78,7 +78,7 @@ func (s IPScheduler) Stop(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s IPScheduler) ConfiguredIPs(ctx context.Context) []IP {
+func (s *IPScheduler) ConfiguredIPs(ctx context.Context) []IP {
 	var ips []IP
 	for _, manager := range s.ipManagers {
 		ips = append(ips, IP{

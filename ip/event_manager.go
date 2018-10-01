@@ -25,7 +25,7 @@ func (m *manager) eventManager(ctx context.Context, eventChan chan string) {
 		if m.isStopping() {
 			// Sleeping twice the lease time will ensure that we've lost our lease and another node was elected MASTER.
 			// So after this sleep, we can safely remove our IP.
-			log.Info("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
+			log.Infof("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
 			time.Sleep(2 * m.config.LeaseTime())
 			if m.stateMachine.Current() != FAILING {
 				eventChan <- DemotedEvent
