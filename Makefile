@@ -1,4 +1,5 @@
 test:
+	go vet ./...
 	go test -race `go list ./... | grep -v /vendor/`
 
 test-verbose:
