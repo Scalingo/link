@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	models "github.com/Scalingo/link/models"
+	scheduler "github.com/Scalingo/link/scheduler"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -33,6 +34,18 @@ func NewMockScheduler(ctrl *gomock.Controller) *MockScheduler {
 // EXPECT returns an object that allows the caller to indicate expected use
 func (m *MockScheduler) EXPECT() *MockSchedulerMockRecorder {
 	return m.recorder
+}
+
+// ConfiguredIPs mocks base method
+func (m *MockScheduler) ConfiguredIPs(arg0 context.Context) []scheduler.IP {
+	ret := m.ctrl.Call(m, "ConfiguredIPs", arg0)
+	ret0, _ := ret[0].([]scheduler.IP)
+	return ret0
+}
+
+// ConfiguredIPs indicates an expected call of ConfiguredIPs
+func (mr *MockSchedulerMockRecorder) ConfiguredIPs(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfiguredIPs", reflect.TypeOf((*MockScheduler)(nil).ConfiguredIPs), arg0)
 }
 
 // Start mocks base method
