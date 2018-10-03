@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/Scalingo/link/api"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/ip"
 	"github.com/Scalingo/link/models"
@@ -15,7 +16,7 @@ type Scheduler interface {
 	Start(context.Context, models.IP) error
 	Stop(context.Context, string) error
 	Status(string) string
-	ConfiguredIPs(ctx context.Context) []IP
+	ConfiguredIPs(ctx context.Context) []api.IP
 }
 
 type IPScheduler struct {
@@ -23,11 +24,6 @@ type IPScheduler struct {
 	ipManagers map[string]ip.Manager
 	etcd       *clientv3.Client
 	config     config.Config
-}
-
-type IP struct {
-	models.IP
-	Status string `json:"status"`
 }
 
 func NewIPScheduler(config config.Config, etcd *clientv3.Client) *IPScheduler {
@@ -78,10 +74,10 @@ func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 	return nil
 }
 
-func (s *IPScheduler) ConfiguredIPs(ctx context.Context) []IP {
-	var ips []IP
+func (s *IPScheduler) ConfiguredIPs(ctx context.Context) []api.IP {
+	var ips []api.IP
 	for _, manager := range s.ipManagers {
-		ips = append(ips, IP{
+		ips = append(ips, api.IP{
 			IP:     manager.IP(),
 			Status: manager.Status(),
 		})
