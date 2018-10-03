@@ -3,9 +3,9 @@ package api
 import "github.com/Scalingo/link/models"
 
 const (
-	ACTIVATED = "ACTIVATED"
-	STANDBY   = "STANDBY"
-	FAILING   = "FAILING"
+	Activated = "ACTIVATED"
+	Standby   = "STANDBY"
+	Failing   = "FAILING"
 )
 
 type IP struct {

@@ -21,11 +21,11 @@ func formatIPs(ips []api.IP) {
 		var status string
 
 		switch ip.Status {
-		case api.ACTIVATED:
+		case api.Activated:
 			status = aurora.Green("ACTIVATED").String()
-		case api.STANDBY:
+		case api.Standby:
 			status = aurora.Brown("STANDBY").String()
-		case api.FAILING:
+		case api.Failing:
 			status = aurora.Red("FAILING").String()
 		default:
 			status = ip.Status
