@@ -118,12 +118,12 @@ func getClientFromCtx(c *cli.Context) api.HTTPClient {
 		opts = append(opts, api.WithURL(c.GlobalString("host")))
 	}
 
-	if c.String("user") != "" {
-		opts = append(opts, api.WithUser(c.String("user")))
+	if c.GlobalString("user") != "" {
+		opts = append(opts, api.WithUser(c.GlobalString("user")))
 	}
 
-	if c.String("password") != "" {
-		opts = append(opts, api.WithUser(c.String("password")))
+	if c.GlobalString("password") != "" {
+		opts = append(opts, api.WithPassword(c.GlobalString("password")))
 	}
 
 	return api.NewHTTPClient(opts...)
