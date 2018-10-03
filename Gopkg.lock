@@ -81,9 +81,27 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/logrusorgru/aurora"
+  packages = ["."]
+  revision = "a7b3b318ed4e1ae5b80602b08627267303c68572"
+
+[[projects]]
+  branch = "master"
   name = "github.com/looplab/fsm"
   packages = ["."]
   revision = "f980bdb68a8962823200eafe6c0aa99e917be0d7"
+
+[[projects]]
+  name = "github.com/mattn/go-runewidth"
+  packages = ["."]
+  revision = "ce7b0b5c7b45a81508558cd1dba6bb1e4ddb51bb"
+  version = "v0.0.3"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/olekukonko/tablewriter"
+  packages = ["."]
+  revision = "be2c049b30ccd4d3fd795d6bf7dce74e42eeedaa"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -113,6 +131,12 @@
   packages = ["assert","require"]
   revision = "f35b8ab0b5a2cef36673838d662e249dd9c94686"
   version = "v1.2.2"
+
+[[projects]]
+  name = "github.com/urfave/cli"
+  packages = ["."]
+  revision = "cfb38830724cc34fedffe9a2a29fb54fa9169cd1"
+  version = "v1.20.0"
 
 [[projects]]
   name = "github.com/vishvananda/netlink"
@@ -171,6 +195,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9004d15afe8a83cd0d2ece998999955ba4b205d50a2154d8a140d14ff60a51c1"
+  inputs-digest = "ee13b4e1c7ab8f5eb3f9f47a717ad6e2dfe04cbd91b0828aea1c74211192004d"
   solver-name = "gps-cdcl"
   solver-version = 1
