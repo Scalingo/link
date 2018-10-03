@@ -12,6 +12,8 @@ services:
     environment:
       ETCD_HOSTS: http://172.17.0.1:22379
       INTERFACE: eth10
+      USER: link
+      PASSWORD: password
     command: reflex -r '\.go$$' -s -- sh -c 'go install -race && /go/bin/link'
   etcd:
     volumes:

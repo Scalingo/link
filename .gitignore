@@ -1,3 +1,4 @@
 docker
 link
 generate-mock
+cmd/link-client/link-client
