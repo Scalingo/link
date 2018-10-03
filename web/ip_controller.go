@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Scalingo/go-utils/logger"
+	"github.com/Scalingo/link/api"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/network"
 	"github.com/Scalingo/link/scheduler"
@@ -35,7 +36,7 @@ func (c ipController) List(w http.ResponseWriter, r *http.Request, p map[string]
 
 	ips := c.scheduler.ConfiguredIPs(ctx)
 
-	err := json.NewEncoder(w).Encode(map[string][]scheduler.IP{
+	err := json.NewEncoder(w).Encode(map[string][]api.IP{
 		"ips": ips,
 	})
 	if err != nil {

@@ -8,8 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
+	api "github.com/Scalingo/link/api"
 	models "github.com/Scalingo/link/models"
-	scheduler "github.com/Scalingo/link/scheduler"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -37,9 +37,9 @@ func (m *MockScheduler) EXPECT() *MockSchedulerMockRecorder {
 }
 
 // ConfiguredIPs mocks base method
-func (m *MockScheduler) ConfiguredIPs(arg0 context.Context) []scheduler.IP {
+func (m *MockScheduler) ConfiguredIPs(arg0 context.Context) []api.IP {
 	ret := m.ctrl.Call(m, "ConfiguredIPs", arg0)
-	ret0, _ := ret[0].([]scheduler.IP)
+	ret0, _ := ret[0].([]api.IP)
 	return ret0
 }
 
