@@ -1,5 +1,21 @@
 # Changelog
 
+## v5.4.0 (Oct 1 2018)
+
+* [logger] Use official lib of rollbar in rollbarplugin
+
+## v5.3.1 (Sep 27 2018)
+
+* [graceful] Fix ListenAndServeTLS to correctly use a tls.Listener
+
+## v5.3.0 (Sep 26 2018)
+
+* Add `graceful` package for graceful restart/shutdown of HTTP servers
+
+## v5.2.1 (Sep 25 2018)
+
+* Add `SkipLogSet` options to NSQ LB producer env init
+
 ## v5.2.0 (Jul 20 2018)
 
 * Add `WhereQuery` in `mongo/document`

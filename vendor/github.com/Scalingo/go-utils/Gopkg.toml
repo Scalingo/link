@@ -26,10 +26,6 @@
   version = "~1"
 
 [[constraint]]
-  name = "github.com/Scalingo/logrus-rollbar"
-  version = "1.2.1"
-
-[[constraint]]
   name = "github.com/coreos/etcd"
   version = "3.3.1"
 
@@ -51,15 +47,11 @@
 
 [[constraint]]
   name = "github.com/sirupsen/logrus"
-  version = "1.0.4"
+  version = "1.1.0"
 
 [[constraint]]
   name = "github.com/stretchr/testify"
   version = "1.2.1"
-
-[[constraint]]
-  name = "github.com/stvp/rollbar"
-  version = "0.5.1"
 
 [[constraint]]
   branch = "v1"

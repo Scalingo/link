@@ -8,6 +8,7 @@ import (
 	"github.com/Scalingo/go-handlers"
 	"github.com/Scalingo/go-utils/etcd"
 	"github.com/Scalingo/go-utils/logger"
+	"github.com/Scalingo/go-utils/logger/plugins/rollbarplugin"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/network"
@@ -22,6 +23,7 @@ func main() {
 		panic(err)
 	}
 
+	rollbarplugin.Register()
 	log := logger.Default()
 	log.SetLevel(logrus.InfoLevel)
 	ctx := logger.ToCtx(context.Background(), log)
@@ -61,6 +63,13 @@ func main() {
 
 	controller := web.NewIPController(storage, scheduler, netInterface)
 	r := handlers.NewRouter(log)
+
+	if config.User != "" || config.Password != "" {
+		r.Use(handlers.AuthMiddleware(func(user, password string) bool {
+			return user == config.User && password == config.Password
+		}))
+	}
+
 	r.Use(handlers.ErrorMiddleware)
 	r.HandleFunc("/ips", controller.List).Methods("GET")
 	r.HandleFunc("/ips", controller.Create).Methods("POST")

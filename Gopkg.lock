@@ -15,9 +15,21 @@
 
 [[projects]]
   name = "github.com/Scalingo/go-utils"
-  packages = ["errors","etcd","logger"]
-  revision = "5abb4781748e915d464a11ed7dbdccb46eecd02f"
-  version = "v5.2.0"
+  packages = ["errors","etcd","logger","logger/plugins/rollbarplugin"]
+  revision = "569c95aae396335638a2a5c3fd614fda7a91eeee"
+  version = "v5.4.0"
+
+[[projects]]
+  name = "github.com/Scalingo/logrus-rollbar"
+  packages = ["."]
+  revision = "e205c8087ba6b9ee8297af49c7c37ad8ee17637c"
+  version = "v1.3.0"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/Soulou/errgo-rollbar"
+  packages = ["."]
+  revision = "9d551cd3bae923dc236ca5f8d951686c7bbcfe94"
 
 [[projects]]
   name = "github.com/codegangsta/negroni"
@@ -80,6 +92,11 @@
   version = "v1.3.0"
 
 [[projects]]
+  name = "github.com/konsorten/go-windows-terminal-sequences"
+  packages = ["."]
+  revision = "b729f2633dfe35f4d1d8a32385f6685610ce1cb5"
+
+[[projects]]
   branch = "master"
   name = "github.com/logrusorgru/aurora"
   packages = ["."]
@@ -116,6 +133,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/rollbar/rollbar-go"
+  packages = ["."]
+  revision = "5f41889d7c6a59e4add07998cf776b1d335d287f"
+  version = "v1.0.1"
+
+[[projects]]
   name = "github.com/satori/go.uuid"
   packages = ["."]
   revision = "36e9d2ebbde5e3f13ab2e25625fd453271d6522e"
@@ -123,8 +146,8 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "3e01752db0189b9157070a0e1668a620f9a85da2"
-  version = "v1.0.6"
+  revision = "a67f783a3814b8729bd2dac5780b5f78f8dbd64d"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/stretchr/testify"
@@ -195,6 +218,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "ee13b4e1c7ab8f5eb3f9f47a717ad6e2dfe04cbd91b0828aea1c74211192004d"
+  inputs-digest = "210f7a29ecbdcb26072b23e2eab0f7dbe5b0c03edc48627944de2102e073c530"
   solver-name = "gps-cdcl"
   solver-version = 1
