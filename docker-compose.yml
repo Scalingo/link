@@ -1,6 +1,6 @@
 version: '2'
 services:
-  link:
+  link-1:
     build: .
     volumes:
       - ./:/go/src/github.com/Scalingo/link
@@ -10,16 +10,52 @@ services:
       - NET_ADMIN
     network_mode: 'host'
     environment:
-      ETCD_HOSTS: http://172.17.0.1:22379
+      HOSTNAME: link-1
+      ETCD_HOSTS: http://172.17.0.1:32379
       INTERFACE: eth10
       USER: link
       PASSWORD: password
     command: reflex -r '\.go$$' -s -- sh -c 'go install -race && /go/bin/link'
+  link-2:
+    build: .
+    volumes:
+      - ./:/go/src/github.com/Scalingo/link
+    ports:
+      - 1314:1314
+    cap_add:
+      - NET_ADMIN
+    network_mode: 'host'
+    environment:
+      HOSTNAME: link-2
+      ETCD_HOSTS: http://172.17.0.1:32379
+      INTERFACE: eth11
+      USER: link
+      PASSWORD: password
+      PORT: 1314
+    command: reflex -r '\.go$$' -s -- sh -c 'go install -race && /go/bin/link'
+  link-3:
+    build: .
+    volumes:
+      - ./:/go/src/github.com/Scalingo/link
+    ports:
+      - 1315:1315
+    cap_add:
+      - NET_ADMIN
+    network_mode: 'host'
+    environment:
+      HOSTNAME: link-3
+      ETCD_HOSTS: http://172.17.0.1:32379
+      INTERFACE: eth12
+      USER: link
+      PASSWORD: password
+      PORT: 1315
+    command: reflex -r '\.go$$' -s -- sh -c 'go install -race && /go/bin/link'
+
   etcd:
     volumes:
       - ./docker/etcd:/data/etcd
     image: quay.io/coreos/etcd:v3.2.11
     command: etcd --name etcd-cluster --data-dir /data/etcd --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --advertise-client-urls http://172.17.0.1:22379
     ports:
-      - 22379:2379
+      - 32379:2379
 
