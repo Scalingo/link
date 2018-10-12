@@ -18,18 +18,7 @@ func formatIPs(ips []api.IP) {
 	table.SetHeader([]string{"ID", "IP", "Status", "CHECKS"})
 
 	for _, ip := range ips {
-		var status string
-
-		switch ip.Status {
-		case api.Activated:
-			status = aurora.Green("ACTIVATED").String()
-		case api.Standby:
-			status = aurora.Brown("STANDBY").String()
-		case api.Failing:
-			status = aurora.Red("FAILING").String()
-		default:
-			status = ip.Status
-		}
+		status := formatStatus(ip)
 
 		checks := "None"
 		if len(ip.Checks) > 0 {
@@ -48,4 +37,30 @@ func formatIPs(ips []api.IP) {
 		})
 	}
 	table.Render()
+}
+
+func formatIP(ip api.IP) {
+	fmt.Printf("ID:\t%s\n", ip.ID)
+	fmt.Printf("Status:\t%s\n", formatStatus(ip))
+	if len(ip.Checks) == 0 {
+		fmt.Printf("Checks:\tNone\n")
+	} else {
+		fmt.Println("Checks:")
+		for _, check := range ip.Checks {
+			fmt.Printf(" - Type: %s, Host: %s, Port: %v\n", check.Type, check.Host, check.Port)
+		}
+	}
+}
+
+func formatStatus(ip api.IP) string {
+	switch ip.Status {
+	case api.Activated:
+		return aurora.Green("ACTIVATED").String()
+	case api.Standby:
+		return aurora.Brown("STANDBY").String()
+	case api.Failing:
+		return aurora.Red("FAILING").String()
+	default:
+		return ip.Status
+	}
 }

@@ -64,8 +64,9 @@ func TestSingleEtcdRun(t *testing.T) {
 
 			eventChan := make(chan string, 10)
 			doneChan := make(chan bool)
+			manager.eventChan = eventChan
 			go func() {
-				manager.singleEtcdRun(ctx, eventChan)
+				manager.singleEtcdRun(ctx)
 				doneChan <- true
 			}()
 			timer := time.NewTimer(500 * time.Millisecond)
@@ -123,7 +124,8 @@ func TestHealthChecker(t *testing.T) {
 			example.Checker(checker)
 
 			manager := &manager{
-				checker: checker,
+				checker:      checker,
+				stateMachine: NewStateMachine(ctx, NewStateMachineOpts{}),
 				config: config.Config{
 					HealthcheckInterval: 10 * time.Millisecond,
 				},
@@ -131,8 +133,9 @@ func TestHealthChecker(t *testing.T) {
 
 			eventChan := make(chan string)
 			doneChan := make(chan bool)
+			manager.eventChan = eventChan
 			go func() {
-				manager.healthChecker(ctx, eventChan)
+				manager.healthChecker(ctx)
 				doneChan <- true
 			}()
 			timer := time.NewTimer(500 * time.Millisecond)

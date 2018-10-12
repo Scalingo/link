@@ -21,6 +21,7 @@ type Manager interface {
 	Stop(context.Context)
 	Status() string
 	IP() models.IP
+	TryGetLock(context.Context)
 }
 
 type manager struct {
@@ -29,9 +30,12 @@ type manager struct {
 	ip               models.IP
 	stopMutex        sync.RWMutex
 	stopping         bool
+	messageMutex     sync.Mutex
+	closed           bool
 	locker           locker.Locker
 	checker          healthcheck.Checker
 	config           config.Config
+	eventChan        chan string
 }
 
 func NewManager(ctx context.Context, config config.Config, ip models.IP, client *clientv3.Client) (*manager, error) {
@@ -51,6 +55,7 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 		locker:           locker.NewETCDLocker(config, client, ip.IP),
 		checker:          healthcheck.FromChecks(config, ip.Checks),
 		config:           config,
+		eventChan:        make(chan string),
 	}
 
 	m.stateMachine = NewStateMachine(ctx, NewStateMachineOpts{
@@ -66,13 +71,11 @@ func (m *manager) Start(ctx context.Context) {
 	log.Info("Starting manager")
 
 	ctx = logger.ToCtx(ctx, log)
-	eventChan := make(chan string)
-
-	go m.eventManager(ctx, eventChan)
-	go m.healthChecker(ctx, eventChan)
+	go m.eventManager(ctx)
+	go m.healthChecker(ctx)
 	go m.startArpEnsure(ctx)
 
-	for event := range eventChan {
+	for event := range m.eventChan {
 		err := m.stateMachine.Event(event)
 		if err != nil {
 			// Ignore NoTransitionError since those just means that we did not change state (which can be normal)

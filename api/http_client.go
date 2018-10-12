@@ -82,6 +82,49 @@ func (c HTTPClient) ListIPs(ctx context.Context) ([]IP, error) {
 	return res["ips"], nil
 }
 
+func (c HTTPClient) GetIP(ctx context.Context, id string) (IP, error) {
+	req, err := c.getRequest(http.MethodGet, fmt.Sprintf("/ips/%s", id), nil)
+	if err != nil {
+		return IP{}, err
+	}
+
+	resp, err := c.getClient().Do(req)
+	if err != nil {
+		return IP{}, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return IP{}, getErrorFromBody(resp.StatusCode, resp.Body)
+	}
+
+	var res map[string]IP
+
+	err = json.NewDecoder(resp.Body).Decode(&res)
+	if err != nil {
+		return IP{}, err
+	}
+
+	return res["ip"], nil
+}
+
+func (c HTTPClient) TryGetLock(ctx context.Context, id string) error {
+	req, err := c.getRequest(http.MethodPost, fmt.Sprintf("/ips/%s/lock", id), nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.getClient().Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusNoContent {
+		return getErrorFromBody(resp.StatusCode, resp.Body)
+	}
+
+	return nil
+}
+
 func (c HTTPClient) AddIP(ctx context.Context, ip string, checks ...models.Healthcheck) (IP, error) {
 	buffer := &bytes.Buffer{}
 	err := json.NewEncoder(buffer).Encode(models.IP{

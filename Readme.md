@@ -54,7 +54,9 @@ This is what the state machine looks like:
 
 - `GET /ips`: List all currently configured IPs
 - `POST /ips`: Add an IP
+- `GET /ips/:id`: Get a single IP
 - `DELETE /ips/:id`: Remove an IP
+- `POST /ips/:id/lock`: Force a link to try to get this IP
 
 ## Dev environment
 

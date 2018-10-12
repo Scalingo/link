@@ -17,6 +17,8 @@ type Scheduler interface {
 	Stop(context.Context, string) error
 	Status(string) string
 	ConfiguredIPs(ctx context.Context) []api.IP
+	GetIP(ctx context.Context, id string) *api.IP
+	TryGetLock(ctx context.Context, id string) bool
 }
 
 type IPScheduler struct {
@@ -75,6 +77,9 @@ func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 }
 
 func (s *IPScheduler) ConfiguredIPs(ctx context.Context) []api.IP {
+	s.mapMutex.Lock()
+	defer s.mapMutex.Unlock()
+
 	var ips []api.IP
 	for _, manager := range s.ipManagers {
 		ips = append(ips, api.IP{
@@ -83,4 +88,31 @@ func (s *IPScheduler) ConfiguredIPs(ctx context.Context) []api.IP {
 		})
 	}
 	return ips
+}
+
+func (s *IPScheduler) GetIP(ctx context.Context, id string) *api.IP {
+	s.mapMutex.Lock()
+	defer s.mapMutex.Unlock()
+
+	manager, ok := s.ipManagers[id]
+	if !ok {
+		return nil
+	}
+	return &api.IP{
+		IP:     manager.IP(),
+		Status: manager.Status(),
+	}
+}
+
+func (s *IPScheduler) TryGetLock(ctx context.Context, id string) bool {
+	s.mapMutex.Lock()
+	defer s.mapMutex.Unlock()
+
+	manager, ok := s.ipManagers[id]
+	if !ok {
+		return false
+	}
+
+	manager.TryGetLock(ctx)
+	return true
 }

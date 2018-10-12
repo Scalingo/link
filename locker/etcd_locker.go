@@ -68,6 +68,14 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	return nil
 }
 
+func (l *etcdLocker) Unlock(ctx context.Context) error {
+	_, err := l.kvEtcd.Delete(ctx, l.key)
+	if err != nil {
+		return errors.Wrap(err, "fail to unlock key")
+	}
+	return nil
+}
+
 func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
 	resp, err := l.kvEtcd.Get(ctx, l.key)
 	if err != nil {

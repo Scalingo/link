@@ -63,6 +63,38 @@ func main() {
 				return nil
 			},
 		}, {
+			Name:      "get",
+			ArgsUsage: "ID",
+			Action: func(c *cli.Context) error {
+				if c.NArg() != 1 {
+					cli.ShowCommandHelp(c, c.Command.Name)
+					return nil
+				}
+				client := getClientFromCtx(c)
+				ip, err := client.GetIP(context.Background(), c.Args().First())
+				if err != nil {
+					return err
+				}
+				formatIP(ip)
+				return nil
+			},
+		}, {
+			Name:      "try-get-lock",
+			ArgsUsage: "ID",
+			Action: func(c *cli.Context) error {
+				if c.NArg() != 1 {
+					cli.ShowCommandHelp(c, c.Command.Name)
+					return nil
+				}
+				client := getClientFromCtx(c)
+				err := client.TryGetLock(context.Background(), c.Args().First())
+				if err != nil {
+					return err
+				}
+				fmt.Println(aurora.Green("Request sent."))
+				return nil
+			},
+		}, {
 			Name:      "add",
 			ArgsUsage: "IP [CHECK_TYPE CHECK_ENDPOINT]...",
 			Action: func(c *cli.Context) error {
