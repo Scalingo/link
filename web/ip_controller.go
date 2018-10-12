@@ -41,6 +41,7 @@ func (c ipController) List(w http.ResponseWriter, r *http.Request, p map[string]
 	})
 	if err != nil {
 		log.WithError(err).Error("fail to encode IPs")
+		return nil
 	}
 	return nil
 }
@@ -63,6 +64,7 @@ func (c ipController) Get(w http.ResponseWriter, r *http.Request, params map[str
 
 	if err != nil {
 		log.WithError(err).Error("fail to encode IP")
+		return nil
 	}
 
 	return nil

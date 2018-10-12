@@ -16,6 +16,7 @@ func (m *manager) Stop(ctx context.Context) {
 		err := m.locker.Unlock(ctx)
 		if err != nil {
 			log.WithError(err).Error("fail to release etcd lease")
+			return
 		}
 	}
 
