@@ -100,6 +100,8 @@ func TestStartARPEnsure(t *testing.T) {
 
 		networkMock := networkmock.NewMockNetworkInterface(ctrl)
 		networkMock.EXPECT().EnsureIP(ip.IP).Return(nil).MinTimes(1)
+		lockerMock := lockermock.NewMockLocker(ctrl)
+		lockerMock.EXPECT().Unlock(gomock.Any()).Return(nil)
 
 		sm := NewStateMachine(ctx, NewStateMachineOpts{})
 		sm.SetState(ACTIVATED)
@@ -108,6 +110,7 @@ func TestStartARPEnsure(t *testing.T) {
 			stateMachine:     sm,
 			config:           config,
 			ip:               ip,
+			locker:           lockerMock,
 		}
 
 		doneChan := make(chan bool)

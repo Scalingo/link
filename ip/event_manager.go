@@ -8,9 +8,21 @@ import (
 )
 
 func (m *manager) Stop(ctx context.Context) {
+	log := logger.Get(ctx)
 	m.stopMutex.Lock()
 	defer m.stopMutex.Unlock()
 	m.stopping = true
+	if m.stateMachine.Current() == ACTIVATED {
+		err := m.locker.Unlock(ctx)
+		if err != nil {
+			log.WithError(err).Error("fail to release etcd lease")
+		}
+	}
+
+}
+
+func (m *manager) TryGetLock(ctx context.Context) {
+	m.singleEtcdRun(ctx)
 }
 
 func (m *manager) isStopping() bool {
@@ -19,54 +31,71 @@ func (m *manager) isStopping() bool {
 	return m.stopping
 }
 
-func (m *manager) eventManager(ctx context.Context, eventChan chan string) {
+func (m *manager) sendEvent(status string) {
+	m.messageMutex.Lock()
+	defer m.messageMutex.Unlock()
+	if m.closed {
+		return
+	}
+	m.eventChan <- status
+}
+
+func (m *manager) closeEventChan() {
+	m.messageMutex.Lock()
+	defer m.messageMutex.Unlock()
+	m.closed = true
+	close(m.eventChan)
+}
+
+func (m *manager) eventManager(ctx context.Context) {
 	log := logger.Get(ctx).WithField("process", "event_manager")
 	for {
 		if m.isStopping() {
 			// Sleeping twice the lease time will ensure that we've lost our lease and another node was elected MASTER.
 			// So after this sleep, we can safely remove our IP.
+
 			log.Infof("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
 			time.Sleep(2 * m.config.LeaseTime())
 			if m.stateMachine.Current() != FAILING {
-				eventChan <- DemotedEvent
+				m.sendEvent(DemotedEvent)
 			}
 			log.Info("Stopping!")
-			close(eventChan)
+			m.closeEventChan()
 			return
 		}
 
 		if m.stateMachine.Current() != FAILING {
-			m.singleEtcdRun(ctx, eventChan)
+			m.singleEtcdRun(ctx)
 		}
 
 		time.Sleep(m.config.KeepAliveInterval)
 	}
 }
 
-func (m *manager) singleEtcdRun(ctx context.Context, eventChan chan string) {
+func (m *manager) singleEtcdRun(ctx context.Context) {
 	log := logger.Get(ctx)
 	err := m.locker.Refresh(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to refresh lock")
 		log.Info("FAULT")
-		eventChan <- FaultEvent
+		m.sendEvent(FaultEvent)
 		return
 	}
 
 	isMaster, err := m.locker.IsMaster(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to check lock")
-		eventChan <- FaultEvent
+		m.sendEvent(FaultEvent)
 	} else {
 		if isMaster {
-			eventChan <- ElectedEvent
+			m.sendEvent(ElectedEvent)
 		} else {
-			eventChan <- DemotedEvent
+			m.sendEvent(DemotedEvent)
 		}
 	}
 }
 
-func (m *manager) healthChecker(ctx context.Context, eventChan chan string) {
+func (m *manager) healthChecker(ctx context.Context) {
 	for {
 		healthy := m.checker.IsHealthy()
 
@@ -77,10 +106,11 @@ func (m *manager) healthChecker(ctx context.Context, eventChan chan string) {
 		}
 
 		if healthy {
-			eventChan <- HealthCheckSuccessEvent
+			m.sendEvent(HealthCheckSuccessEvent)
 		} else {
-			eventChan <- HealthCheckFailEvent
+			m.sendEvent(HealthCheckFailEvent)
 		}
+
 		time.Sleep(m.config.HealthcheckInterval)
 	}
 }

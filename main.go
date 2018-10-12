@@ -74,6 +74,8 @@ func main() {
 	r.HandleFunc("/ips", controller.List).Methods("GET")
 	r.HandleFunc("/ips", controller.Create).Methods("POST")
 	r.HandleFunc("/ips/{id}", controller.Destroy).Methods("DELETE")
+	r.HandleFunc("/ips/{id}", controller.Get).Methods("GET")
+	r.HandleFunc("/ips/{id}/lock", controller.TryGetLock).Methods("POST")
 
 	log.Infof("Listening on %v", config.Port)
 	err = http.ListenAndServe(fmt.Sprintf(":%v", config.Port), r)

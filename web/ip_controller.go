@@ -40,8 +40,31 @@ func (c ipController) List(w http.ResponseWriter, r *http.Request, p map[string]
 		"ips": ips,
 	})
 	if err != nil {
-		log.WithError(err).Error(err, "fail to encode IPs")
+		log.WithError(err).Error("fail to encode IPs")
 	}
+	return nil
+}
+
+func (c ipController) Get(w http.ResponseWriter, r *http.Request, params map[string]string) error {
+	ctx := r.Context()
+	log := logger.Get(ctx)
+	w.Header().Set("Content-Type", "application/json")
+
+	ip := c.scheduler.GetIP(ctx, params["id"])
+	if ip == nil {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(`{"error": "not found"}`))
+		return nil
+	}
+
+	err := json.NewEncoder(w).Encode(map[string]api.IP{
+		"ip": *ip,
+	})
+
+	if err != nil {
+		log.WithError(err).Error("fail to encode IP")
+	}
+
 	return nil
 }
 
@@ -101,6 +124,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 	}
 	return nil
 }
+
 func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	ctx := r.Context()
 	id := params["id"]
@@ -116,5 +140,22 @@ func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map
 
 	w.WriteHeader(http.StatusNoContent)
 
+	return nil
+}
+
+func (c ipController) TryGetLock(w http.ResponseWriter, r *http.Request, params map[string]string) error {
+	ctx := r.Context()
+	id := params["id"]
+
+	w.Header().Set("Content-Type", "application/json")
+
+	found := c.scheduler.TryGetLock(ctx, id)
+	if !found {
+		w.WriteHeader(http.StatusNotFound)
+		w.Write([]byte(`{"error": "not found"}`))
+		return nil
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 	return nil
 }
