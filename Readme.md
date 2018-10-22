@@ -62,7 +62,7 @@ This is what the state machine looks like:
 
 To make it work in dev you might want to add a dummy interface:
 
-```
+```shell
 modprobe dummy
 ip link add eth10 type dummy
 ip link set eth10 up
@@ -70,5 +70,6 @@ ip link add eth11 type dummy
 ip link set eth11 up
 ip link add eth12 type dummy
 ip link set eth12 up
-
 ```
+
+The script `start.sh` can be executed as root to automatically do that.
