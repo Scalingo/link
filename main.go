@@ -38,7 +38,7 @@ func main() {
 		panic(err)
 	}
 
-	storage := models.NewETCDStorage(config)
+	storage := models.NewEtcdStorage(config)
 	scheduler := scheduler.NewIPScheduler(config, etcd)
 
 	ips, err := storage.GetIPs(ctx)

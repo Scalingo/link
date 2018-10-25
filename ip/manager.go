@@ -18,7 +18,8 @@ import (
 
 type Manager interface {
 	Start(context.Context)
-	Stop(context.Context)
+	Stop(ctx context.Context, stopper func(context.Context) error)
+	CancelStopping(context.Context)
 	Status() string
 	IP() models.IP
 	TryGetLock(context.Context)
@@ -29,7 +30,7 @@ type manager struct {
 	stateMachine     *fsm.FSM
 	ip               models.IP
 	stopMutex        sync.RWMutex
-	stopping         bool
+	stopper          func(context.Context) error
 	messageMutex     sync.Mutex
 	closed           bool
 	locker           locker.Locker
@@ -52,7 +53,7 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 	m := &manager{
 		networkInterface: i,
 		ip:               ip,
-		locker:           locker.NewETCDLocker(config, client, ip.IP),
+		locker:           locker.NewEtcdLocker(config, client, ip.IP),
 		checker:          healthcheck.FromChecks(config, ip.Checks),
 		config:           config,
 		eventChan:        make(chan string),

@@ -7,11 +7,11 @@ import (
 	"github.com/Scalingo/go-utils/logger"
 )
 
-func (m *manager) Stop(ctx context.Context) {
+func (m *manager) Stop(ctx context.Context, stopper func(context.Context) error) {
 	log := logger.Get(ctx)
 	m.stopMutex.Lock()
 	defer m.stopMutex.Unlock()
-	m.stopping = true
+	m.stopper = stopper
 	if m.stateMachine.Current() == ACTIVATED {
 		err := m.locker.Unlock(ctx)
 		if err != nil {
@@ -19,7 +19,14 @@ func (m *manager) Stop(ctx context.Context) {
 			return
 		}
 	}
+}
 
+func (m *manager) CancelStopping(ctx context.Context) {
+	m.stopMutex.RLock()
+	defer m.stopMutex.RUnlock()
+	logger.Get(ctx).Info("Cancel manager stopping")
+
+	m.stopper = nil
 }
 
 func (m *manager) TryGetLock(ctx context.Context) {
@@ -29,7 +36,7 @@ func (m *manager) TryGetLock(ctx context.Context) {
 func (m *manager) isStopping() bool {
 	m.stopMutex.RLock()
 	defer m.stopMutex.RUnlock()
-	return m.stopping
+	return m.stopper != nil
 }
 
 func (m *manager) sendEvent(status string) {
@@ -57,12 +64,10 @@ func (m *manager) eventManager(ctx context.Context) {
 
 			log.Infof("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
 			time.Sleep(2 * m.config.LeaseTime())
-			if m.stateMachine.Current() != FAILING {
-				m.sendEvent(DemotedEvent)
+			if m.stopOrder(ctx) {
+				return
 			}
-			log.Info("Stopping!")
-			m.closeEventChan()
-			return
+			log.Info("Stop order has been cancelled")
 		}
 
 		if m.stateMachine.Current() != FAILING {
@@ -71,6 +76,31 @@ func (m *manager) eventManager(ctx context.Context) {
 
 		time.Sleep(m.config.KeepAliveInterval)
 	}
+}
+
+// stopOrder actually handles the stopping. It returns true if it has been stopped, false
+// otherwise. It can happen if the current manager stopping has been cancelled.
+func (m *manager) stopOrder(ctx context.Context) bool {
+	m.stopMutex.RLock()
+	defer m.stopMutex.RUnlock()
+
+	log := logger.Get(ctx)
+	log.Info("Stopping!")
+	if m.stateMachine.Current() != FAILING {
+		m.sendEvent(DemotedEvent)
+	}
+
+	// The stopping might have been cancelled during the two lease time sleep. We execute the
+	// stopper function only if it is still in stopping state
+	if m.isStopping() {
+		err := m.stopper(ctx)
+		if err != nil {
+			log.WithError(err).Error("fail to execute the stopper function")
+		}
+		m.closeEventChan()
+		return true
+	}
+	return false
 }
 
 func (m *manager) singleEtcdRun(ctx context.Context) {

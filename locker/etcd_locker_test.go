@@ -142,7 +142,7 @@ func Test_IsMaster(t *testing.T) {
 		ExpectedError  string
 	}{
 		{
-			Name:          "When there is an issue with ETCD",
+			Name:          "When there is an issue with etcd",
 			EtcdError:     errors.New("NOP"),
 			ExpectedError: "NOP",
 		}, {

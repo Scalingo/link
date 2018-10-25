@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestSingleEtcdRun(t *testing.T) {
+func TestManager_SingleEtcdRun(t *testing.T) {
 	examples := []struct {
 		Name           string
 		Locker         func(*lockermock.MockLocker)
@@ -94,7 +94,7 @@ func TestSingleEtcdRun(t *testing.T) {
 	}
 }
 
-func TestHealthChecker(t *testing.T) {
+func TestManager_HealthChecker(t *testing.T) {
 	examples := []struct {
 		Name           string
 		Checker        func(*healthcheckmock.MockChecker)
@@ -155,7 +155,7 @@ func TestHealthChecker(t *testing.T) {
 					cont = false
 				}
 
-				manager.Stop(ctx)
+				manager.Stop(ctx, func(context.Context) error { return nil })
 			}
 
 			for i := 0; i < len(example.ExpectedEvents); i++ {

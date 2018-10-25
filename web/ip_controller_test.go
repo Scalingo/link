@@ -10,6 +10,7 @@ import (
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/models/modelsmock"
 	"github.com/Scalingo/link/network/networkmock"
+	"github.com/Scalingo/link/scheduler"
 	"github.com/Scalingo/link/scheduler/schedulermock"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
@@ -17,7 +18,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestCreate(t *testing.T) {
+func TestIPController_Create(t *testing.T) {
 	examples := []struct {
 		Name               string
 		Input              string
@@ -43,6 +44,12 @@ func TestCreate(t *testing.T) {
 			Input: `{"ip": "10.0.0.1/32"}`,
 			InterfaceMock: func(mock *networkmock.MockNetworkInterface) {
 				mock.EXPECT().HasIP("10.0.0.1/32").Return(true, nil)
+			},
+			StorageMock: func(mock *modelsmock.MockStorage) {
+				mock.EXPECT().AddIP(gomock.Any(), gomock.Any()).Return(models.IP{}, models.ErrIPAlreadyPresent)
+			},
+			SchedulerMock: func(mock *schedulermock.MockScheduler) {
+				mock.EXPECT().CancelStopping(gomock.Any(), gomock.Any()).Return(scheduler.ErrNotStopping)
 			},
 			ExpectedStatusCode: http.StatusBadRequest,
 			ExpectedBody:       `{"msg": "IP already assigned"}`,

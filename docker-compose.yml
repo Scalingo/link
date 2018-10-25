@@ -15,7 +15,7 @@ services:
       INTERFACE: eth10
       USER: link
       PASSWORD: password
-    command: reflex -r '\.go$$' -s -- sh -c 'go install -race && /go/bin/link'
+    command: reflex -r '\.go$$' -R '_test\.go$$' -s -- sh -c 'go build && ./link'
   link-2:
     build: .
     volumes:
@@ -32,7 +32,7 @@ services:
       USER: link
       PASSWORD: password
       PORT: 1314
-    command: reflex -r '\.go$$' -s -- sh -c 'go install -race && /go/bin/link'
+    command: reflex --all -r 'link' -s -- sh -c './link'
   link-3:
     build: .
     volumes:
@@ -49,7 +49,15 @@ services:
       USER: link
       PASSWORD: password
       PORT: 1315
-    command: reflex -r '\.go$$' -s -- sh -c 'go install -race && /go/bin/link'
+    command: reflex --all -r 'link' -s -- sh -c './link'
+
+  test:
+    build: .
+    volumes:
+      - ./:/go/src/github.com/Scalingo/link
+    environment:
+      GO_ENV: test
+    command: "tail -F /dev/null"
 
   etcd:
     volumes:

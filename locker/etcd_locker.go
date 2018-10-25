@@ -20,7 +20,7 @@ type etcdLocker struct {
 	config    config.Config
 }
 
-func NewETCDLocker(config config.Config, etcd *clientv3.Client, ip string) *etcdLocker {
+func NewEtcdLocker(config config.Config, etcd *clientv3.Client, ip string) *etcdLocker {
 	key := fmt.Sprintf("%s/default/%s", models.ETCD_LINK_DIRECTORY, strings.Replace(ip, "/", "_", -1))
 	return &etcdLocker{
 		kvEtcd:    etcd,
@@ -84,7 +84,7 @@ func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
 
 	if len(resp.Kvs) != 1 {
 		// DAFUK :/
-		return false, errors.New("Invalid ETCD state (key not found!)")
+		return false, errors.New("invalid etcd state (key not found!)")
 	}
 
 	return resp.Kvs[0].Lease == int64(l.leaseID), nil

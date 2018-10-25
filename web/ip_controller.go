@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 
+	scerrors "github.com/Scalingo/go-utils/errors"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/api"
 	"github.com/Scalingo/link/models"
@@ -90,27 +91,38 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		return nil
 	}
 
+	// TODO Not sure this check is useful anymore
 	has, err := c.netInterface.HasIP(newIP.IP)
 	if err != nil {
 		return errors.Wrap(err, "fail to check if IP is already assigned")
 	}
 
-	if has {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"msg": "IP already assigned"}`))
-		return nil
-	}
-
 	newIP, err = c.storage.AddIP(ctx, newIP)
 	if err != nil {
-		return errors.Wrap(err, "fail to save IP")
+		if scerrors.ErrgoRoot(err) != models.ErrIPAlreadyPresent {
+			return errors.Wrap(err, "fail to save IP")
+		}
+		if !has {
+			// Should never happen...
+			return errors.New("IP present in storage but not in the interface")
+		}
+		// If the interface has the IP, it might be in stopping state. We just want to cancel the
+		// stopping
+		err := c.scheduler.CancelStopping(ctx, newIP.ID)
+		if err != nil {
+			if scerrors.ErrgoRoot(err) == scheduler.ErrNotStopping {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte(`{"msg": "IP already assigned"}`))
+				return nil
+			}
+			return errors.Wrap(err, "fail to cancel the stopping")
+		}
 	}
 
 	log = log.WithFields(logrus.Fields{
 		"id": newIP.ID,
 		"ip": newIP.IP,
 	})
-
 	ctx = logger.ToCtx(context.Background(), log)
 
 	err = c.scheduler.Start(ctx, newIP)
@@ -123,6 +135,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 	err = json.NewEncoder(w).Encode(newIP)
 	if err != nil {
 		log.WithError(err).Error("fail to encode IP")
+		// TODO Why no error returned here?
 	}
 	return nil
 }
@@ -130,18 +143,18 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	ctx := r.Context()
 	id := params["id"]
-	err := c.storage.RemoveIP(ctx, id)
-	if err != nil {
-		return errors.Wrap(err, "fail to delete IP")
-	}
-
-	err = c.scheduler.Stop(ctx, id)
+	err := c.scheduler.Stop(ctx, id, func(ctx context.Context) error {
+		err := c.storage.RemoveIP(ctx, id)
+		if err != nil {
+			return errors.Wrap(err, "fail to delete IP")
+		}
+		return nil
+	})
 	if err != nil {
 		return errors.Wrap(err, "fail to stop IP manager")
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-
 	return nil
 }
 
