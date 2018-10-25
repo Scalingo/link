@@ -8,7 +8,6 @@ import (
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/api"
 	"github.com/Scalingo/link/models"
-	"github.com/Scalingo/link/network"
 	"github.com/Scalingo/link/scheduler"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -16,14 +15,12 @@ import (
 )
 
 type ipController struct {
-	scheduler    scheduler.Scheduler
-	netInterface network.NetworkInterface
+	scheduler scheduler.Scheduler
 }
 
-func NewIPController(scheduler scheduler.Scheduler, netInterface network.NetworkInterface) ipController {
+func NewIPController(scheduler scheduler.Scheduler) ipController {
 	return ipController{
-		scheduler:    scheduler,
-		netInterface: netInterface,
+		scheduler: scheduler,
 	}
 }
 
@@ -91,6 +88,11 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 	ctx = logger.ToCtx(context.Background(), log)
 	ip, err = c.scheduler.Start(ctx, ip)
 	if err != nil {
+		if errors.Cause(err) == scheduler.ErrNotStopping {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"msg": "IP already assigned"}`))
+			return nil
+		}
 		return errors.Wrap(err, "fail to start IP manager")
 	}
 	log = log.WithFields(logrus.Fields{

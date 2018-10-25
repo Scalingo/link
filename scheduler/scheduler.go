@@ -77,8 +77,11 @@ func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) (models.IP, e
 	}).Debug("")
 	// If the interface has the IP, it might be in stopping state. We just want to cancel the
 	// stopping
-	if ok && manager.CancelStopping(ctx) {
-		return newIP, nil
+	if ok {
+		if manager.CancelStopping(ctx) {
+			return newIP, nil
+		}
+		return newIP, ErrNotStopping
 	}
 	log.Info("Initialize a new IP manager")
 
