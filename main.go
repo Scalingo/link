@@ -25,7 +25,6 @@ func main() {
 
 	rollbarplugin.Register()
 	log := logger.Default()
-	log.SetLevel(logrus.InfoLevel)
 	ctx := logger.ToCtx(context.Background(), log)
 
 	etcd, err := etcd.ClientFromEnv()
@@ -39,7 +38,7 @@ func main() {
 	}
 
 	storage := models.NewEtcdStorage(config)
-	scheduler := scheduler.NewIPScheduler(config, etcd)
+	scheduler := scheduler.NewIPScheduler(config, etcd, storage)
 
 	ips, err := storage.GetIPs(ctx)
 	if err != nil {
@@ -54,14 +53,14 @@ func main() {
 				"ip": ip.IP,
 			})
 			log.Info("Starting")
-			err := scheduler.Start(logger.ToCtx(ctx, log), ip)
+			_, err := scheduler.Start(logger.ToCtx(ctx, log), ip)
 			if err != nil {
 				panic(err)
 			}
 		}
 	}
 
-	controller := web.NewIPController(storage, scheduler, netInterface)
+	controller := web.NewIPController(scheduler, netInterface)
 	r := handlers.NewRouter(log)
 
 	if config.User != "" || config.Password != "" {

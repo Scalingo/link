@@ -67,7 +67,7 @@ func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
 
 	for _, i := range ips {
 		if i.IP == ip.IP {
-			return ip, ErrIPAlreadyPresent
+			return i, ErrIPAlreadyPresent
 		}
 	}
 

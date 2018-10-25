@@ -10,6 +10,7 @@ services:
       - NET_ADMIN
     network_mode: 'host'
     environment:
+      LOGGER_LEVEL: debug
       HOSTNAME: link-1
       ETCD_HOSTS: http://172.17.0.1:32379
       INTERFACE: eth10
@@ -26,6 +27,7 @@ services:
       - NET_ADMIN
     network_mode: 'host'
     environment:
+      LOGGER_LEVEL: debug
       HOSTNAME: link-2
       ETCD_HOSTS: http://172.17.0.1:32379
       INTERFACE: eth11
@@ -43,6 +45,7 @@ services:
       - NET_ADMIN
     network_mode: 'host'
     environment:
+      LOGGER_LEVEL: debug
       HOSTNAME: link-3
       ETCD_HOSTS: http://172.17.0.1:32379
       INTERFACE: eth12

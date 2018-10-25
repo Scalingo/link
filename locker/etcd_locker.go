@@ -54,8 +54,9 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 		Commit()
 	if err != nil {
 		// We got an error, this can be because our leaseID is not valid anymore: Reset it
+		oldLeaseID := l.leaseID
 		l.leaseID = 0
-		return errors.Wrapf(err, "fail to refresh lock (leaseID = %v)", l.leaseID)
+		return errors.Wrapf(err, "fail to refresh lock (leaseID = %v)", oldLeaseID)
 	}
 
 	_, err = l.leaseEtcd.KeepAliveOnce(ctx, l.leaseID)
@@ -73,6 +74,7 @@ func (l *etcdLocker) Unlock(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "fail to unlock key")
 	}
+	l.leaseID = 0
 	return nil
 }
 

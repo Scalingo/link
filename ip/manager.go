@@ -19,7 +19,7 @@ import (
 type Manager interface {
 	Start(context.Context)
 	Stop(ctx context.Context, stopper func(context.Context) error)
-	CancelStopping(context.Context)
+	CancelStopping(context.Context) bool
 	Status() string
 	IP() models.IP
 	TryGetLock(context.Context)

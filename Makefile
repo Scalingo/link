@@ -7,3 +7,6 @@ test-verbose:
 
 fmt:
 	godep go fmt
+
+generate:
+	gomock_generator

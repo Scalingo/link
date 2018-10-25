@@ -16,7 +16,7 @@ type Config struct {
 	KeepAliveInterval     time.Duration `envconfig:"KEEPALIVE_INTERVAL" default:"3s"`
 	HealthcheckInterval   time.Duration `envconfig:"HEALTH_CHECK_INTERVAL" default:"5s"`
 	HealthcheckTimeout    time.Duration `envconfig:"HEALTH_CHECK_TIMEOUT" default:"5s"`
-	ARPGratuitousInterval time.Duration `envconfig:"ARP_GRATUITOUS_INTERVAL" default:"10s"`
+	ARPGratuitousInterval time.Duration `envconfig:"ARP_GRATUITOUS_INTERVAL" default:"1s"`
 }
 
 func (c Config) LeaseTime() time.Duration {
