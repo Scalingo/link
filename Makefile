@@ -7,7 +7,3 @@ test-verbose:
 
 fmt:
 	godep go fmt
-
-generate:
-	go build -i ./cmd/generate-mock
-	./generate-mock

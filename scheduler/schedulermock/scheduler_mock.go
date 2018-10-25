@@ -36,6 +36,18 @@ func (m *MockScheduler) EXPECT() *MockSchedulerMockRecorder {
 	return m.recorder
 }
 
+// CancelStopping mocks base method
+func (m *MockScheduler) CancelStopping(arg0 context.Context, arg1 string) error {
+	ret := m.ctrl.Call(m, "CancelStopping", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CancelStopping indicates an expected call of CancelStopping
+func (mr *MockSchedulerMockRecorder) CancelStopping(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CancelStopping", reflect.TypeOf((*MockScheduler)(nil).CancelStopping), arg0, arg1)
+}
+
 // ConfiguredIPs mocks base method
 func (m *MockScheduler) ConfiguredIPs(arg0 context.Context) []api.IP {
 	ret := m.ctrl.Call(m, "ConfiguredIPs", arg0)
@@ -85,15 +97,15 @@ func (mr *MockSchedulerMockRecorder) Status(arg0 interface{}) *gomock.Call {
 }
 
 // Stop mocks base method
-func (m *MockScheduler) Stop(arg0 context.Context, arg1 string) error {
-	ret := m.ctrl.Call(m, "Stop", arg0, arg1)
+func (m *MockScheduler) Stop(arg0 context.Context, arg1 string, arg2 func(context.Context) error) error {
+	ret := m.ctrl.Call(m, "Stop", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Stop indicates an expected call of Stop
-func (mr *MockSchedulerMockRecorder) Stop(arg0, arg1 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockScheduler)(nil).Stop), arg0, arg1)
+func (mr *MockSchedulerMockRecorder) Stop(arg0, arg1, arg2 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockScheduler)(nil).Stop), arg0, arg1, arg2)
 }
 
 // TryGetLock mocks base method
