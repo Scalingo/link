@@ -11,7 +11,6 @@ import (
 	"github.com/Scalingo/go-utils/logger/plugins/rollbarplugin"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/models"
-	"github.com/Scalingo/link/network"
 	"github.com/Scalingo/link/scheduler"
 	"github.com/Scalingo/link/web"
 	"github.com/sirupsen/logrus"
@@ -28,11 +27,6 @@ func main() {
 	ctx := logger.ToCtx(context.Background(), log)
 
 	etcd, err := etcd.ClientFromEnv()
-	if err != nil {
-		panic(err)
-	}
-
-	netInterface, err := network.NewNetworkInterfaceFromName(config.Interface)
 	if err != nil {
 		panic(err)
 	}
@@ -60,7 +54,7 @@ func main() {
 		}
 	}
 
-	controller := web.NewIPController(scheduler, netInterface)
+	controller := web.NewIPController(scheduler)
 	r := handlers.NewRouter(log)
 
 	if config.User != "" || config.Password != "" {

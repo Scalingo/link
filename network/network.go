@@ -6,7 +6,6 @@ import (
 )
 
 type NetworkInterface interface {
-	HasIP(string) (bool, error)
 	EnsureIP(string) error
 	RemoveIP(string) error
 }
@@ -28,15 +27,6 @@ func NewNetworkInterfaceFromName(name string) (networkInterface, error) {
 		link:     link,
 		arp:      GetArp(),
 	}, nil
-}
-
-func (i networkInterface) HasIP(ip string) (bool, error) {
-	addr, err := netlink.ParseAddr(ip)
-	if err != nil {
-		return false, errors.Wrapf(err, "invalid IP: %s", ip)
-	}
-
-	return i.hasIP(addr)
 }
 
 func (i networkInterface) hasIP(addr *netlink.Addr) (bool, error) {
