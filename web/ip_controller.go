@@ -8,7 +8,6 @@ import (
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/api"
 	"github.com/Scalingo/link/models"
-	"github.com/Scalingo/link/network"
 	"github.com/Scalingo/link/scheduler"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -16,16 +15,12 @@ import (
 )
 
 type ipController struct {
-	storage      models.Storage
-	scheduler    scheduler.Scheduler
-	netInterface network.NetworkInterface
+	scheduler scheduler.Scheduler
 }
 
-func NewIPController(storage models.Storage, scheduler scheduler.Scheduler, netInterface network.NetworkInterface) ipController {
+func NewIPController(scheduler scheduler.Scheduler) ipController {
 	return ipController{
-		storage:      storage,
-		scheduler:    scheduler,
-		netInterface: netInterface,
+		scheduler: scheduler,
 	}
 }
 
@@ -75,52 +70,39 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 	log := logger.Get(ctx)
 
 	w.Header().Set("Content-Type", "application/json")
-	var newIP models.IP
-	err := json.NewDecoder(r.Body).Decode(&newIP)
+	var ip models.IP
+	err := json.NewDecoder(r.Body).Decode(&ip)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`{"msg": "invalid json"}`))
 		return nil
 	}
 
-	_, err = netlink.ParseAddr(newIP.IP)
+	_, err = netlink.ParseAddr(ip.IP)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`{"msg": "invalid IP"}`))
 		return nil
 	}
 
-	has, err := c.netInterface.HasIP(newIP.IP)
-	if err != nil {
-		return errors.Wrap(err, "fail to check if IP is already assigned")
-	}
-
-	if has {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"msg": "IP already assigned"}`))
-		return nil
-	}
-
-	newIP, err = c.storage.AddIP(ctx, newIP)
-	if err != nil {
-		return errors.Wrap(err, "fail to save IP")
-	}
-
-	log = log.WithFields(logrus.Fields{
-		"id": newIP.ID,
-		"ip": newIP.IP,
-	})
-
 	ctx = logger.ToCtx(context.Background(), log)
-
-	err = c.scheduler.Start(ctx, newIP)
+	ip, err = c.scheduler.Start(ctx, ip)
 	if err != nil {
+		if errors.Cause(err) == scheduler.ErrNotStopping {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"msg": "IP already assigned"}`))
+			return nil
+		}
 		return errors.Wrap(err, "fail to start IP manager")
 	}
+	log = log.WithFields(logrus.Fields{
+		"id": ip.ID,
+		"ip": ip.IP,
+	})
 
 	w.WriteHeader(http.StatusCreated)
 
-	err = json.NewEncoder(w).Encode(newIP)
+	err = json.NewEncoder(w).Encode(ip)
 	if err != nil {
 		log.WithError(err).Error("fail to encode IP")
 	}
@@ -130,18 +112,12 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	ctx := r.Context()
 	id := params["id"]
-	err := c.storage.RemoveIP(ctx, id)
-	if err != nil {
-		return errors.Wrap(err, "fail to delete IP")
-	}
-
-	err = c.scheduler.Stop(ctx, id)
+	err := c.scheduler.Stop(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "fail to stop IP manager")
 	}
 
 	w.WriteHeader(http.StatusNoContent)
-
 	return nil
 }
 

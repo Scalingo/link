@@ -45,19 +45,6 @@ func (mr *MockNetworkInterfaceMockRecorder) EnsureIP(arg0 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureIP", reflect.TypeOf((*MockNetworkInterface)(nil).EnsureIP), arg0)
 }
 
-// HasIP mocks base method
-func (m *MockNetworkInterface) HasIP(arg0 string) (bool, error) {
-	ret := m.ctrl.Call(m, "HasIP", arg0)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// HasIP indicates an expected call of HasIP
-func (mr *MockNetworkInterfaceMockRecorder) HasIP(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasIP", reflect.TypeOf((*MockNetworkInterface)(nil).HasIP), arg0)
-}
-
 // RemoveIP mocks base method
 func (m *MockNetworkInterface) RemoveIP(arg0 string) error {
 	ret := m.ctrl.Call(m, "RemoveIP", arg0)

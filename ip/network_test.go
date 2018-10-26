@@ -119,7 +119,7 @@ func TestStartARPEnsure(t *testing.T) {
 			doneChan <- true
 		}()
 		time.Sleep(50 * time.Millisecond)
-		manager.Stop(ctx)
+		manager.Stop(ctx, func(context.Context) error { return nil })
 
 		timer := time.NewTimer(500 * time.Millisecond)
 		select {
@@ -150,7 +150,7 @@ func TestStartARPEnsure(t *testing.T) {
 			doneChan <- true
 		}()
 		time.Sleep(50 * time.Millisecond)
-		manager.Stop(ctx)
+		manager.Stop(ctx, func(context.Context) error { return nil })
 
 		timer := time.NewTimer(500 * time.Millisecond)
 		select {

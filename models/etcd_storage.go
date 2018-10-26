@@ -18,11 +18,15 @@ const (
 	ETCD_LINK_DIRECTORY = "/link"
 )
 
+var (
+	ErrIPAlreadyPresent = errors.New("IP already present")
+)
+
 type etcdStorage struct {
 	hostname string
 }
 
-func NewETCDStorage(config config.Config) etcdStorage {
+func NewEtcdStorage(config config.Config) etcdStorage {
 	return etcdStorage{
 		hostname: config.Hostname,
 	}
@@ -63,7 +67,7 @@ func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
 
 	for _, i := range ips {
 		if i.IP == ip.IP {
-			return ip, errors.New("already present")
+			return i, ErrIPAlreadyPresent
 		}
 	}
 
@@ -89,9 +93,9 @@ func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
 	}
 	key := fmt.Sprintf("%s/hosts/%s/%s", ETCD_LINK_DIRECTORY, e.hostname, ip.ID)
 
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	_, err = client.Put(ctx, key, string(value))
+	_, err = client.Put(etcdCtx, key, string(value))
 	if err != nil {
 		return ip, errors.Wrapf(err, "fail to save IP")
 	}

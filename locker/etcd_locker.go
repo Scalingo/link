@@ -20,7 +20,7 @@ type etcdLocker struct {
 	config    config.Config
 }
 
-func NewETCDLocker(config config.Config, etcd *clientv3.Client, ip string) *etcdLocker {
+func NewEtcdLocker(config config.Config, etcd *clientv3.Client, ip string) *etcdLocker {
 	key := fmt.Sprintf("%s/default/%s", models.ETCD_LINK_DIRECTORY, strings.Replace(ip, "/", "_", -1))
 	return &etcdLocker{
 		kvEtcd:    etcd,
@@ -54,8 +54,9 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 		Commit()
 	if err != nil {
 		// We got an error, this can be because our leaseID is not valid anymore: Reset it
+		oldLeaseID := l.leaseID
 		l.leaseID = 0
-		return errors.Wrapf(err, "fail to refresh lock (leaseID = %v)", l.leaseID)
+		return errors.Wrapf(err, "fail to refresh lock (leaseID = %v)", oldLeaseID)
 	}
 
 	_, err = l.leaseEtcd.KeepAliveOnce(ctx, l.leaseID)
@@ -73,6 +74,7 @@ func (l *etcdLocker) Unlock(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "fail to unlock key")
 	}
+	l.leaseID = 0
 	return nil
 }
 
@@ -84,7 +86,7 @@ func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
 
 	if len(resp.Kvs) != 1 {
 		// DAFUK :/
-		return false, errors.New("Invalid ETCD state (key not found!)")
+		return false, errors.New("invalid etcd state (key not found!)")
 	}
 
 	return resp.Kvs[0].Lease == int64(l.leaseID), nil

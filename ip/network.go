@@ -49,7 +49,7 @@ func (m *manager) startArpEnsure(ctx context.Context) {
 		}
 
 		if m.stateMachine.Current() == ACTIVATED {
-			log.Info("Send gratuitous ARP request")
+			log.Debug("Send gratuitous ARP request")
 			err := m.networkInterface.EnsureIP(m.ip.IP)
 			if err != nil {
 				log.WithError(err).Error("Fail to ensure IP")

@@ -61,10 +61,11 @@ func (mr *MockSchedulerMockRecorder) GetIP(arg0, arg1 interface{}) *gomock.Call 
 }
 
 // Start mocks base method
-func (m *MockScheduler) Start(arg0 context.Context, arg1 models.IP) error {
+func (m *MockScheduler) Start(arg0 context.Context, arg1 models.IP) (models.IP, error) {
 	ret := m.ctrl.Call(m, "Start", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(models.IP)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Start indicates an expected call of Start

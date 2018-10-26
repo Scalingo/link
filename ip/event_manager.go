@@ -7,11 +7,12 @@ import (
 	"github.com/Scalingo/go-utils/logger"
 )
 
-func (m *manager) Stop(ctx context.Context) {
+func (m *manager) Stop(ctx context.Context, stopper func(context.Context) error) {
 	log := logger.Get(ctx)
 	m.stopMutex.Lock()
-	defer m.stopMutex.Unlock()
-	m.stopping = true
+	m.stopper = stopper
+	m.stopMutex.Unlock()
+
 	if m.stateMachine.Current() == ACTIVATED {
 		err := m.locker.Unlock(ctx)
 		if err != nil {
@@ -19,7 +20,20 @@ func (m *manager) Stop(ctx context.Context) {
 			return
 		}
 	}
+}
 
+func (m *manager) CancelStopping(ctx context.Context) bool {
+	log := logger.Get(ctx)
+	if !m.isStopping() {
+		log.Debug("Do not cancel stopping of a non-stopping IP")
+		return false
+	}
+	log.Info("Cancel manager stopping")
+
+	m.stopMutex.Lock()
+	defer m.stopMutex.Unlock()
+	m.stopper = nil
+	return true
 }
 
 func (m *manager) TryGetLock(ctx context.Context) {
@@ -29,7 +43,7 @@ func (m *manager) TryGetLock(ctx context.Context) {
 func (m *manager) isStopping() bool {
 	m.stopMutex.RLock()
 	defer m.stopMutex.RUnlock()
-	return m.stopping
+	return m.stopper != nil
 }
 
 func (m *manager) sendEvent(status string) {
@@ -56,13 +70,11 @@ func (m *manager) eventManager(ctx context.Context) {
 			// So after this sleep, we can safely remove our IP.
 
 			log.Infof("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
-			time.Sleep(2 * m.config.LeaseTime())
-			if m.stateMachine.Current() != FAILING {
-				m.sendEvent(DemotedEvent)
+			m.waitTwiceLeaseTime(ctx)
+			if m.stopOrder(ctx) {
+				return
 			}
-			log.Info("Stopping!")
-			m.closeEventChan()
-			return
+			log.Info("Stop order has been cancelled")
 		}
 
 		if m.stateMachine.Current() != FAILING {
@@ -73,12 +85,57 @@ func (m *manager) eventManager(ctx context.Context) {
 	}
 }
 
+func (m *manager) waitTwiceLeaseTime(ctx context.Context) {
+	log := logger.Get(ctx)
+	timer := time.NewTimer(2 * m.config.LeaseTime())
+	defer timer.Stop()
+
+	ticker := time.NewTicker(500 * time.Millisecond)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-timer.C:
+			return
+		case <-ticker.C:
+			log.Debug("tick wait twice lease time")
+			if !m.isStopping() {
+				return
+			}
+		}
+	}
+}
+
+// stopOrder actually handles the stopping. It returns true if it has been stopped, false
+// otherwise. It can happen if the current manager stopping has been cancelled.
+func (m *manager) stopOrder(ctx context.Context) bool {
+	m.stopMutex.RLock()
+	defer m.stopMutex.RUnlock()
+
+	log := logger.Get(ctx)
+
+	// The stopping might have been cancelled during the two lease time sleep. We execute the
+	// stopper function only if it is still in stopping state
+	if m.isStopping() {
+		log.Info("Stopping!")
+		if m.stateMachine.Current() != FAILING {
+			m.sendEvent(DemotedEvent)
+		}
+		err := m.stopper(ctx)
+		if err != nil {
+			log.WithError(err).Error("fail to execute the stopper function")
+		}
+		m.closeEventChan()
+		return true
+	}
+	return false
+}
+
 func (m *manager) singleEtcdRun(ctx context.Context) {
 	log := logger.Get(ctx)
 	err := m.locker.Refresh(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to refresh lock")
-		log.Info("FAULT")
 		m.sendEvent(FaultEvent)
 		return
 	}

@@ -1,4 +1,4 @@
-# LINK
+# LinK
 [ ![Codeship Status for Scalingo/link](https://app.codeship.com/projects/9487cd90-a499-0136-2a21-42361f54bfcf/status?branch=master)](https://app.codeship.com/projects/307806)
 
 > Link Is Not Keepalived
@@ -13,7 +13,7 @@ IPs. This project aims to be as KISS and dynamic as possible.
 
 ## How do we bind the IPs ?
 
-To add an interface LINK will add the IP to the configured interface and sent a unsolicited ARP request on the network (see [Gratuitous ARP](https://wiki.wireshark.org/Gratuitous_ARP)).
+To add an interface LinK will add the IP to the configured interface and sent a unsolicited ARP request on the network (see [Gratuitous ARP](https://wiki.wireshark.org/Gratuitous_ARP)).
 
 This is the equivalent of:
 
@@ -36,7 +36,7 @@ Each IP can be in any of these three states:
 
 - `ACTIVATED`: This machine owns the IP
 - `STANDBY`: This machine does not own the IP bust is available for election
-- `FAILING`: Healthchecks for this IP failed, this machine is not available for election
+- `FAILING`: Health checks for this IP failed, this machine is not available for election
 
 At any point three types of events can happen:
 - `fault`: There was some error when coordinating with other notes
