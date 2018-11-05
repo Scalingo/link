@@ -1,5 +1,5 @@
 # LinK
-[ ![Codeship Status for Scalingo/link](https://app.codeship.com/projects/9487cd90-a499-0136-2a21-42361f54bfcf/status?branch=master)](https://app.codeship.com/projects/307806)
+[![Build Status](https://travis-ci.org/Scalingo/link.svg?branch=master)](https://travis-ci.org/Scalingo/link)
 
 > Link Is Not Keepalived
 
