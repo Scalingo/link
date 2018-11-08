@@ -44,7 +44,7 @@ func (e etcdStorage) GetIPs(ctx context.Context) ([]IP, error) {
 
 	resp, err := client.Get(ctx, fmt.Sprintf("%s/hosts/%s", ETCD_LINK_DIRECTORY, e.hostname), clientv3.WithPrefix())
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "fail to get list of IPs from etcd")
 	}
 
 	ips := make([]IP, 0)
