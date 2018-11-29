@@ -3,17 +3,44 @@
 
 > Link is not Keepalived
 
-The goal of this project is to provide a simple and easy way to manage virtual
-IPs. This project aims to be as KISS and dynamic as possible.
+LinK is a networking agent that will let multiple host share a virtual IP. It
+will choose which host must bind this IP and inform other members of the
+network of the host having this IP.
 
-## Project promises
+The IP owner election is performed using ETCD lease system and other host on
+this network will be informed of the current IP owner using gratuitous ARP
+requests (see "How do we bind IPs").
 
-1. KISS: our goal is not to rebuild Keepalived nor Pacemaker
-1. If an IP is configured on a server there must always be *at least one* server that binds the IP
+To ease the cluster administration, LinK comes with it's
+[own-cli](https://github.com/Scalingo/link/tree/master/cmd/link-client/).
+
+
+## Demo
+
+![demo](https://raw.githubusercontent.com/Scalingo/link/master/media/demo.gif)
+
+## Project goals
+
+1. KISS: our goal is to follow the UNIX philosophy: "Do one thing and do it
+   well". This component is only responsible of the IP attribution part, it
+   will not manage load balancing or other higher level stuff.
+1. If an IP is registered on the cluster there must always be *at least one*
+   server that binds the IP
+
+## Endpoints
+
+- `GET /ips`: List all currently configured IPs
+- `POST /ips`: Add an IP
+- `GET /ips/:id`: Get a single IP
+- `DELETE /ips/:id`: Remove an IP
+- `POST /ips/:id/lock`: Try to get the lock on this IP
+
 
 ## How do we bind the IPs?
 
-To add an interface LinK adds the IP to the configured interface and send an unsolicited ARP request on the network (see [Gratuitous ARP](https://wiki.wireshark.org/Gratuitous_ARP)).
+To add an interface LinK adds the IP to the configured interface and send an
+unsolicited ARP request on the network (see [Gratuitous
+ARP](https://wiki.wireshark.org/Gratuitous_ARP)).
 
 This is the equivalent of:
 
@@ -50,17 +77,10 @@ This is what the state machine looks like:
 
 ![Sate Machine](./state_machine.png)
 
-## Endpoints
-
-- `GET /ips`: List all currently configured IPs
-- `POST /ips`: Add an IP
-- `GET /ips/:id`: Get a single IP
-- `DELETE /ips/:id`: Remove an IP
-- `POST /ips/:id/lock`: Force a link to try to get this IP
 
 ## Dev environment
 
-To make it work in dev you might want to add a dummy interface:
+To make it work in dev you might want to some a dummy interfaces:
 
 ```shell
 modprobe dummy
