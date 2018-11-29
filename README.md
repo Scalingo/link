@@ -3,16 +3,16 @@
 
 > Link is not Keepalived
 
-LinK is a networking agent that will let multiple host share a virtual IP. It
-will choose which host must bind this IP and inform other members of the
-network of the host having this IP.
+LinK is a networking agent that will let multiple hosts share a virtual IP. It
+chooses which host must bind this IP and inform other members of the
+network of the host owning this IP.
 
-The IP owner election is performed using ETCD lease system and other host on
-this network will be informed of the current IP owner using gratuitous ARP
-requests (see "How do we bind IPs").
+The IP owner election is performed using etcd lease system and other hosts on
+this network is informed of the current IP owner using gratuitous ARP
+requests (see [How do we bind IPs?](#how-do-we-bind-the-ips)).
 
 To ease the cluster administration, LinK comes with it's
-[own-cli](https://github.com/Scalingo/link/tree/master/cmd/link-client/).
+[own CLI](https://github.com/Scalingo/link/tree/master/cmd/link-client/).
 
 
 ## Demo
@@ -22,10 +22,45 @@ To ease the cluster administration, LinK comes with it's
 ## Project goals
 
 1. KISS: our goal is to follow the UNIX philosophy: "Do one thing and do it
-   well". This component is only responsible of the IP attribution part, it
+   well". This component is only responsible of the IP attribution part. It
    will not manage load balancing or other higher level stuff.
 1. If an IP is registered on the cluster there must always be *at least one*
    server that binds the IP
+
+## Architecture
+
+** No central manager** Each agent only have knowledge of their local
+configuration. They do not know nor care if other IP exists or if other hosts
+have the same IP configured. The synchronization is done by creating locks in
+etcd.
+
+** Fault resilience** If for any reason something went wrong (lost connection
+with etcd) LinK will always try to have **at least** one host this means that
+if one agent fails to contact the etcd cluster it will take the IP.
+
+## Installation
+
+In order to be able to run LinK, you must have a working etcd cluster.
+Installation and configuration instructions are available on the [etcd
+website](https://coreos.com/etcd/docs/latest/getting-started-with-etcd.html).
+
+> LinK uses etcd v3 API. So you'll need etcd version 3.0.0 or higher.
+
+The easiest way to get LinK up and running is to use pre-build binary available
+on the [release pages](https://github.com/Scalingo/link/releases).
+
+### Configuration
+
+LinK configuration is entirely done by setting environment variables.
+
+- `INTERFACE`: Name of the interface where LinK should add and remove IPs.
+- `USER`: Username used for basic auth
+- `PASSWORD`: Password used for basic auth
+- `PORT` (default: 1313): Port where the LinK HTTP interface will be available
+- `ETCD_HOSTS`: The different endpoints of etcd members
+- `ETCD_TLS_CERT`: Path to the TLS X.509 certificate
+- `ETCD_TLS_KEY`: Path to the private key authenticating the certificate
+- `ETCD_CACERT`: Path to the CA cert signing the etcd member certificates
 
 ## Endpoints
 
@@ -34,7 +69,6 @@ To ease the cluster administration, LinK comes with it's
 - `GET /ips/:id`: Get a single IP
 - `DELETE /ips/:id`: Remove an IP
 - `POST /ips/:id/lock`: Try to get the lock on this IP
-
 
 ## How do we bind the IPs?
 
