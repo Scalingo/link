@@ -27,6 +27,41 @@ To ease the cluster administration, LinK comes with it's
 1. If an IP is registered on the cluster there must always be *at least one*
    server that binds the IP
 
+## Architecture
+
+** No central manager** Each agent only have knowledge of their local
+configuration. They do not know nor care if other IP exists or if other hosts
+have the same IP configured. The synchronization is done by creating locks in
+ETCD.
+
+** Fault resilience** If for any reason something went wrong (lost connection
+with ETCD) LinK will always try to have **at least** one host this means that
+if one agent fail to contact the ETCD cluster it will take the IP.
+
+## Installation
+
+In order to be able to run LinK, you must have a working ETCD cluster.
+Installation and configuration instructions are available on the [ETCD
+website](https://coreos.com/etcd/docs/latest/getting-started-with-etcd.html).
+
+> Link uses ETCD v3 API. So you'll need ETCD version 3.0.0 or higher.
+
+The easiest way to get link up and running is to use pre-build binary available
+on the [release pages](https://github.com/Scalingo/link/releases).
+
+### Configuration
+
+LinK configuration is entirely done by setting environment variables.
+
+- `INTERFACE`: Name of the interface where LinK should add and remove IPs.
+- `USER`: Username used for basic auth
+- `PASSWORD`: Password used for basic auth
+- `PORT` (default: 1313): Port where the LinK HTTP interface will be available
+- `ETCD_HOSTS`: The different endpoints of ETCD members
+- `ETCD_TLS_CERT`: Path to the TLS X.509 certificate
+- `ETCD_TLS_KEY`: Path to the private key authenticating the certificate
+- `ETCD_CACERT`: Path to the CA cert signing the ETCD member certifcates
+
 ## Endpoints
 
 - `GET /ips`: List all currently configured IPs
@@ -34,7 +69,6 @@ To ease the cluster administration, LinK comes with it's
 - `GET /ips/:id`: Get a single IP
 - `DELETE /ips/:id`: Remove an IP
 - `POST /ips/:id/lock`: Try to get the lock on this IP
-
 
 ## How do we bind the IPs?
 
