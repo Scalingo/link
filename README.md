@@ -1,19 +1,19 @@
 # LinK
 [![Build Status](https://travis-ci.org/Scalingo/link.svg?branch=master)](https://travis-ci.org/Scalingo/link)
 
-> Link Is Not Keepalived
+> Link is not Keepalived
 
 The goal of this project is to provide a simple and easy way to manage virtual
 IPs. This project aims to be as KISS and dynamic as possible.
 
 ## Project promises
 
-1. KISS our goal is not to rebuild Keepalived nor Pacemaker
+1. KISS: our goal is not to rebuild Keepalived nor Pacemaker
 1. If an IP is configured on a server there must always be *at least one* server that binds the IP
 
-## How do we bind the IPs ?
+## How do we bind the IPs?
 
-To add an interface LinK will add the IP to the configured interface and sent a unsolicited ARP request on the network (see [Gratuitous ARP](https://wiki.wireshark.org/Gratuitous_ARP)).
+To add an interface LinK adds the IP to the configured interface and send an unsolicited ARP request on the network (see [Gratuitous ARP](https://wiki.wireshark.org/Gratuitous_ARP)).
 
 This is the equivalent of:
 
@@ -35,15 +35,15 @@ ip addr del MY_IP dev MY_INTERFACE
 Each IP can be in any of these three states:
 
 - `ACTIVATED`: This machine owns the IP
-- `STANDBY`: This machine does not own the IP bust is available for election
+- `STANDBY`: This machine does not own the IP but is available for election
 - `FAILING`: Health checks for this IP failed, this machine is not available for election
 
-At any point three types of events can happen:
-- `fault`: There was some error when coordinating with other notes
+At any point five types of events can happen:
+- `fault`: There was some error when coordinating with other nodes
 - `elected`: This machine was elected to own the IP
 - `demoted`: This machine just loosed ownership on the IP
-- `health_check_fail`: The health checks configured with this IP has failed.
-- `health_check_success`: The health checks configured with this IP has succeeded.
+- `health_check_fail`: The health checks configured with this IP failed.
+- `health_check_success`: The health checks configured with this IP succeeded.
 
 
 This is what the state machine looks like:
