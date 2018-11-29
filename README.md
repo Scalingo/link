@@ -3,16 +3,16 @@
 
 > Link is not Keepalived
 
-LinK is a networking agent that will let multiple host share a virtual IP. It
-will choose which host must bind this IP and inform other members of the
-network of the host having this IP.
+LinK is a networking agent that will let multiple hosts share a virtual IP. It
+chooses which host must bind this IP and inform other members of the
+network of the host owning this IP.
 
-The IP owner election is performed using ETCD lease system and other host on
-this network will be informed of the current IP owner using gratuitous ARP
-requests (see "How do we bind IPs").
+The IP owner election is performed using etcd lease system and other hosts on
+this network is informed of the current IP owner using gratuitous ARP
+requests (see [How do we bind IPs?](#how-do-we-bind-the-ips)).
 
 To ease the cluster administration, LinK comes with it's
-[own-cli](https://github.com/Scalingo/link/tree/master/cmd/link-client/).
+[own CLI](https://github.com/Scalingo/link/tree/master/cmd/link-client/).
 
 
 ## Demo
@@ -22,7 +22,7 @@ To ease the cluster administration, LinK comes with it's
 ## Project goals
 
 1. KISS: our goal is to follow the UNIX philosophy: "Do one thing and do it
-   well". This component is only responsible of the IP attribution part, it
+   well". This component is only responsible of the IP attribution part. It
    will not manage load balancing or other higher level stuff.
 1. If an IP is registered on the cluster there must always be *at least one*
    server that binds the IP
