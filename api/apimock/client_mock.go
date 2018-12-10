@@ -103,3 +103,15 @@ func (m *MockClient) TryGetLock(arg0 context.Context, arg1 string) error {
 func (mr *MockClientMockRecorder) TryGetLock(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TryGetLock", reflect.TypeOf((*MockClient)(nil).TryGetLock), arg0, arg1)
 }
+
+// Version mocks base method
+func (m *MockClient) Version(arg0 context.Context) string {
+	ret := m.ctrl.Call(m, "Version", arg0)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Version indicates an expected call of Version
+func (mr *MockClientMockRecorder) Version(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Version", reflect.TypeOf((*MockClient)(nil).Version), arg0)
+}
