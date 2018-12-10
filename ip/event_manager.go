@@ -103,6 +103,8 @@ func (m *manager) waitTwiceLeaseTimeOrReallocation(ctx context.Context) {
 				return
 			}
 			master, err := m.locker.IsMaster(ctx)
+			// This can return a key not found error
+			// This is likely to happen during re-election and is perfectly normal
 			if err == nil && !master {
 				log.Debug("Someone else took the lock, beginning premature shutdown")
 				return
