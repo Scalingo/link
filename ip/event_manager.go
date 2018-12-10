@@ -70,7 +70,7 @@ func (m *manager) eventManager(ctx context.Context) {
 			// So after this sleep, we can safely remove our IP.
 
 			log.Infof("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
-			m.waitTwiceLeaseTime(ctx)
+			m.waitTwiceLeaseTimeOrReallocation(ctx)
 			if m.stopOrder(ctx) {
 				return
 			}
@@ -85,7 +85,7 @@ func (m *manager) eventManager(ctx context.Context) {
 	}
 }
 
-func (m *manager) waitTwiceLeaseTime(ctx context.Context) {
+func (m *manager) waitTwiceLeaseTimeOrReallocation(ctx context.Context) {
 	log := logger.Get(ctx)
 	timer := time.NewTimer(2 * m.config.LeaseTime())
 	defer timer.Stop()
@@ -100,6 +100,11 @@ func (m *manager) waitTwiceLeaseTime(ctx context.Context) {
 		case <-ticker.C:
 			log.Debug("tick wait twice lease time")
 			if !m.isStopping() {
+				return
+			}
+			master, err := m.locker.IsMaster(ctx)
+			if err == nil && !master {
+				log.Debug("Someone else took the lock, beginning premature shutdown")
 				return
 			}
 		}
