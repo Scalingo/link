@@ -13,10 +13,12 @@ import (
 	"github.com/urfave/cli"
 )
 
+var Version = "dev"
+
 func main() {
 	app := cli.NewApp()
 
-	app.Version = "1.0.0"
+	app.Version = Version
 
 	app.Flags = []cli.Flag{
 		cli.StringFlag{
@@ -135,6 +137,18 @@ func main() {
 				}
 
 				fmt.Println(aurora.Green(fmt.Sprintf("IP %s (%s) successfully added", newIP.IP.IP, newIP.ID)))
+				return nil
+			},
+		}, {
+			Name: "version",
+			Action: func(c *cli.Context) error {
+				fmt.Printf("Client version: \t%s\n", app.Version)
+				client := getClientFromCtx(c)
+				version, err := client.Version(context.Background())
+				if err != nil {
+					version = aurora.Red(err.Error()).String()
+				}
+				fmt.Printf("Server version: \t%s\n", version)
 				return nil
 			},
 		},
