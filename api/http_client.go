@@ -57,6 +57,28 @@ func WithTimeout(timeout time.Duration) ClientOpt {
 	}
 }
 
+func (c HTTPClient) Version(ctx context.Context) (string, error) {
+	req, err := c.getRequest(http.MethodGet, "/version", nil)
+	if err != nil {
+		return "", err
+	}
+
+	resp, err := c.getClient().Do(req)
+	if err != nil {
+		return "", err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return "", getErrorFromBody(resp.StatusCode, resp.Body)
+	}
+
+	var res map[string]string
+	err = json.NewDecoder(resp.Body).Decode(&res)
+	if err != nil {
+		return "", err
+	}
+	return res["version"], nil
+}
+
 func (c HTTPClient) ListIPs(ctx context.Context) ([]IP, error) {
 	req, err := c.getRequest(http.MethodGet, "/ips", nil)
 	if err != nil {

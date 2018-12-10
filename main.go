@@ -16,6 +16,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var Version = "dev"
+
 func main() {
 	config, err := config.Build()
 	if err != nil {
@@ -54,7 +56,8 @@ func main() {
 		}
 	}
 
-	controller := web.NewIPController(scheduler)
+	ipController := web.NewIPController(scheduler)
+	versionController := web.NewVersionController(Version)
 	r := handlers.NewRouter(log)
 
 	if config.User != "" || config.Password != "" {
@@ -64,11 +67,12 @@ func main() {
 	}
 
 	r.Use(handlers.ErrorMiddleware)
-	r.HandleFunc("/ips", controller.List).Methods("GET")
-	r.HandleFunc("/ips", controller.Create).Methods("POST")
-	r.HandleFunc("/ips/{id}", controller.Destroy).Methods("DELETE")
-	r.HandleFunc("/ips/{id}", controller.Get).Methods("GET")
-	r.HandleFunc("/ips/{id}/lock", controller.TryGetLock).Methods("POST")
+	r.HandleFunc("/ips", ipController.List).Methods("GET")
+	r.HandleFunc("/ips", ipController.Create).Methods("POST")
+	r.HandleFunc("/ips/{id}", ipController.Destroy).Methods("DELETE")
+	r.HandleFunc("/ips/{id}", ipController.Get).Methods("GET")
+	r.HandleFunc("/ips/{id}/lock", ipController.TryGetLock).Methods("POST")
+	r.HandleFunc("/version", versionController.Version).Methods("GET")
 
 	log.Infof("Listening on %v", config.Port)
 	err = http.ListenAndServe(fmt.Sprintf(":%v", config.Port), r)
