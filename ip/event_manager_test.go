@@ -164,3 +164,39 @@ func TestManager_HealthChecker(t *testing.T) {
 		})
 	}
 }
+
+func TestWaitTwiceLeaseTimeOrReallocation(t *testing.T) {
+	c := config.Config{
+		KeepAliveInterval: 5 * time.Second,
+	}
+	t.Run("when someone else took the lock", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+		lockerMock := lockermock.NewMockLocker(ctrl)
+		lockerMock.EXPECT().IsMaster(gomock.Any()).Return(false, nil).Times(1)
+
+		m := &manager{
+			locker: lockerMock,
+			config: c,
+			stopper: func(ctx context.Context) error {
+				t.Log("Stopper should not be called")
+				t.Fail()
+				return nil
+			},
+		}
+
+		start := time.Now()
+		m.waitTwiceLeaseTimeOrReallocation(context.Background())
+		assert.WithinDuration(t, start, time.Now(), 600*time.Millisecond)
+	})
+
+	t.Run("if we're not stopping", func(t *testing.T) {
+		m := &manager{
+			stopper: nil,
+			config:  c,
+		}
+		start := time.Now()
+		m.waitTwiceLeaseTimeOrReallocation(context.Background())
+		assert.WithinDuration(t, start, time.Now(), 600*time.Millisecond)
+	})
+}

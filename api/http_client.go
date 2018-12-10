@@ -214,9 +214,13 @@ func getErrorFromBody(statusCode int, body io.Reader) error {
 			if msg, ok := res["error"]; ok {
 				value = fmt.Sprintf("%v", msg)
 			}
-
 		}
-		return errors.New(value)
+		switch statusCode {
+		case 404:
+			return ErrNotFound{value}
+		default:
+			return errors.New(value)
+		}
 	}
 
 	return fmt.Errorf("Unexpected status code: %v", statusCode)
