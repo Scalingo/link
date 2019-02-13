@@ -105,10 +105,11 @@ func (mr *MockClientMockRecorder) TryGetLock(arg0, arg1 interface{}) *gomock.Cal
 }
 
 // Version mocks base method
-func (m *MockClient) Version(arg0 context.Context) string {
+func (m *MockClient) Version(arg0 context.Context) (string, error) {
 	ret := m.ctrl.Call(m, "Version", arg0)
 	ret0, _ := ret[0].(string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // Version indicates an expected call of Version

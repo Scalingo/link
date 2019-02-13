@@ -12,5 +12,5 @@ type Client interface {
 	AddIP(ctx context.Context, ip string, checks ...models.Healthcheck) (IP, error)
 	RemoveIP(ctx context.Context, id string) error
 	TryGetLock(ctx context.Context, id string) error
-	Version(ctx context.Context) string
+	Version(ctx context.Context) (string, error)
 }
