@@ -17,6 +17,8 @@ services:
       USER: link
       PASSWORD: password
     command: reflex -r '\.go$$' -R '_test\.go$$' -s -- sh -c 'go build && ./link'
+    depends_on:
+      - etcd
   link-2:
     build: .
     volumes:
@@ -35,6 +37,8 @@ services:
       PASSWORD: password
       PORT: 1314
     command: reflex --all -r 'link' -s -- sh -c './link'
+    depends_on:
+      - etcd
   link-3:
     build: .
     volumes:
@@ -53,6 +57,8 @@ services:
       PASSWORD: password
       PORT: 1315
     command: reflex --all -r 'link' -s -- sh -c './link'
+    depends_on:
+      - etcd
 
   test:
     build: .
