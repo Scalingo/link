@@ -45,12 +45,13 @@ func (c checker) IsHealthy(ctx context.Context) bool {
 
 	res := c.prober.Check(philaeCtx)
 	if !res.Healthy {
-		if len(res.Probes) == 0 {
-			appLogger.Error("Probe failed but no probes configured")
-
-		} else {
-			appLogger.Errorf("Probe failed with error: %s", res.Probes[0].Comment)
+		var reasons []string
+		for _, probe := range res.Probes {
+			if !probe.Healthy {
+				reasons = append(reasons, probe.Comment)
+			}
 		}
+		appLogger.WithField("reasons", reasons).Error("Probe failed")
 	}
 	return res.Healthy
 }

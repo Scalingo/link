@@ -5,6 +5,7 @@
 package healthcheckmock
 
 import (
+	context "context"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
@@ -34,13 +35,13 @@ func (m *MockChecker) EXPECT() *MockCheckerMockRecorder {
 }
 
 // IsHealthy mocks base method
-func (m *MockChecker) IsHealthy() bool {
-	ret := m.ctrl.Call(m, "IsHealthy")
+func (m *MockChecker) IsHealthy(arg0 context.Context) bool {
+	ret := m.ctrl.Call(m, "IsHealthy", arg0)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // IsHealthy indicates an expected call of IsHealthy
-func (mr *MockCheckerMockRecorder) IsHealthy() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsHealthy", reflect.TypeOf((*MockChecker)(nil).IsHealthy))
+func (mr *MockCheckerMockRecorder) IsHealthy(arg0 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsHealthy", reflect.TypeOf((*MockChecker)(nil).IsHealthy), arg0)
 }
