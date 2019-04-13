@@ -13,7 +13,7 @@ import (
 )
 
 type Checker interface {
-	IsHealthy() bool
+	IsHealthy(ctx context.Context) bool
 }
 
 type checker struct {
@@ -35,14 +35,22 @@ func FromChecks(config config.Config, checks []models.Healthcheck) checker {
 	}
 }
 
-func (c checker) IsHealthy() bool {
-	ctx := context.Background()
+func (c checker) IsHealthy(ctx context.Context) bool {
+	appLogger := logger.Get(ctx)
 
 	// Custom logger to discard Philae output
 	log := logrus.New()
 	log.Out = ioutil.Discard
-	ctx = logger.ToCtx(ctx, log)
+	philaeCtx := logger.ToCtx(context.Background(), log)
 
-	res := c.prober.Check(ctx)
+	res := c.prober.Check(philaeCtx)
+	if !res.Healthy {
+		if len(res.Probes) == 0 {
+			appLogger.Error("Probe failed but no probes configured")
+
+		} else {
+			appLogger.Errorf("Probe failed with error: %s", res.Probes[0].Comment)
+		}
+	}
 	return res.Healthy
 }
