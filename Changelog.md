@@ -1,3 +1,8 @@
+# [2019-04-15] 1.2.0
+
+* Fix Client interface
+* Make probes more verbose
+
 # [2018-12-10] 1.1.0
 
 * Release IP early if someone else got the lock
