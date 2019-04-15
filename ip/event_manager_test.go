@@ -103,13 +103,13 @@ func TestManager_HealthChecker(t *testing.T) {
 		{
 			Name: "With fail events",
 			Checker: func(mock *healthcheckmock.MockChecker) {
-				mock.EXPECT().IsHealthy().Return(false).MaxTimes(2)
+				mock.EXPECT().IsHealthy(gomock.Any()).Return(false).MaxTimes(2)
 			},
 			ExpectedEvents: []string{HealthCheckFailEvent},
 		}, {
 			Name: "With a success event and a stop",
 			Checker: func(mock *healthcheckmock.MockChecker) {
-				mock.EXPECT().IsHealthy().Return(true).MaxTimes(2)
+				mock.EXPECT().IsHealthy(gomock.Any()).Return(true).MaxTimes(2)
 			},
 			ExpectedEvents: []string{HealthCheckSuccessEvent},
 		},

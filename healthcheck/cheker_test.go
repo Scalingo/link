@@ -98,7 +98,7 @@ func TestIsHealthy(t *testing.T) {
 				prober: prober,
 			}
 
-			assert.Equal(t, example.ExpetedResult, checker.IsHealthy())
+			assert.Equal(t, example.ExpetedResult, checker.IsHealthy(context.Background()))
 
 		})
 	}
