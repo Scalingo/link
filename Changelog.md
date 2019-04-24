@@ -1,3 +1,9 @@
+# [????-??-??] ?.?.?
+
+* Do not fail on first healthcheck failure, add `FAIL_COUNT_BEFORE_FAILOVER`
+  environment variable to configure the number of healthcheck failure before
+  failover.
+
 # [2019-04-15] 1.2.0
 
 * Fix Client interface

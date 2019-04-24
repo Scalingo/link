@@ -27,7 +27,7 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 			},
 			ExpectedEvents: []string{FaultEvent},
 		}, {
-			Name: "When IsMaster fails",
+			Name: "When IsMaster fails just one time",
 			Locker: func(mock *lockermock.MockLocker) {
 				mock.EXPECT().Refresh(gomock.Any()).Return(nil)
 				mock.EXPECT().IsMaster(gomock.Any()).Return(false, errors.New("NOP"))
@@ -101,11 +101,19 @@ func TestManager_HealthChecker(t *testing.T) {
 		ExpectedEvents []string
 	}{
 		{
-			Name: "With fail events",
+			Name: "With not enough failing events",
 			Checker: func(mock *healthcheckmock.MockChecker) {
 				mock.EXPECT().IsHealthy(gomock.Any()).Return(false).MaxTimes(2)
+				mock.EXPECT().IsHealthy(gomock.Any()).Return(true).AnyTimes()
 			},
-			ExpectedEvents: []string{HealthCheckFailEvent},
+			ExpectedEvents: []string{HealthCheckSuccessEvent},
+		}, {
+			Name: "With enough failing events",
+			Checker: func(mock *healthcheckmock.MockChecker) {
+				mock.EXPECT().IsHealthy(gomock.Any()).Return(false).MaxTimes(3)
+				mock.EXPECT().IsHealthy(gomock.Any()).Return(true).AnyTimes()
+			},
+			ExpectedEvents: []string{HealthCheckFailEvent, HealthCheckSuccessEvent},
 		}, {
 			Name: "With a success event and a stop",
 			Checker: func(mock *healthcheckmock.MockChecker) {
@@ -127,7 +135,8 @@ func TestManager_HealthChecker(t *testing.T) {
 				checker:      checker,
 				stateMachine: NewStateMachine(ctx, NewStateMachineOpts{}),
 				config: config.Config{
-					HealthcheckInterval: 10 * time.Millisecond,
+					HealthcheckInterval:     10 * time.Millisecond,
+					FailCountBeforeFailover: 3,
 				},
 			}
 
@@ -154,9 +163,12 @@ func TestManager_HealthChecker(t *testing.T) {
 				case <-doneChan:
 					cont = false
 				}
+				if i >= len(example.ExpectedEvents) {
+					cont = false
+				}
 
-				manager.Stop(ctx, func(context.Context) error { return nil })
 			}
+			manager.Stop(ctx, func(context.Context) error { return nil })
 
 			for i := 0; i < len(example.ExpectedEvents); i++ {
 				assert.Equal(t, example.ExpectedEvents[i], events[i])

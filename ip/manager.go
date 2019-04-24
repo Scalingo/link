@@ -37,6 +37,7 @@ type manager struct {
 	checker          healthcheck.Checker
 	config           config.Config
 	eventChan        chan string
+	failingCount     int
 }
 
 func NewManager(ctx context.Context, config config.Config, ip models.IP, client *clientv3.Client) (*manager, error) {
@@ -57,6 +58,7 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 		checker:          healthcheck.FromChecks(config, ip.Checks),
 		config:           config,
 		eventChan:        make(chan string),
+		failingCount:     0,
 	}
 
 	m.stateMachine = NewStateMachine(ctx, NewStateMachineOpts{
