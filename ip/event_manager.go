@@ -161,6 +161,7 @@ func (m *manager) singleEtcdRun(ctx context.Context) {
 }
 
 func (m *manager) healthChecker(ctx context.Context) {
+	log := logger.Get(ctx)
 	for {
 		healthy := m.checker.IsHealthy(ctx)
 
@@ -171,9 +172,15 @@ func (m *manager) healthChecker(ctx context.Context) {
 		}
 
 		if healthy {
+			m.failingCount = 0
 			m.sendEvent(HealthCheckSuccessEvent)
 		} else {
-			m.sendEvent(HealthCheckFailEvent)
+			m.failingCount++
+			log.WithField("failing_count", m.failingCount).Error("Node failing")
+			if m.failingCount >= m.config.FailCountBeforeFailover {
+				log.Error("Too many failure, setting status to failing")
+				m.sendEvent(HealthCheckFailEvent)
+			}
 		}
 
 		time.Sleep(m.config.HealthcheckInterval)
