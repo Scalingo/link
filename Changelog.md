@@ -1,3 +1,7 @@
+# [2019-04-30] 1.3.1
+
+* Update go-philae to v4.3.0
+
 # [2019-04-25] 1.3.0
 
 * Do not fail on first healthcheck failure, add `FAIL_COUNT_BEFORE_FAILOVER`
