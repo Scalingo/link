@@ -1,0 +1,126 @@
+# github.com/Scalingo/go-handlers v1.2.4
+github.com/Scalingo/go-handlers
+# github.com/Scalingo/go-philae v4.3.0+incompatible
+github.com/Scalingo/go-philae/prober
+github.com/Scalingo/go-philae/tcpprobe
+github.com/Scalingo/go-philae/sampleprobe
+# github.com/Scalingo/go-utils v5.4.0+incompatible
+github.com/Scalingo/go-utils/etcd
+github.com/Scalingo/go-utils/logger
+github.com/Scalingo/go-utils/logger/plugins/rollbarplugin
+github.com/Scalingo/go-utils/errors
+# github.com/Scalingo/logrus-rollbar v1.3.0
+github.com/Scalingo/logrus-rollbar
+# github.com/Soulou/errgo-rollbar v0.0.0-20181001084048-9d551cd3bae9
+github.com/Soulou/errgo-rollbar
+# github.com/codegangsta/negroni v1.0.0
+github.com/codegangsta/negroni
+# github.com/coreos/etcd v3.3.9+incompatible
+github.com/coreos/etcd/clientv3
+github.com/coreos/etcd/pkg/transport
+github.com/coreos/etcd/auth/authpb
+github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes
+github.com/coreos/etcd/etcdserver/etcdserverpb
+github.com/coreos/etcd/mvcc/mvccpb
+github.com/coreos/etcd/pkg/types
+github.com/coreos/etcd/pkg/tlsutil
+# github.com/davecgh/go-spew v1.1.1
+github.com/davecgh/go-spew/spew
+# github.com/gogo/protobuf v1.2.1
+github.com/gogo/protobuf/gogoproto
+github.com/gogo/protobuf/proto
+github.com/gogo/protobuf/protoc-gen-gogo/descriptor
+# github.com/golang/mock v1.1.1
+github.com/golang/mock/gomock
+# github.com/golang/protobuf v1.3.0
+github.com/golang/protobuf/proto
+github.com/golang/protobuf/ptypes
+github.com/golang/protobuf/ptypes/any
+github.com/golang/protobuf/ptypes/duration
+github.com/golang/protobuf/ptypes/timestamp
+# github.com/gorilla/mux v1.7.1
+github.com/gorilla/mux
+# github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56
+github.com/j-keck/arping
+# github.com/kelseyhightower/envconfig v1.3.0
+github.com/kelseyhightower/envconfig
+# github.com/konsorten/go-windows-terminal-sequences v1.0.1
+github.com/konsorten/go-windows-terminal-sequences
+# github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e
+github.com/logrusorgru/aurora
+# github.com/looplab/fsm v0.0.0-20180515091235-f980bdb68a89
+github.com/looplab/fsm
+# github.com/mattn/go-runewidth v0.0.3
+github.com/mattn/go-runewidth
+# github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
+github.com/olekukonko/tablewriter
+# github.com/pkg/errors v0.8.1
+github.com/pkg/errors
+# github.com/pmezard/go-difflib v1.0.0
+github.com/pmezard/go-difflib/difflib
+# github.com/rollbar/rollbar-go v1.0.1
+github.com/rollbar/rollbar-go
+# github.com/satori/go.uuid v0.0.0-20180103174451-36e9d2ebbde5
+github.com/satori/go.uuid
+# github.com/sirupsen/logrus v1.3.0
+github.com/sirupsen/logrus
+# github.com/stretchr/testify v1.2.2
+github.com/stretchr/testify/assert
+github.com/stretchr/testify/require
+# github.com/urfave/cli v1.20.0
+github.com/urfave/cli
+# github.com/vishvananda/netlink v1.0.0
+github.com/vishvananda/netlink
+github.com/vishvananda/netlink/nl
+# github.com/vishvananda/netns v0.0.0-20180720170159-13995c7128cc
+github.com/vishvananda/netns
+# golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2
+golang.org/x/crypto/ssh/terminal
+# golang.org/x/net v0.0.0-20180911220305-26e67e76b6c3
+golang.org/x/net/context
+golang.org/x/net/trace
+golang.org/x/net/internal/timeseries
+golang.org/x/net/http2
+golang.org/x/net/http2/hpack
+golang.org/x/net/http/httpguts
+golang.org/x/net/idna
+# golang.org/x/sys v0.0.0-20190310054646-10058d7d4faa
+golang.org/x/sys/unix
+golang.org/x/sys/windows
+# golang.org/x/text v0.3.0
+golang.org/x/text/secure/bidirule
+golang.org/x/text/unicode/bidi
+golang.org/x/text/unicode/norm
+golang.org/x/text/transform
+# google.golang.org/genproto v0.0.0-20180918203901-c3f76f3b92d1
+google.golang.org/genproto/googleapis/rpc/status
+# google.golang.org/grpc v1.15.0
+google.golang.org/grpc
+google.golang.org/grpc/codes
+google.golang.org/grpc/credentials
+google.golang.org/grpc/grpclog
+google.golang.org/grpc/health/grpc_health_v1
+google.golang.org/grpc/keepalive
+google.golang.org/grpc/metadata
+google.golang.org/grpc/status
+google.golang.org/grpc/balancer
+google.golang.org/grpc/balancer/roundrobin
+google.golang.org/grpc/connectivity
+google.golang.org/grpc/encoding
+google.golang.org/grpc/encoding/proto
+google.golang.org/grpc/internal
+google.golang.org/grpc/internal/backoff
+google.golang.org/grpc/internal/channelz
+google.golang.org/grpc/internal/envconfig
+google.golang.org/grpc/internal/grpcrand
+google.golang.org/grpc/internal/transport
+google.golang.org/grpc/naming
+google.golang.org/grpc/peer
+google.golang.org/grpc/resolver
+google.golang.org/grpc/resolver/dns
+google.golang.org/grpc/resolver/passthrough
+google.golang.org/grpc/stats
+google.golang.org/grpc/tap
+google.golang.org/grpc/balancer/base
+# gopkg.in/errgo.v1 v1.0.0-20180818175205-2393dcb27450
+gopkg.in/errgo.v1
