@@ -1,3 +1,7 @@
+# [2019-05-03] 1.3.3
+
+* Update go-philae to v4.3.2
+
 # [2019-05-03] 1.3.2
 
 * Update go-philae to v4.3.1
