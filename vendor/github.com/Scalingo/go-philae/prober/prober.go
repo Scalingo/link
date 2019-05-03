@@ -93,7 +93,7 @@ func (p *Prober) Check(ctx context.Context) *Result {
 	probesResults := make([]*ProbeResult, len(p.probes))
 	resultChan := make(chan *ProbeResult, len(p.probes))
 	healthy := true
-	err := &ProberError{}
+	proberErr := &ProberError{}
 
 	ctx, cancel := context.WithTimeout(ctx, p.timeout)
 	defer cancel()
@@ -106,13 +106,14 @@ func (p *Prober) Check(ctx context.Context) *Result {
 		probeResult := <-resultChan
 		if !probeResult.Healthy {
 			healthy = false
-			err.AddError(probeResult.Name, probeResult.Error)
+			proberErr.AddError(probeResult.Name, probeResult.Error)
 		}
 		probesResults[i] = probeResult
 	}
 
-	if err.IsEmpty() {
-		err = nil
+	var err error
+	if !proberErr.IsEmpty() {
+		err = proberErr
 	}
 
 	return &Result{
