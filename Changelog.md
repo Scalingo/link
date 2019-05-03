@@ -1,3 +1,8 @@
+# [2019-05-03] 1.3.2
+
+* Update go-philae to v4.3.1
+* Use go modules instead of dep
+
 # [2019-04-30] 1.3.1
 
 * Update go-philae to v4.3.0
