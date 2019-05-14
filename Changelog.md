@@ -1,3 +1,7 @@
+# [2019-05-14] 1.3.4
+
+* Lease time is now 3 times the KeepaliveInterval
+
 # [2019-05-03] 1.3.3
 
 * Update go-philae to v4.3.2
