@@ -29,14 +29,14 @@ func TestRefresh(t *testing.T) {
 			Name:           "When we cannot get the lease",
 			InitialLeaseID: 0,
 			ExpectedLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().Grant(gomock.Any(), int64(6)).Return(nil, errors.New("NOP"))
+				mock.EXPECT().Grant(gomock.Any(), int64(9)).Return(nil, errors.New("NOP"))
 			},
 			ExpectedError: "NOP",
 		}, {
 			Name:           "When the transaction fails",
 			InitialLeaseID: 0,
 			ExpectedLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().Grant(gomock.Any(), int64(6)).Return(&clientv3.LeaseGrantResponse{
+				mock.EXPECT().Grant(gomock.Any(), int64(9)).Return(&clientv3.LeaseGrantResponse{
 					ID: 12,
 				}, nil)
 			},
@@ -54,7 +54,7 @@ func TestRefresh(t *testing.T) {
 			Name:           "When keepalive fail",
 			InitialLeaseID: 0,
 			ExpectedLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().Grant(gomock.Any(), int64(6)).Return(&clientv3.LeaseGrantResponse{
+				mock.EXPECT().Grant(gomock.Any(), int64(9)).Return(&clientv3.LeaseGrantResponse{
 					ID: 12,
 				}, nil)
 
@@ -73,7 +73,7 @@ func TestRefresh(t *testing.T) {
 			Name:           "When everything succeed",
 			InitialLeaseID: 0,
 			ExpectedLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().Grant(gomock.Any(), int64(6)).Return(&clientv3.LeaseGrantResponse{
+				mock.EXPECT().Grant(gomock.Any(), int64(9)).Return(&clientv3.LeaseGrantResponse{
 					ID: 12,
 				}, nil)
 
