@@ -1,3 +1,8 @@
+# [????-??-??] 1.4.0
+
+* Do not release IP on standby
+* Do not use another lease if it has not expired
+
 # [2019-05-14] 1.3.4
 
 * Lease time is now 3 times the KeepaliveInterval
