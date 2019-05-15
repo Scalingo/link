@@ -18,12 +18,13 @@ import (
 func TestRefresh(t *testing.T) {
 	key := "/test"
 	examples := []struct {
-		Name            string
-		InitialLeaseID  int
-		ExpectedLeaseID int64
-		ExpectedKV      func(*gomock.Controller, *etcdmock.MockKV)
-		ExpectedLease   func(*etcdmock.MockLease)
-		ExpectedError   string
+		Name             string
+		InitialLeaseID   int
+		LastLeaseRefresh time.Time
+		ExpectedLeaseID  int64
+		ExpectedKV       func(*gomock.Controller, *etcdmock.MockKV)
+		ExpectedLease    func(*etcdmock.MockLease)
+		ExpectedError    string
 	}{
 		{
 			Name:           "When we cannot get the lease",
@@ -33,10 +34,48 @@ func TestRefresh(t *testing.T) {
 			},
 			ExpectedError: "NOP",
 		}, {
-			Name:           "When the transaction fails",
+			Name:           "When the transaction fails and no lease were configured",
 			InitialLeaseID: 0,
 			ExpectedLease: func(mock *etcdmock.MockLease) {
 				mock.EXPECT().Grant(gomock.Any(), int64(9)).Return(&clientv3.LeaseGrantResponse{
+					ID: 12,
+				}, nil)
+			},
+			ExpectedKV: func(ctrl *gomock.Controller, mock *etcdmock.MockKV) {
+				txnMock := etcdmock.NewMockTxn(ctrl)
+				txnMock.EXPECT().If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0)).Return(txnMock)
+				txnMock.EXPECT().Then(clientv3.OpPut(key, "locked", clientv3.WithLease(12))).Return(txnMock)
+				txnMock.EXPECT().Commit().Return(nil, errors.New("NOP"))
+
+				mock.EXPECT().Txn(gomock.Any()).Return(txnMock)
+			},
+			ExpectedError:   "NOP",
+			ExpectedLeaseID: 0,
+		}, {
+			Name:             "When the transaction fails and the lease was not expired",
+			InitialLeaseID:   0,
+			LastLeaseRefresh: time.Now(),
+			ExpectedLease: func(mock *etcdmock.MockLease) {
+				mock.EXPECT().Grant(gomock.Any(), int64(6)).Return(&clientv3.LeaseGrantResponse{
+					ID: 12,
+				}, nil)
+			},
+			ExpectedKV: func(ctrl *gomock.Controller, mock *etcdmock.MockKV) {
+				txnMock := etcdmock.NewMockTxn(ctrl)
+				txnMock.EXPECT().If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0)).Return(txnMock)
+				txnMock.EXPECT().Then(clientv3.OpPut(key, "locked", clientv3.WithLease(12))).Return(txnMock)
+				txnMock.EXPECT().Commit().Return(nil, errors.New("NOP"))
+
+				mock.EXPECT().Txn(gomock.Any()).Return(txnMock)
+			},
+			ExpectedError:   "NOP",
+			ExpectedLeaseID: 12,
+		}, {
+			Name:             "When the transaction fails and the lease was expired",
+			InitialLeaseID:   0,
+			LastLeaseRefresh: time.Now().Add(-1 * time.Hour),
+			ExpectedLease: func(mock *etcdmock.MockLease) {
+				mock.EXPECT().Grant(gomock.Any(), int64(6)).Return(&clientv3.LeaseGrantResponse{
 					ID: 12,
 				}, nil)
 			},
@@ -115,7 +154,8 @@ func TestRefresh(t *testing.T) {
 				config: config.Config{
 					KeepAliveInterval: 3 * time.Second,
 				},
-				leaseID: clientv3.LeaseID(example.InitialLeaseID),
+				leaseID:          clientv3.LeaseID(example.InitialLeaseID),
+				lastLeaseRefresh: example.LastLeaseRefresh,
 			}
 
 			err := locker.Refresh(ctx)

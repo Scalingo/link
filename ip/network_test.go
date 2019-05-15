@@ -41,12 +41,10 @@ func TestSetStandBy(t *testing.T) {
 		defer ctrl.Finish()
 
 		networkMock := networkmock.NewMockNetworkInterface(ctrl)
-
 		ip := models.IP{
 			IP: "10.0.0.1/32",
 			ID: "test-1234",
 		}
-		networkMock.EXPECT().RemoveIP(ip.IP).Return(nil)
 
 		manager := &manager{
 			networkInterface: networkMock,
