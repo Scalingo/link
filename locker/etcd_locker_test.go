@@ -56,7 +56,7 @@ func TestRefresh(t *testing.T) {
 			InitialLeaseID:   0,
 			LastLeaseRefresh: time.Now(),
 			ExpectedLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().Grant(gomock.Any(), int64(6)).Return(&clientv3.LeaseGrantResponse{
+				mock.EXPECT().Grant(gomock.Any(), int64(9)).Return(&clientv3.LeaseGrantResponse{
 					ID: 12,
 				}, nil)
 			},
@@ -75,7 +75,7 @@ func TestRefresh(t *testing.T) {
 			InitialLeaseID:   0,
 			LastLeaseRefresh: time.Now().Add(-1 * time.Hour),
 			ExpectedLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().Grant(gomock.Any(), int64(6)).Return(&clientv3.LeaseGrantResponse{
+				mock.EXPECT().Grant(gomock.Any(), int64(9)).Return(&clientv3.LeaseGrantResponse{
 					ID: 12,
 				}, nil)
 			},
