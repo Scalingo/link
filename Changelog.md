@@ -1,4 +1,4 @@
-# [????-??-??] 1.4.0
+# [2019-05-15] 1.4.0
 
 * Do not release IP on standby
 * Do not use another lease if it has not expired
