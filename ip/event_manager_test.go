@@ -8,6 +8,8 @@ import (
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/healthcheck/healthcheckmock"
 	"github.com/Scalingo/link/locker/lockermock"
+	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/network/networkmock"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -211,4 +213,95 @@ func TestWaitTwiceLeaseTimeOrReallocation(t *testing.T) {
 		m.waitTwiceLeaseTimeOrReallocation(context.Background())
 		assert.WithinDuration(t, start, time.Now(), 600*time.Millisecond)
 	})
+}
+
+func TestSingleEventRun(t *testing.T) {
+	examples := []struct {
+		Name            string
+		currentState    string
+		shouldStop      bool
+		shouldRefreshIP bool
+		shouldCancel    bool
+		shouldRemoveIP  bool
+		shouldContinue  bool
+	}{
+		{
+			Name:            "When we stop the manager",
+			currentState:    STANDBY,
+			shouldStop:      true,
+			shouldRefreshIP: false,
+			shouldCancel:    false,
+			shouldRemoveIP:  true,
+			shouldContinue:  false,
+		}, {
+			Name:            "When we cancel the stop order",
+			currentState:    STANDBY,
+			shouldStop:      true,
+			shouldRefreshIP: true,
+			shouldCancel:    true,
+			shouldRemoveIP:  false,
+			shouldContinue:  true,
+		}, {
+			Name:            "When we are not stopping the app",
+			currentState:    STANDBY,
+			shouldStop:      false,
+			shouldRefreshIP: true,
+			shouldContinue:  true,
+		},
+	}
+
+	for _, example := range examples {
+		t.Run(example.Name, func(t *testing.T) {
+
+			ctrl := gomock.NewController(t)
+			config := config.Config{
+				KeepAliveInterval: 100 * time.Millisecond,
+			}
+
+			networkInterface := networkmock.NewMockNetworkInterface(ctrl)
+			locker := lockermock.NewMockLocker(ctrl)
+
+			manager := manager{
+				networkInterface: networkInterface,
+				config:           config,
+				ip: models.IP{
+					IP: "127.10.10.10",
+				},
+				stateMachine: NewStateMachine(context.Background(), NewStateMachineOpts{}),
+				locker:       locker,
+				eventChan:    make(chan string, 100),
+			}
+
+			manager.stateMachine.SetState(example.currentState)
+
+			locker.EXPECT().IsMaster(gomock.Any()).Return(true, nil).AnyTimes()
+
+			stopCalled := false
+			if example.shouldStop {
+				manager.stopper = func(ctx context.Context) error {
+					stopCalled = true
+					return nil
+				}
+			}
+
+			if example.shouldRemoveIP {
+				networkInterface.EXPECT().RemoveIP("127.10.10.10")
+			}
+
+			if example.shouldRefreshIP {
+				locker.EXPECT().Refresh(gomock.Any()).Return(nil)
+			}
+
+			if example.shouldCancel {
+				go func() {
+					time.Sleep(50 * time.Millisecond)
+					manager.CancelStopping(context.Background())
+				}()
+			}
+			res := manager.singleEventRun(context.Background())
+
+			assert.Equal(t, example.shouldContinue, res)
+			assert.Equal(t, example.shouldRemoveIP, stopCalled)
+		})
+	}
 }
