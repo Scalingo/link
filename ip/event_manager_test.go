@@ -69,6 +69,8 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 			manager.eventChan = eventChan
 			go func() {
 				manager.singleEtcdRun(ctx)
+				// Wait for the eventChan to be processed
+				time.Sleep(100 * time.Millisecond)
 				doneChan <- true
 			}()
 			timer := time.NewTimer(500 * time.Millisecond)
