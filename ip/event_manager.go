@@ -63,26 +63,40 @@ func (m *manager) closeEventChan() {
 }
 
 func (m *manager) eventManager(ctx context.Context) {
-	log := logger.Get(ctx).WithField("process", "event_manager")
 	for {
-		if m.isStopping() {
-			// Sleeping twice the lease time will ensure that we've lost our lease and another node was elected MASTER.
-			// So after this sleep, we can safely remove our IP.
-
-			log.Infof("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
-			m.waitTwiceLeaseTimeOrReallocation(ctx)
-			if m.stopOrder(ctx) {
-				return
-			}
-			log.Info("Stop order has been cancelled")
-		}
-
-		if m.stateMachine.Current() != FAILING {
-			m.singleEtcdRun(ctx)
+		shouldContinue := m.singleEventRun(ctx)
+		if !shouldContinue {
+			return
 		}
 
 		time.Sleep(m.config.KeepAliveInterval)
 	}
+}
+
+func (m *manager) singleEventRun(ctx context.Context) bool {
+	log := logger.Get(ctx).WithField("process", "event_manager")
+	if m.isStopping() {
+		// Sleeping twice the lease time will ensure that we've lost our lease and another node was elected MASTER.
+		// So after this sleep, we can safely remove our IP.
+
+		log.Infof("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
+		m.waitTwiceLeaseTimeOrReallocation(ctx)
+		if m.stopOrder(ctx) {
+			log.Infof("Removing IP %s", m.ip.IP)
+			err := m.networkInterface.RemoveIP(m.ip.IP)
+			if err != nil {
+				log.WithError(err).Error("fail to remove IP")
+			}
+			return false
+		}
+		log.Info("Stop order has been cancelled")
+	}
+
+	if m.stateMachine.Current() != FAILING {
+		m.singleEtcdRun(ctx)
+	}
+
+	return true
 }
 
 func (m *manager) waitTwiceLeaseTimeOrReallocation(ctx context.Context) {

@@ -1,3 +1,7 @@
+# [????-??-??] 1.4.1
+
+* Fix regression: Remove IP on Stop
+
 # [2019-05-15] 1.4.0
 
 * Do not release IP on standby
