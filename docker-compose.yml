@@ -66,6 +66,7 @@ services:
       - ./:/go/src/github.com/Scalingo/link
     environment:
       GO_ENV: test
+    stop_signal: SIGKILL
     command: "tail -F /dev/null"
 
   etcd:
