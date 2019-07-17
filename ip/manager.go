@@ -38,6 +38,7 @@ type manager struct {
 	config           config.Config
 	eventChan        chan string
 	failingCount     int
+	stopped          bool
 }
 
 func NewManager(ctx context.Context, config config.Config, ip models.IP, client *clientv3.Client) (*manager, error) {

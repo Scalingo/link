@@ -141,6 +141,7 @@ func TestManager_HealthChecker(t *testing.T) {
 				config: config.Config{
 					HealthcheckInterval:     10 * time.Millisecond,
 					FailCountBeforeFailover: 3,
+					KeepAliveInterval:       10 * time.Millisecond,
 				},
 			}
 
@@ -173,6 +174,7 @@ func TestManager_HealthChecker(t *testing.T) {
 
 			}
 			manager.Stop(ctx, func(context.Context) error { return nil })
+			manager.stopOrder(ctx)
 
 			for i := 0; i < len(example.ExpectedEvents); i++ {
 				assert.Equal(t, example.ExpectedEvents[i], events[i])

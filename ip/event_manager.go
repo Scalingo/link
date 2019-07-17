@@ -46,6 +46,12 @@ func (m *manager) isStopping() bool {
 	return m.stopper != nil
 }
 
+func (m *manager) isStopped() bool {
+	m.stopMutex.RLock()
+	defer m.stopMutex.RUnlock()
+	return m.stopped
+}
+
 func (m *manager) sendEvent(status string) {
 	m.messageMutex.Lock()
 	defer m.messageMutex.Unlock()
@@ -131,7 +137,8 @@ func (m *manager) waitTwiceLeaseTimeOrReallocation(ctx context.Context) {
 // otherwise. It can happen if the current manager stopping has been cancelled.
 func (m *manager) stopOrder(ctx context.Context) bool {
 	m.stopMutex.RLock()
-	defer m.stopMutex.RUnlock()
+	stopper := m.stopper
+	m.stopMutex.RUnlock()
 
 	log := logger.Get(ctx)
 
@@ -142,11 +149,15 @@ func (m *manager) stopOrder(ctx context.Context) bool {
 		if m.stateMachine.Current() != FAILING {
 			m.sendEvent(DemotedEvent)
 		}
-		err := m.stopper(ctx)
+		err := stopper(ctx)
 		if err != nil {
 			log.WithError(err).Error("fail to execute the stopper function")
 		}
 		m.closeEventChan()
+
+		m.stopMutex.Lock()
+		m.stopped = true
+		m.stopMutex.Unlock()
 		return true
 	}
 	return false
@@ -175,28 +186,34 @@ func (m *manager) singleEtcdRun(ctx context.Context) {
 }
 
 func (m *manager) healthChecker(ctx context.Context) {
-	log := logger.Get(ctx)
 	for {
 		healthy := m.checker.IsHealthy(ctx)
 
 		// The eventManager will close the chan when we receive the Stop order and we do not want to send things on a close channel.
 		// Since the checker can take up to 5s to run his checks, this check must be done between the health check and sending the results.
-		if m.isStopping() {
+		if m.isStopped() {
 			return
 		}
 
-		if healthy {
-			m.failingCount = 0
-			m.sendEvent(HealthCheckSuccessEvent)
-		} else {
-			m.failingCount++
-			log.WithField("failing_count", m.failingCount).Error("Node failing")
-			if m.failingCount >= m.config.FailCountBeforeFailover {
-				log.Error("Too many failure, setting status to failing")
-				m.sendEvent(HealthCheckFailEvent)
-			}
+		if !m.isStopping() {
+			m.sendHealthcheckResults(ctx, healthy)
 		}
 
 		time.Sleep(m.config.HealthcheckInterval)
+	}
+}
+
+func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool) {
+	log := logger.Get(ctx)
+	if healthy {
+		m.failingCount = 0
+		m.sendEvent(HealthCheckSuccessEvent)
+	} else {
+		m.failingCount++
+		log.WithField("failing_count", m.failingCount).Error("Node failing")
+		if m.failingCount >= m.config.FailCountBeforeFailover {
+			log.Error("Too many failure, setting status to failing")
+			m.sendEvent(HealthCheckFailEvent)
+		}
 	}
 }
