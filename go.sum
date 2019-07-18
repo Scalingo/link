@@ -14,6 +14,8 @@ github.com/Scalingo/go-utils v5.5.9+incompatible h1:lA6ltog6RZ/OJNvhQVC80Ao3cBsT
 github.com/Scalingo/go-utils v5.5.9+incompatible/go.mod h1:YcispJL9BCnNJwWxspalrRQ6zHAYPyNSnDLlfdfhxt8=
 github.com/Scalingo/logrus-rollbar v1.3.0 h1:EqyVUEOgBZfoDdgPVoTdG3rQzmwL/3a8PcKw/2hTJ80=
 github.com/Scalingo/logrus-rollbar v1.3.0/go.mod h1:Mo38Fue00mdY/UM5gOMTXAWfiOIJK29/sxL3zxb/68I=
+github.com/Scalingo/logrus-rollbar v1.3.1 h1:sjD3RQXF5voEZIz9YtlL2aFIXfykrVXL5tGHCG5coIc=
+github.com/Scalingo/logrus-rollbar v1.3.1/go.mod h1:Mo38Fue00mdY/UM5gOMTXAWfiOIJK29/sxL3zxb/68I=
 github.com/Soulou/errgo-rollbar v0.0.0-20181001084048-9d551cd3bae9 h1:bAJMdsbKHRclNzmTEL2gHAWl9nUhqLKHKFdrQnO3YtQ=
 github.com/Soulou/errgo-rollbar v0.0.0-20181001084048-9d551cd3bae9/go.mod h1:7+LUv1ler6IXAzrVgw3RPKL9CQ43oaLiEp2zv9Gr45E=
 github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973 h1:xJ4a3vCFaGF/jqvzLMYoU8P317H5OQ+Via4RmuPwCS0=
@@ -25,7 +27,7 @@ github.com/containerd/continuity v0.0.0-20181203112020-004b46473808 h1:4BX8f882b
 github.com/containerd/continuity v0.0.0-20181203112020-004b46473808/go.mod h1:GL3xCUCBDV3CZiTSEKksMWbLE66hEyuu9qyDOOqM47Y=
 github.com/coreos/bbolt v1.3.2 h1:wZwiHHUieZCquLkDL0B8UhzreNWsPHooDAG3q34zk0s=
 github.com/coreos/bbolt v1.3.2/go.mod h1:iRUV2dpdMOn7Bo10OQBFzIJO9kkE559Wcmn+qkEiiKk=
-github.com/coreos/etcd v3.3.13+incompatible h1:8F3hqu9fGYLBifCmRCJsicFqDx/D68Rt3q1JMazcgBQ=
+github.com/coreos/etcd v3.3.13+incompatible h1:gLs8IvZUgVJwC3/b0ILSqPZoflsywDhG78behZnjk/s=
 github.com/coreos/etcd v3.3.13+incompatible/go.mod h1:uF7uidLiAD3TWHmW31ZFd/JWoc32PjwdhPthX9715RE=
 github.com/coreos/go-semver v0.3.0 h1:wkHLiw0WNATZnSG7epLsujiMCgPAc9xhjJ4tgnAxmfM=
 github.com/coreos/go-semver v0.3.0/go.mod h1:nnelYz7RCh+5ahJtPPxZlU+153eP4D4r3EedlOD2RNk=

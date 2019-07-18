@@ -1,3 +1,7 @@
+# [2019-07-18] 1.4.3
+
+* Update: logrus-rollbar to v1.3.1
+
 # [2019-07-18] 1.4.2
 
 * Fix: Health checker were stopped too early

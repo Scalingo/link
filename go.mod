@@ -6,7 +6,7 @@ require (
 	github.com/Scalingo/go-handlers v1.2.4
 	github.com/Scalingo/go-philae v0.0.0-20190503160133-6607dff74013
 	github.com/Scalingo/go-utils v5.5.9+incompatible
-	github.com/Scalingo/logrus-rollbar v1.3.0 // indirect
+	github.com/Scalingo/logrus-rollbar v1.3.1 // indirect
 	github.com/Soulou/errgo-rollbar v0.0.0-20181001084048-9d551cd3bae9 // indirect
 	github.com/codegangsta/negroni v1.0.0 // indirect
 	github.com/coreos/etcd v3.3.13+incompatible
