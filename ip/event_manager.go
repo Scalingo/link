@@ -136,28 +136,25 @@ func (m *manager) waitTwiceLeaseTimeOrReallocation(ctx context.Context) {
 // stopOrder actually handles the stopping. It returns true if it has been stopped, false
 // otherwise. It can happen if the current manager stopping has been cancelled.
 func (m *manager) stopOrder(ctx context.Context) bool {
-	m.stopMutex.RLock()
-	stopper := m.stopper
-	m.stopMutex.RUnlock()
+	m.stopMutex.Lock()
+	defer m.stopMutex.Unlock()
 
 	log := logger.Get(ctx)
 
 	// The stopping might have been cancelled during the two lease time sleep. We execute the
 	// stopper function only if it is still in stopping state
-	if m.isStopping() {
+	if m.stopper != nil {
 		log.Info("Stopping!")
 		if m.stateMachine.Current() != FAILING {
 			m.sendEvent(DemotedEvent)
 		}
-		err := stopper(ctx)
+		err := m.stopper(ctx)
 		if err != nil {
 			log.WithError(err).Error("fail to execute the stopper function")
 		}
 		m.closeEventChan()
 
-		m.stopMutex.Lock()
 		m.stopped = true
-		m.stopMutex.Unlock()
 		return true
 	}
 	return false
