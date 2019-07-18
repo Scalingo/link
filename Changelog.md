@@ -1,3 +1,7 @@
+# [2019-07-18] 1.4.2
+
+* Fix: Health checker were stopped too early
+
 # [2019-05-17] 1.4.1
 
 * Fix regression: Remove IP on Stop
