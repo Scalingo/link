@@ -20,11 +20,10 @@ func (m *manager) setActivated(ctx context.Context, _ *fsm.Event) {
 func (m *manager) setStandBy(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: STANDBY")
-	// Here we don't want to do anything.
-	// - if we came from a success state, we should keep the IP but not advertise it
-	//   we keep the IP to prevent broken connections. We still want to respond to this
-	//   IP even if another host is master.
-	// - If we came from failing state connections were already broken, no need to add the IP back.
+	err := m.networkInterface.RemoveIP(m.ip.IP)
+	if err != nil {
+		log.WithError(err).Error("Fail to de-activate IP")
+	}
 }
 
 func (m *manager) setFailing(ctx context.Context, _ *fsm.Event) {
