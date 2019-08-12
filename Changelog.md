@@ -1,3 +1,8 @@
+# [2019-08-12] 1.5.0
+
+* Release IP on standby
+* Change LeaseDuration to 5 * KeepAliveInterval
+
 # [2019-07-18] 1.4.3
 
 * Update: logrus-rollbar to v1.3.1
