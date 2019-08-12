@@ -21,7 +21,7 @@ type Config struct {
 }
 
 func (c Config) LeaseTime() time.Duration {
-	return 3 * c.KeepAliveInterval
+	return 5 * c.KeepAliveInterval
 }
 
 func Build() (Config, error) {
