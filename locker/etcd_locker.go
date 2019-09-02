@@ -134,5 +134,8 @@ func (l *etcdLocker) storeNewLeaseID(ctx context.Context, ip models.IP, leaseID 
 	log.Info("Storing new lease ID")
 	ip.LeaseID = leaseID
 
-	l.storage.UpdateIP(ctx, ip)
+	err := l.storage.UpdateIP(ctx, ip)
+	if err != nil {
+		log.WithError(err).Error("fail to update IP leaseID")
+	}
 }
