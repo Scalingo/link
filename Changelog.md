@@ -1,5 +1,7 @@
 # To be released
 
+* Fix: Logging is too verbose
+
 # [2019-08-12] 1.5.1
 
 * Do not loose IP on restart

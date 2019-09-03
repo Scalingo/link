@@ -58,7 +58,6 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	transactionCtx, cancel := context.WithTimeout(ctx, l.config.KeepAliveInterval)
 	defer cancel()
 
-	log.Infof("Using lease: %v", l.leaseID)
 	_, err := l.kvEtcd.Txn(transactionCtx).
 		// If the key does not exists (createRevision == 0)
 		If(clientv3.Compare(clientv3.CreateRevision(l.key), "=", 0)).
