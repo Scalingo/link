@@ -10,6 +10,7 @@ const (
 	ACTIVATED = "ACTIVATED"
 	STANDBY   = "STANDBY"
 	FAILING   = "FAILING"
+	BOOTING   = "BOOTING"
 )
 
 const (
@@ -49,23 +50,28 @@ func NewStateMachine(ctx context.Context, opts NewStateMachineOpts) *fsm.FSM {
 	}
 
 	return fsm.NewFSM(
-		FAILING,
+		BOOTING,
 		fsm.Events{
 			{Name: FaultEvent, Src: []string{ACTIVATED}, Dst: ACTIVATED},
 			{Name: FaultEvent, Src: []string{STANDBY}, Dst: ACTIVATED},
 			{Name: FaultEvent, Src: []string{FAILING}, Dst: FAILING},
+			{Name: FaultEvent, Src: []string{BOOTING}, Dst: ACTIVATED},
 			{Name: ElectedEvent, Src: []string{STANDBY}, Dst: ACTIVATED},
 			{Name: ElectedEvent, Src: []string{ACTIVATED}, Dst: ACTIVATED},
 			{Name: ElectedEvent, Src: []string{FAILING}, Dst: FAILING},
+			{Name: ElectedEvent, Src: []string{BOOTING}, Dst: ACTIVATED},
 			{Name: DemotedEvent, Src: []string{ACTIVATED}, Dst: STANDBY},
 			{Name: DemotedEvent, Src: []string{STANDBY}, Dst: STANDBY},
 			{Name: DemotedEvent, Src: []string{FAILING}, Dst: FAILING},
+			{Name: DemotedEvent, Src: []string{BOOTING}, Dst: STANDBY},
 			{Name: HealthCheckFailEvent, Src: []string{ACTIVATED}, Dst: FAILING},
 			{Name: HealthCheckFailEvent, Src: []string{STANDBY}, Dst: FAILING},
 			{Name: HealthCheckFailEvent, Src: []string{FAILING}, Dst: FAILING},
+			{Name: HealthCheckFailEvent, Src: []string{BOOTING}, Dst: FAILING},
 			{Name: HealthCheckSuccessEvent, Src: []string{FAILING}, Dst: STANDBY},
 			{Name: HealthCheckSuccessEvent, Src: []string{STANDBY}, Dst: STANDBY},
 			{Name: HealthCheckSuccessEvent, Src: []string{ACTIVATED}, Dst: ACTIVATED},
+			{Name: HealthCheckSuccessEvent, Src: []string{BOOTING}, Dst: BOOTING},
 		},
 		callbacks,
 	)

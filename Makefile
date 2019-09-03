@@ -10,3 +10,6 @@ fmt:
 
 generate:
 	gomock_generator
+
+graph:
+	go run visualize/main.go | dot -Tpng -o state_machine.png

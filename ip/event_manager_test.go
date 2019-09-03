@@ -145,7 +145,7 @@ func TestManager_HealthChecker(t *testing.T) {
 				},
 			}
 
-			eventChan := make(chan string)
+			eventChan := make(chan string, 1)
 			doneChan := make(chan bool)
 			manager.eventChan = eventChan
 			go func() {
@@ -171,9 +171,10 @@ func TestManager_HealthChecker(t *testing.T) {
 				if i >= len(example.ExpectedEvents) {
 					cont = false
 				}
-
 			}
+
 			manager.Stop(ctx, func(context.Context) error { return nil })
+
 			manager.stopOrder(ctx)
 
 			for i := 0; i < len(example.ExpectedEvents); i++ {
