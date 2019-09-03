@@ -1,5 +1,7 @@
 # To be released
 
+# [2019-08-12] 1.5.2
+
 * Fix: Logging is too verbose
 
 # [2019-08-12] 1.5.1
