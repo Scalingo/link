@@ -1,5 +1,7 @@
 # To be released
 
+# [2019-08-12] 1.5.1
+
 * Do not loose IP on restart
 
 # [2019-08-12] 1.5.0
