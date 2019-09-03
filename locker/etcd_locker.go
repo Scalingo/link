@@ -11,6 +11,7 @@ import (
 	"github.com/Scalingo/link/models"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 type etcdLocker struct {
@@ -20,16 +21,20 @@ type etcdLocker struct {
 	key              string
 	config           config.Config
 	lastLeaseRefresh time.Time
+	ip               models.IP
+	storage          models.Storage
 }
 
-func NewEtcdLocker(config config.Config, etcd *clientv3.Client, ip string) *etcdLocker {
-	key := fmt.Sprintf("%s/default/%s", models.ETCD_LINK_DIRECTORY, strings.Replace(ip, "/", "_", -1))
+func NewEtcdLocker(config config.Config, etcd *clientv3.Client, storage models.Storage, ip models.IP) *etcdLocker {
+	key := fmt.Sprintf("%s/default/%s", models.ETCD_LINK_DIRECTORY, strings.Replace(ip.IP, "/", "_", -1))
 	return &etcdLocker{
 		kvEtcd:    etcd,
 		leaseEtcd: etcd,
 		key:       key,
-		leaseID:   0,
+		leaseID:   clientv3.LeaseID(ip.LeaseID),
 		config:    config,
+		ip:        ip,
+		storage:   storage,
 	}
 }
 
@@ -43,6 +48,8 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 		}
 
 		l.leaseID = grant.ID
+
+		go l.storeNewLeaseID(ctx, l.ip, int64(l.leaseID))
 	}
 
 	// The goal of this transaction is to create the key with our leaseID only if this key does not exist
@@ -51,6 +58,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	transactionCtx, cancel := context.WithTimeout(ctx, l.config.KeepAliveInterval)
 	defer cancel()
 
+	log.Infof("Using lease: %v", l.leaseID)
 	_, err := l.kvEtcd.Txn(transactionCtx).
 		// If the key does not exists (createRevision == 0)
 		If(clientv3.Compare(clientv3.CreateRevision(l.key), "=", 0)).
@@ -117,4 +125,17 @@ func (l *etcdLocker) Stop(ctx context.Context) error {
 	// called, we will work with a new lease.
 	l.leaseID = 0
 	return nil
+}
+
+func (l *etcdLocker) storeNewLeaseID(ctx context.Context, ip models.IP, leaseID int64) {
+	log := logger.Get(ctx).WithFields(logrus.Fields{
+		"LeaseID": leaseID,
+	})
+	log.Info("Storing new lease ID")
+	ip.LeaseID = leaseID
+
+	err := l.storage.UpdateIP(ctx, ip)
+	if err != nil {
+		log.WithError(err).Error("fail to update IP leaseID")
+	}
 }

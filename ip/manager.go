@@ -41,7 +41,7 @@ type manager struct {
 	stopped          bool
 }
 
-func NewManager(ctx context.Context, config config.Config, ip models.IP, client *clientv3.Client) (*manager, error) {
+func NewManager(ctx context.Context, config config.Config, ip models.IP, client *clientv3.Client, storage models.Storage) (*manager, error) {
 	i, err := network.NewNetworkInterfaceFromName(config.Interface)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to instantiate network interface")
@@ -55,7 +55,7 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 	m := &manager{
 		networkInterface: i,
 		ip:               ip,
-		locker:           locker.NewEtcdLocker(config, client, ip.IP),
+		locker:           locker.NewEtcdLocker(config, client, storage, ip),
 		checker:          healthcheck.FromChecks(config, ip.Checks),
 		config:           config,
 		eventChan:        make(chan string),

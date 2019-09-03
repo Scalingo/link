@@ -1,3 +1,7 @@
+# To be released
+
+* Do not loose IP on restart
+
 # [2019-08-12] 1.5.0
 
 * Release IP on standby

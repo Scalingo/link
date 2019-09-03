@@ -72,3 +72,15 @@ func (m *MockStorage) RemoveIP(arg0 context.Context, arg1 string) error {
 func (mr *MockStorageMockRecorder) RemoveIP(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveIP", reflect.TypeOf((*MockStorage)(nil).RemoveIP), arg0, arg1)
 }
+
+// UpdateIP mocks base method
+func (m *MockStorage) UpdateIP(arg0 context.Context, arg1 models.IP) error {
+	ret := m.ctrl.Call(m, "UpdateIP", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateIP indicates an expected call of UpdateIP
+func (mr *MockStorageMockRecorder) UpdateIP(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIP", reflect.TypeOf((*MockStorage)(nil).UpdateIP), arg0, arg1)
+}

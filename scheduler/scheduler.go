@@ -85,7 +85,7 @@ func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) (models.IP, e
 	}
 	log.Info("Initialize a new IP manager")
 
-	manager, err = ip.NewManager(ctx, s.config, newIP, s.etcd)
+	manager, err = ip.NewManager(ctx, s.config, newIP, s.etcd, s.storage)
 	if err != nil {
 		if ipAdded {
 			err := s.storage.RemoveIP(ctx, newIP.ID)

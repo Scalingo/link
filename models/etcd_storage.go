@@ -91,16 +91,41 @@ func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
 	if err != nil {
 		return ip, errors.Wrap(err, "fail to marshal IP")
 	}
-	key := fmt.Sprintf("%s/hosts/%s/%s", ETCD_LINK_DIRECTORY, e.hostname, ip.ID)
 
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	_, err = client.Put(etcdCtx, key, string(value))
+	_, err = client.Put(etcdCtx, e.keyFor(ip), string(value))
 	if err != nil {
 		return ip, errors.Wrapf(err, "fail to save IP")
 	}
 
 	return ip, nil
+}
+
+func (e etcdStorage) UpdateIP(ctx context.Context, ip IP) error {
+	if ip.ID == "" {
+		return fmt.Errorf("invalid IP ID: %s", ip.IP)
+	}
+
+	client, closer, err := e.NewEtcdClient()
+	if err != nil {
+		return errors.Wrap(err, "fail to open client")
+	}
+	defer closer.Close()
+	ip.Status = ""
+
+	value, err := json.Marshal(ip)
+	if err != nil {
+		return errors.Wrap(err, "fail to marshal IP")
+	}
+
+	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	_, err = client.Put(etcdCtx, e.keyFor(ip), string(value))
+	if err != nil {
+		return errors.Wrap(err, "fail to save IP")
+	}
+	return nil
 }
 
 func (e etcdStorage) RemoveIP(ctx context.Context, id string) error {
@@ -127,4 +152,8 @@ func (e etcdStorage) NewEtcdClient() (clientv3.KV, io.Closer, error) {
 	}
 
 	return clientv3.KV(c), c, nil
+}
+
+func (e etcdStorage) keyFor(ip IP) string {
+	return fmt.Sprintf("%s/hosts/%s/%s", ETCD_LINK_DIRECTORY, e.hostname, ip.ID)
 }

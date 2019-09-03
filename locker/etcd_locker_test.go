@@ -7,6 +7,8 @@ import (
 
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/etcdmock"
+	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/models/modelsmock"
 	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/golang/mock/gomock"
@@ -24,6 +26,7 @@ func TestRefresh(t *testing.T) {
 		ExpectedLeaseID  int64
 		ExpectedKV       func(*gomock.Controller, *etcdmock.MockKV)
 		ExpectedLease    func(*etcdmock.MockLease)
+		ExpectedStorage  func(*modelsmock.MockStorage)
 		ExpectedError    string
 	}{
 		{
@@ -40,6 +43,11 @@ func TestRefresh(t *testing.T) {
 				mock.EXPECT().Grant(gomock.Any(), int64(15)).Return(&clientv3.LeaseGrantResponse{
 					ID: 12,
 				}, nil)
+			},
+			ExpectedStorage: func(mock *modelsmock.MockStorage) {
+				mock.EXPECT().UpdateIP(gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, ip models.IP) {
+					assert.Equal(t, ip.LeaseID, int64(12))
+				})
 			},
 			ExpectedKV: func(ctrl *gomock.Controller, mock *etcdmock.MockKV) {
 				txnMock := etcdmock.NewMockTxn(ctrl)
@@ -60,6 +68,11 @@ func TestRefresh(t *testing.T) {
 					ID: 12,
 				}, nil)
 			},
+			ExpectedStorage: func(mock *modelsmock.MockStorage) {
+				mock.EXPECT().UpdateIP(gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, ip models.IP) {
+					assert.Equal(t, ip.LeaseID, int64(12))
+				})
+			},
 			ExpectedKV: func(ctrl *gomock.Controller, mock *etcdmock.MockKV) {
 				txnMock := etcdmock.NewMockTxn(ctrl)
 				txnMock.EXPECT().If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0)).Return(txnMock)
@@ -78,6 +91,11 @@ func TestRefresh(t *testing.T) {
 				mock.EXPECT().Grant(gomock.Any(), int64(15)).Return(&clientv3.LeaseGrantResponse{
 					ID: 12,
 				}, nil)
+			},
+			ExpectedStorage: func(mock *modelsmock.MockStorage) {
+				mock.EXPECT().UpdateIP(gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, ip models.IP) {
+					assert.Equal(t, ip.LeaseID, int64(12))
+				})
 			},
 			ExpectedKV: func(ctrl *gomock.Controller, mock *etcdmock.MockKV) {
 				txnMock := etcdmock.NewMockTxn(ctrl)
@@ -99,6 +117,11 @@ func TestRefresh(t *testing.T) {
 
 				mock.EXPECT().KeepAliveOnce(gomock.Any(), clientv3.LeaseID(12)).Return(nil, errors.New("NOP"))
 			},
+			ExpectedStorage: func(mock *modelsmock.MockStorage) {
+				mock.EXPECT().UpdateIP(gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, ip models.IP) {
+					assert.Equal(t, ip.LeaseID, int64(12))
+				})
+			},
 			ExpectedKV: func(ctrl *gomock.Controller, mock *etcdmock.MockKV) {
 				txnMock := etcdmock.NewMockTxn(ctrl)
 				txnMock.EXPECT().If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0)).Return(txnMock)
@@ -117,6 +140,11 @@ func TestRefresh(t *testing.T) {
 				}, nil)
 
 				mock.EXPECT().KeepAliveOnce(gomock.Any(), clientv3.LeaseID(12)).Return(nil, nil)
+			},
+			ExpectedStorage: func(mock *modelsmock.MockStorage) {
+				mock.EXPECT().UpdateIP(gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, ip models.IP) {
+					assert.Equal(t, ip.LeaseID, int64(12))
+				})
 			},
 			ExpectedKV: func(ctrl *gomock.Controller, mock *etcdmock.MockKV) {
 				txnMock := etcdmock.NewMockTxn(ctrl)
@@ -138,6 +166,7 @@ func TestRefresh(t *testing.T) {
 
 			kvMock := etcdmock.NewMockKV(ctrl)
 			leaseMock := etcdmock.NewMockLease(ctrl)
+			storageMock := modelsmock.NewMockStorage(ctrl)
 
 			if example.ExpectedLease != nil {
 				example.ExpectedLease(leaseMock)
@@ -145,6 +174,10 @@ func TestRefresh(t *testing.T) {
 
 			if example.ExpectedKV != nil {
 				example.ExpectedKV(ctrl, kvMock)
+			}
+
+			if example.ExpectedStorage != nil {
+				example.ExpectedStorage(storageMock)
 			}
 
 			locker := &etcdLocker{
@@ -156,6 +189,7 @@ func TestRefresh(t *testing.T) {
 				},
 				leaseID:          clientv3.LeaseID(example.InitialLeaseID),
 				lastLeaseRefresh: example.LastLeaseRefresh,
+				storage:          storageMock,
 			}
 
 			err := locker.Refresh(ctx)
@@ -167,6 +201,8 @@ func TestRefresh(t *testing.T) {
 			}
 
 			assert.Equal(t, locker.leaseID, clientv3.LeaseID(example.ExpectedLeaseID))
+			// Let the coroutine time to finish
+			time.Sleep(200 * time.Millisecond)
 		})
 	}
 }
