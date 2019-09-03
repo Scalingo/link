@@ -1,0 +1,21 @@
+digraph fsm {
+    "BOOTING" -> "ACTIVATED" [ label = "elected,fault" ];
+    "BOOTING" -> "FAILING" [ label = "health_check_fail" ];
+    "BOOTING" -> "BOOTING" [ label = "health_check_success" ];
+    "BOOTING" -> "STANDBY" [ label = "demoted" ];
+    "ACTIVATED" -> "ACTIVATED" [ label = "health_check_success,elected,fault" ];
+    "FAILING" -> "FAILING" [ label = "health_check_fail,elected,fault,demoted" ];
+    "STANDBY" -> "STANDBY" [ label = "health_check_success,demoted" ];
+    "STANDBY" -> "ACTIVATED" [ label = "elected" ];
+    "ACTIVATED" -> "STANDBY" [ label = "demoted" ];
+    "FAILING" -> "STANDBY" [ label = "health_check_success" ];
+    "ACTIVATED" -> "FAILING" [ label = "health_check_fail" ];
+    "STANDBY" -> "FAILING" [ label = "health_check_fail" ];
+    "STANDBY" -> "ACTIVATED" [ label = "fault" ];
+
+    "BOOTING";
+    "ACTIVATED";
+    "FAILING";
+    "STANDBY";
+}
+
