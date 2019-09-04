@@ -1,6 +1,8 @@
 package network
 
 import (
+	"net"
+
 	"github.com/pkg/errors"
 	"github.com/vishvananda/netlink"
 )
@@ -11,9 +13,9 @@ type NetworkInterface interface {
 }
 
 type networkInterface struct {
-	cardName string
-	link     netlink.Link
-	arp      *arp
+	card *net.Interface
+	link netlink.Link
+	arp  *arp
 }
 
 func NewNetworkInterfaceFromName(name string) (networkInterface, error) {
@@ -22,10 +24,15 @@ func NewNetworkInterfaceFromName(name string) (networkInterface, error) {
 		return networkInterface{}, errors.Wrapf(err, "fail to open interface %s", name)
 	}
 
+	card, err := net.InterfaceByName(name)
+	if err != nil {
+		return networkInterface{}, errors.Wrapf(err, "fail to find interface %s", name)
+	}
+
 	return networkInterface{
-		cardName: name,
-		link:     link,
-		arp:      GetArp(),
+		card: card,
+		link: link,
+		arp:  GetArp(),
 	}, nil
 }
 
@@ -65,7 +72,7 @@ func (i networkInterface) EnsureIP(ip string) error {
 	// Send the gratuitous ARP request (it wont hurt anyone)
 	err = i.arp.GratuitousArpRequest(GratuitousArpRequest{
 		IP:        addr.IP,
-		Interface: i.cardName,
+		Interface: i.card,
 	})
 	if err != nil {
 		return errors.Wrapf(err, "fail to announce our IP")

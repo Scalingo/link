@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/pprof"
+	"os"
 
 	"github.com/Scalingo/go-handlers"
 	"github.com/Scalingo/go-utils/etcd"
@@ -13,6 +15,7 @@ import (
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/scheduler"
 	"github.com/Scalingo/link/web"
+	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 )
 
@@ -74,8 +77,29 @@ func main() {
 	r.HandleFunc("/ips/{id}/lock", ipController.TryGetLock).Methods("POST")
 	r.HandleFunc("/version", versionController.Version).Methods("GET")
 
+	globalRouter := mux.NewRouter()
+
+	if os.Getenv("PPROF_ENABLED") == "true" {
+		pprofPrefix := "/debug/pprof"
+		log.Info("Enabling pprof endpoints under " + pprofPrefix)
+
+		pprofRouter := mux.NewRouter()
+		pprofRouter.HandleFunc(pprofPrefix+"/", pprof.Index)
+		pprofRouter.HandleFunc(pprofPrefix+"/profile", pprof.Profile)
+		pprofRouter.HandleFunc(pprofPrefix+"/symbol", pprof.Symbol)
+		pprofRouter.HandleFunc(pprofPrefix+"/cmdline", pprof.Cmdline)
+		pprofRouter.HandleFunc(pprofPrefix+"/trace", pprof.Trace)
+		pprofRouter.Handle(pprofPrefix+"/heap", pprof.Handler("heap"))
+		pprofRouter.Handle(pprofPrefix+"/goroutine", pprof.Handler("goroutine"))
+		pprofRouter.Handle(pprofPrefix+"/threadcreate", pprof.Handler("threadcreate"))
+		pprofRouter.Handle(pprofPrefix+"/block", pprof.Handler("block"))
+
+		globalRouter.Handle(pprofPrefix+"/{prop:.*}", pprofRouter)
+	}
+	globalRouter.Handle("/{any:.+}", r)
+
 	log.Infof("Listening on %v", config.Port)
-	err = http.ListenAndServe(fmt.Sprintf(":%v", config.Port), r)
+	err = http.ListenAndServe(fmt.Sprintf(":%v", config.Port), globalRouter)
 	if err != nil {
 		panic(err)
 	}

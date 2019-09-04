@@ -16,6 +16,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20190702054246-869f871628b6 // indirect
 	github.com/golang/mock v1.1.1
 	github.com/google/uuid v1.1.1 // indirect
+	github.com/gorilla/mux v1.7.1
 	github.com/gorilla/websocket v1.4.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.11.1 // indirect
 	github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56
