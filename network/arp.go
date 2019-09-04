@@ -30,7 +30,7 @@ type ARP interface {
 
 type GratuitousArpRequest struct {
 	IP        net.IP
-	Interface string
+	Interface *net.Interface
 }
 
 type gratuitousArpRequest struct {
@@ -69,7 +69,7 @@ func (a *arp) Stop() {
 
 func (a *arp) start() {
 	for req := range a.requests {
-		err := arping.GratuitousArpOverIfaceByName(req.request.IP, req.request.Interface)
+		err := arping.GratuitousArpOverIface(req.request.IP, *req.request.Interface)
 		req.response <- err
 	}
 }

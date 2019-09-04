@@ -1,5 +1,10 @@
 # To be released
 
+* Add PPROF web
+* Add BOOTING state to manage boot order.
+* Fix: High CPU consumption when doing gratuitous ARP
+* Fix: Do not remove IP on restart
+
 # [2019-08-12] 1.5.2
 
 * Fix: Logging is too verbose
