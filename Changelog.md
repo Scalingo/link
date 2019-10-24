@@ -1,5 +1,7 @@
 # To be released
 
+# [2019-10-24] 1.6.0
+
 * Add PPROF web
 * Add BOOTING state to manage boot order.
 * Fix: High CPU consumption when doing gratuitous ARP
