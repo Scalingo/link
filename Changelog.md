@@ -1,6 +1,10 @@
 # To be released
 
-# [2019-11-5] 1.6.1
+# [2019-11-05] 1.6.2
+
+* Improve logging after retries have been executed in etcd locker/healthcheck
+
+# [2019-11-05] 1.6.1
 
 * Add retry logics when refreshing ETCD lock (default 5 retries)
 * Reduce logging verbosity when healthcheck is negative
