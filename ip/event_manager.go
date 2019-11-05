@@ -164,15 +164,22 @@ func (m *manager) singleEtcdRun(ctx context.Context) {
 	log := logger.Get(ctx)
 	err := m.locker.Refresh(ctx)
 	if err != nil {
-		log.WithError(err).Error("Fail to refresh lock")
-		m.sendEvent(FaultEvent)
+		m.keepaliveRetry++
+		log.WithError(err).Info("Fail to refresh lock (retry)")
+		if m.keepaliveRetry > m.config.KeepAliveRetry {
+			log.WithError(err).Error("Fail to refresh lock")
+			m.sendEvent(FaultEvent)
+		}
 		return
 	}
+	m.keepaliveRetry = 0
 
 	isMaster, err := m.locker.IsMaster(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to check lock")
-		m.sendEvent(FaultEvent)
+		// Fault event should only be handled in the Refresh operation where the
+		// retry loop is present
+		return
 	} else {
 		if isMaster {
 			m.sendEvent(ElectedEvent)
