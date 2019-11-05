@@ -166,7 +166,7 @@ func (m *manager) singleEtcdRun(ctx context.Context) {
 	if err != nil {
 		m.keepaliveRetry++
 		log.WithError(err).Info("Fail to refresh lock (retry)")
-		if m.keepaliveRetry == m.config.KeepAliveRetry {
+		if m.keepaliveRetry > m.config.KeepAliveRetry {
 			log.WithError(err).Error("Fail to refresh lock")
 			m.sendEvent(FaultEvent)
 		}

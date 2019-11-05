@@ -21,20 +21,29 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 		Name           string
 		Locker         func(*lockermock.MockLocker)
 		ExpectedEvents []string
+		KeepAliveRetry int
 	}{
 		{
-			Name: "When refresh fails",
+			Name: "When refresh fails, fault event",
 			Locker: func(mock *lockermock.MockLocker) {
 				mock.EXPECT().Refresh(gomock.Any()).Return(errors.New("NOP"))
 			},
+			KeepAliveRetry: 0,
 			ExpectedEvents: []string{FaultEvent},
 		}, {
-			Name: "When IsMaster fails just one time",
+			Name: "When refresh fails with retry, no fault",
+			Locker: func(mock *lockermock.MockLocker) {
+				mock.EXPECT().Refresh(gomock.Any()).Return(errors.New("NOP"))
+			},
+			KeepAliveRetry: 1,
+			ExpectedEvents: []string{},
+		}, {
+			Name: "When IsMaster fails just one time, no fault",
 			Locker: func(mock *lockermock.MockLocker) {
 				mock.EXPECT().Refresh(gomock.Any()).Return(nil)
 				mock.EXPECT().IsMaster(gomock.Any()).Return(false, errors.New("NOP"))
 			},
-			ExpectedEvents: []string{FaultEvent},
+			ExpectedEvents: []string{},
 		}, {
 			Name: "When we are not master",
 			Locker: func(mock *lockermock.MockLocker) {
@@ -60,8 +69,14 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 			locker := lockermock.NewMockLocker(ctrl)
 			example.Locker(locker)
 
+			cfg, err := config.Build()
+			require.NoError(t, err)
+
+			cfg.KeepAliveRetry = example.KeepAliveRetry
+
 			manager := &manager{
 				locker: locker,
+				config: cfg,
 			}
 
 			eventChan := make(chan string, 10)
