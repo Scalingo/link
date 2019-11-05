@@ -214,9 +214,9 @@ func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool) {
 		m.sendEvent(HealthCheckSuccessEvent)
 	} else {
 		m.failingCount++
-		log.WithField("failing_count", m.failingCount).Error("Node failing")
+		log.WithField("failing_count", m.failingCount).Info("healthcheck failed (retry)")
 		if m.failingCount >= m.config.FailCountBeforeFailover {
-			log.Error("Too many failure, setting status to failing")
+			log.Error("healthcheck failed")
 			m.sendEvent(HealthCheckFailEvent)
 		}
 	}
