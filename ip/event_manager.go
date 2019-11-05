@@ -172,7 +172,10 @@ func (m *manager) singleEtcdRun(ctx context.Context) {
 		}
 		return
 	}
-	m.keepaliveRetry = 0
+	if m.keepaliveRetry > 0 {
+		log.Infof("Lock refreshed after %v retries", m.keepaliveRetry)
+		m.keepaliveRetry = 0
+	}
 
 	isMaster, err := m.locker.IsMaster(ctx)
 	if err != nil {
@@ -210,7 +213,10 @@ func (m *manager) healthChecker(ctx context.Context) {
 func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool) {
 	log := logger.Get(ctx)
 	if healthy {
-		m.failingCount = 0
+		if m.failingCount > 0 {
+			log.Infof("healthcheck healthy after %v retries", m.failingCount)
+			m.failingCount = 0
+		}
 		m.sendEvent(HealthCheckSuccessEvent)
 	} else {
 		m.failingCount++
