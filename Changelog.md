@@ -1,5 +1,10 @@
 # To be released
 
+# [2019-11-5] 1.6.1
+
+* Add retry logics when refreshing ETCD lock (default 5 retries)
+* Reduce logging verbosity when healthcheck is negative
+
 # [2019-10-24] 1.6.0
 
 * Add PPROF web
