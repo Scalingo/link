@@ -37,6 +37,7 @@ type manager struct {
 	checker          healthcheck.Checker
 	config           config.Config
 	eventChan        chan string
+	keepaliveRetry   int
 	failingCount     int
 	stopped          bool
 }

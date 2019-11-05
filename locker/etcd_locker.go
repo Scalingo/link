@@ -71,7 +71,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 			l.leaseID = 0
 			return errors.Wrapf(err, "fail to refresh lock: probably expired (leaseID = %v)", oldLeaseID)
 		} else {
-			// We got an error. This is probably not relaterd to an expired lease. Do not reset it
+			// We got an error. This is probably not related to an expired lease. Do not reset it
 			return errors.Wrapf(err, "fail to refresh lock")
 		}
 	}
