@@ -122,21 +122,21 @@ func TestManager_HealthChecker(t *testing.T) {
 		{
 			Name: "With not enough failing events",
 			Checker: func(mock *healthcheckmock.MockChecker) {
-				mock.EXPECT().IsHealthy(gomock.Any()).Return(false).MaxTimes(2)
-				mock.EXPECT().IsHealthy(gomock.Any()).Return(true).AnyTimes()
+				mock.EXPECT().IsHealthy(gomock.Any()).Return(false, errors.New("failing")).MaxTimes(2)
+				mock.EXPECT().IsHealthy(gomock.Any()).Return(true, nil).AnyTimes()
 			},
 			ExpectedEvents: []string{HealthCheckSuccessEvent},
 		}, {
 			Name: "With enough failing events",
 			Checker: func(mock *healthcheckmock.MockChecker) {
-				mock.EXPECT().IsHealthy(gomock.Any()).Return(false).MaxTimes(3)
-				mock.EXPECT().IsHealthy(gomock.Any()).Return(true).AnyTimes()
+				mock.EXPECT().IsHealthy(gomock.Any()).Return(false, errors.New("failing")).MaxTimes(3)
+				mock.EXPECT().IsHealthy(gomock.Any()).Return(true, nil).AnyTimes()
 			},
 			ExpectedEvents: []string{HealthCheckFailEvent, HealthCheckSuccessEvent},
 		}, {
 			Name: "With a success event and a stop",
 			Checker: func(mock *healthcheckmock.MockChecker) {
-				mock.EXPECT().IsHealthy(gomock.Any()).Return(true).MaxTimes(2)
+				mock.EXPECT().IsHealthy(gomock.Any()).Return(true, nil).MaxTimes(2)
 			},
 			ExpectedEvents: []string{HealthCheckSuccessEvent},
 		},

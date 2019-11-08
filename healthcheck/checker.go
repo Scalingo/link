@@ -5,13 +5,12 @@ import (
 
 	"github.com/Scalingo/go-philae/prober"
 	"github.com/Scalingo/go-philae/tcpprobe"
-	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/models"
 )
 
 type Checker interface {
-	IsHealthy(ctx context.Context) bool
+	IsHealthy(ctx context.Context) (bool, error)
 }
 
 type checker struct {
@@ -33,13 +32,10 @@ func FromChecks(config config.Config, checks []models.Healthcheck) checker {
 	}
 }
 
-func (c checker) IsHealthy(ctx context.Context) bool {
-	log := logger.Get(ctx)
-
+func (c checker) IsHealthy(ctx context.Context) (bool, error) {
 	res := c.prober.Check(ctx)
 	if res.Error != nil {
-		log.WithError(res.Error).Error("Healthcheck failed")
-
+		return false, res.Error
 	}
-	return res.Healthy
+	return res.Healthy, nil
 }

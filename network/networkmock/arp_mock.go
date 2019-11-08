@@ -36,6 +36,7 @@ func (m *MockARP) EXPECT() *MockARPMockRecorder {
 
 // GratuitousArp mocks base method
 func (m *MockARP) GratuitousArp(arg0 network.GratuitousArpRequest) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GratuitousArp", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -43,5 +44,6 @@ func (m *MockARP) GratuitousArp(arg0 network.GratuitousArpRequest) error {
 
 // GratuitousArp indicates an expected call of GratuitousArp
 func (mr *MockARPMockRecorder) GratuitousArp(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GratuitousArp", reflect.TypeOf((*MockARP)(nil).GratuitousArp), arg0)
 }

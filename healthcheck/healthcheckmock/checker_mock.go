@@ -35,13 +35,16 @@ func (m *MockChecker) EXPECT() *MockCheckerMockRecorder {
 }
 
 // IsHealthy mocks base method
-func (m *MockChecker) IsHealthy(arg0 context.Context) bool {
+func (m *MockChecker) IsHealthy(arg0 context.Context) (bool, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsHealthy", arg0)
 	ret0, _ := ret[0].(bool)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // IsHealthy indicates an expected call of IsHealthy
 func (mr *MockCheckerMockRecorder) IsHealthy(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsHealthy", reflect.TypeOf((*MockChecker)(nil).IsHealthy), arg0)
 }

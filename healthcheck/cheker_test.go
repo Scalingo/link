@@ -54,35 +54,38 @@ func TestFromChecks(t *testing.T) {
 
 func TestIsHealthy(t *testing.T) {
 	examples := []struct {
-		Name          string
-		Probes        []prober.Probe
-		ExpetedResult bool
+		Name           string
+		Probes         []prober.Probe
+		ExpectedResult bool
+		ExpectedError  string
 	}{
 		{
-			Name:          "With no probe configured",
-			Probes:        []prober.Probe{},
-			ExpetedResult: true,
+			Name:           "With no probe configured",
+			Probes:         []prober.Probe{},
+			ExpectedResult: true,
 		}, {
 			Name: "With only failing probes",
 			Probes: []prober.Probe{
 				sampleprobe.NewSampleProbe("test", false),
 				sampleprobe.NewSampleProbe("test-2", false),
 			},
-			ExpetedResult: false,
+			ExpectedResult: false,
+			ExpectedError:  "error",
 		}, {
 			Name: "With failing and valid probes",
 			Probes: []prober.Probe{
 				sampleprobe.NewSampleProbe("test", false),
 				sampleprobe.NewSampleProbe("test-2", true),
 			},
-			ExpetedResult: false,
+			ExpectedResult: false,
+			ExpectedError:  "error",
 		}, {
 			Name: "With only valid probes",
 			Probes: []prober.Probe{
 				sampleprobe.NewSampleProbe("test", true),
 				sampleprobe.NewSampleProbe("test-2", true),
 			},
-			ExpetedResult: true,
+			ExpectedResult: true,
 		},
 	}
 
@@ -98,9 +101,11 @@ func TestIsHealthy(t *testing.T) {
 				prober: prober,
 			}
 
-			assert.Equal(t, example.ExpetedResult, checker.IsHealthy(context.Background()))
-
+			healthy, err := checker.IsHealthy(context.Background())
+			assert.Equal(t, example.ExpectedResult, healthy)
+			if example.ExpectedError != "" {
+				assert.Contains(t, err.Error(), example.ExpectedError)
+			}
 		})
 	}
-
 }

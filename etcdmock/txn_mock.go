@@ -36,6 +36,7 @@ func (m *MockTxn) EXPECT() *MockTxnMockRecorder {
 
 // Commit mocks base method
 func (m *MockTxn) Commit() (*clientv3.TxnResponse, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Commit")
 	ret0, _ := ret[0].(*clientv3.TxnResponse)
 	ret1, _ := ret[1].(error)
@@ -44,11 +45,13 @@ func (m *MockTxn) Commit() (*clientv3.TxnResponse, error) {
 
 // Commit indicates an expected call of Commit
 func (mr *MockTxnMockRecorder) Commit() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Commit", reflect.TypeOf((*MockTxn)(nil).Commit))
 }
 
 // Else mocks base method
 func (m *MockTxn) Else(arg0 ...clientv3.Op) clientv3.Txn {
+	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range arg0 {
 		varargs = append(varargs, a)
@@ -60,11 +63,13 @@ func (m *MockTxn) Else(arg0 ...clientv3.Op) clientv3.Txn {
 
 // Else indicates an expected call of Else
 func (mr *MockTxnMockRecorder) Else(arg0 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Else", reflect.TypeOf((*MockTxn)(nil).Else), arg0...)
 }
 
 // If mocks base method
 func (m *MockTxn) If(arg0 ...clientv3.Cmp) clientv3.Txn {
+	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range arg0 {
 		varargs = append(varargs, a)
@@ -76,11 +81,13 @@ func (m *MockTxn) If(arg0 ...clientv3.Cmp) clientv3.Txn {
 
 // If indicates an expected call of If
 func (mr *MockTxnMockRecorder) If(arg0 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "If", reflect.TypeOf((*MockTxn)(nil).If), arg0...)
 }
 
 // Then mocks base method
 func (m *MockTxn) Then(arg0 ...clientv3.Op) clientv3.Txn {
+	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range arg0 {
 		varargs = append(varargs, a)
@@ -92,5 +99,6 @@ func (m *MockTxn) Then(arg0 ...clientv3.Op) clientv3.Txn {
 
 // Then indicates an expected call of Then
 func (mr *MockTxnMockRecorder) Then(arg0 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Then", reflect.TypeOf((*MockTxn)(nil).Then), arg0...)
 }

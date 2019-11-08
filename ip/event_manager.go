@@ -194,7 +194,7 @@ func (m *manager) singleEtcdRun(ctx context.Context) {
 
 func (m *manager) healthChecker(ctx context.Context) {
 	for {
-		healthy := m.checker.IsHealthy(ctx)
+		healthy, err := m.checker.IsHealthy(ctx)
 
 		// The eventManager will close the chan when we receive the Stop order and we do not want to send things on a close channel.
 		// Since the checker can take up to 5s to run his checks, this check must be done between the health check and sending the results.
@@ -203,14 +203,14 @@ func (m *manager) healthChecker(ctx context.Context) {
 		}
 
 		if !m.isStopping() {
-			m.sendHealthcheckResults(ctx, healthy)
+			m.sendHealthcheckResults(ctx, healthy, err)
 		}
 
 		time.Sleep(m.config.HealthcheckInterval)
 	}
 }
 
-func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool) {
+func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool, err error) {
 	log := logger.Get(ctx)
 	if healthy {
 		if m.failingCount > 0 {
@@ -220,9 +220,9 @@ func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool) {
 		m.sendEvent(HealthCheckSuccessEvent)
 	} else {
 		m.failingCount++
-		log.WithField("failing_count", m.failingCount).Info("healthcheck failed (retry)")
+		log.WithField("failing_count", m.failingCount).WithError(err).Info("healthcheck failed (retry)")
 		if m.failingCount >= m.config.FailCountBeforeFailover {
-			log.Error("healthcheck failed")
+			log.WithError(err).Error("healthcheck failed")
 			m.sendEvent(HealthCheckFailEvent)
 		}
 	}
