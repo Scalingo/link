@@ -1,5 +1,9 @@
 # To be released
 
+# [2019-11-08] 1.6.3
+
+* Improve logging less useless errors when un-threatening healthcheck fail
+
 # [2019-11-05] 1.6.2
 
 * Improve logging after retries have been executed in etcd locker/healthcheck
