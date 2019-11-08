@@ -220,7 +220,7 @@ func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool, err 
 		m.sendEvent(HealthCheckSuccessEvent)
 	} else {
 		m.failingCount++
-		log.WithField("failing_count", m.failingCount).Infof("healthcheck failed (retry): %v", err)
+		log.WithField("failing_count", m.failingCount).WithError(err).Info("healthcheck failed (retry)")
 		if m.failingCount >= m.config.FailCountBeforeFailover {
 			log.WithError(err).Error("healthcheck failed")
 			m.sendEvent(HealthCheckFailEvent)

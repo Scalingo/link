@@ -35,6 +35,7 @@ func (m *MockNetworkInterface) EXPECT() *MockNetworkInterfaceMockRecorder {
 
 // EnsureIP mocks base method
 func (m *MockNetworkInterface) EnsureIP(arg0 string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "EnsureIP", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -42,11 +43,13 @@ func (m *MockNetworkInterface) EnsureIP(arg0 string) error {
 
 // EnsureIP indicates an expected call of EnsureIP
 func (mr *MockNetworkInterfaceMockRecorder) EnsureIP(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureIP", reflect.TypeOf((*MockNetworkInterface)(nil).EnsureIP), arg0)
 }
 
 // RemoveIP mocks base method
 func (m *MockNetworkInterface) RemoveIP(arg0 string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveIP", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -54,5 +57,6 @@ func (m *MockNetworkInterface) RemoveIP(arg0 string) error {
 
 // RemoveIP indicates an expected call of RemoveIP
 func (mr *MockNetworkInterfaceMockRecorder) RemoveIP(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveIP", reflect.TypeOf((*MockNetworkInterface)(nil).RemoveIP), arg0)
 }

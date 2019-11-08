@@ -36,6 +36,7 @@ func (m *MockLocker) EXPECT() *MockLockerMockRecorder {
 
 // IsMaster mocks base method
 func (m *MockLocker) IsMaster(arg0 context.Context) (bool, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "IsMaster", arg0)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
@@ -44,11 +45,13 @@ func (m *MockLocker) IsMaster(arg0 context.Context) (bool, error) {
 
 // IsMaster indicates an expected call of IsMaster
 func (mr *MockLockerMockRecorder) IsMaster(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsMaster", reflect.TypeOf((*MockLocker)(nil).IsMaster), arg0)
 }
 
 // Refresh mocks base method
 func (m *MockLocker) Refresh(arg0 context.Context) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Refresh", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -56,11 +59,13 @@ func (m *MockLocker) Refresh(arg0 context.Context) error {
 
 // Refresh indicates an expected call of Refresh
 func (mr *MockLockerMockRecorder) Refresh(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Refresh", reflect.TypeOf((*MockLocker)(nil).Refresh), arg0)
 }
 
 // Stop mocks base method
 func (m *MockLocker) Stop(arg0 context.Context) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Stop", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -68,11 +73,13 @@ func (m *MockLocker) Stop(arg0 context.Context) error {
 
 // Stop indicates an expected call of Stop
 func (mr *MockLockerMockRecorder) Stop(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockLocker)(nil).Stop), arg0)
 }
 
 // Unlock mocks base method
 func (m *MockLocker) Unlock(arg0 context.Context) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Unlock", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -80,5 +87,6 @@ func (m *MockLocker) Unlock(arg0 context.Context) error {
 
 // Unlock indicates an expected call of Unlock
 func (mr *MockLockerMockRecorder) Unlock(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Unlock", reflect.TypeOf((*MockLocker)(nil).Unlock), arg0)
 }

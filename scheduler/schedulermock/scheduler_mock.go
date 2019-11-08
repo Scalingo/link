@@ -38,6 +38,7 @@ func (m *MockScheduler) EXPECT() *MockSchedulerMockRecorder {
 
 // ConfiguredIPs mocks base method
 func (m *MockScheduler) ConfiguredIPs(arg0 context.Context) []api.IP {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ConfiguredIPs", arg0)
 	ret0, _ := ret[0].([]api.IP)
 	return ret0
@@ -45,11 +46,13 @@ func (m *MockScheduler) ConfiguredIPs(arg0 context.Context) []api.IP {
 
 // ConfiguredIPs indicates an expected call of ConfiguredIPs
 func (mr *MockSchedulerMockRecorder) ConfiguredIPs(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfiguredIPs", reflect.TypeOf((*MockScheduler)(nil).ConfiguredIPs), arg0)
 }
 
 // GetIP mocks base method
 func (m *MockScheduler) GetIP(arg0 context.Context, arg1 string) *api.IP {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetIP", arg0, arg1)
 	ret0, _ := ret[0].(*api.IP)
 	return ret0
@@ -57,11 +60,13 @@ func (m *MockScheduler) GetIP(arg0 context.Context, arg1 string) *api.IP {
 
 // GetIP indicates an expected call of GetIP
 func (mr *MockSchedulerMockRecorder) GetIP(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIP", reflect.TypeOf((*MockScheduler)(nil).GetIP), arg0, arg1)
 }
 
 // Start mocks base method
 func (m *MockScheduler) Start(arg0 context.Context, arg1 models.IP) (models.IP, error) {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", arg0, arg1)
 	ret0, _ := ret[0].(models.IP)
 	ret1, _ := ret[1].(error)
@@ -70,11 +75,13 @@ func (m *MockScheduler) Start(arg0 context.Context, arg1 models.IP) (models.IP, 
 
 // Start indicates an expected call of Start
 func (mr *MockSchedulerMockRecorder) Start(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockScheduler)(nil).Start), arg0, arg1)
 }
 
 // Status mocks base method
 func (m *MockScheduler) Status(arg0 string) string {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Status", arg0)
 	ret0, _ := ret[0].(string)
 	return ret0
@@ -82,11 +89,13 @@ func (m *MockScheduler) Status(arg0 string) string {
 
 // Status indicates an expected call of Status
 func (mr *MockSchedulerMockRecorder) Status(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Status", reflect.TypeOf((*MockScheduler)(nil).Status), arg0)
 }
 
 // Stop mocks base method
 func (m *MockScheduler) Stop(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Stop", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
@@ -94,11 +103,13 @@ func (m *MockScheduler) Stop(arg0 context.Context, arg1 string) error {
 
 // Stop indicates an expected call of Stop
 func (mr *MockSchedulerMockRecorder) Stop(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockScheduler)(nil).Stop), arg0, arg1)
 }
 
 // TryGetLock mocks base method
 func (m *MockScheduler) TryGetLock(arg0 context.Context, arg1 string) bool {
+	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TryGetLock", arg0, arg1)
 	ret0, _ := ret[0].(bool)
 	return ret0
@@ -106,5 +117,6 @@ func (m *MockScheduler) TryGetLock(arg0 context.Context, arg1 string) bool {
 
 // TryGetLock indicates an expected call of TryGetLock
 func (mr *MockSchedulerMockRecorder) TryGetLock(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TryGetLock", reflect.TypeOf((*MockScheduler)(nil).TryGetLock), arg0, arg1)
 }
