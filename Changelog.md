@@ -1,5 +1,10 @@
 # To be released
 
+# [2019-12-17] 1.7.0
+
+* Bugfix: when a save leased is no found, consider it expired to renew it completely
+* ARP: Only send 3 Gratuitous ARP packets after becoming primary, configurable with env `ARP_GRATUITOUS_COUNT`
+
 # [2019-11-08] 1.6.3
 
 * Improve logging less useless errors when un-threatening healthcheck fail
