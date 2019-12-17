@@ -89,7 +89,8 @@ func TestStartARPEnsure(t *testing.T) {
 	}
 
 	config := config.Config{
-		ARPGratuitousInterval: 100 * time.Millisecond,
+		ARPGratuitousInterval: 10 * time.Millisecond,
+		ARPGratuitousCount:    3,
 	}
 
 	t.Run("If the IP is activated", func(t *testing.T) {
@@ -99,7 +100,7 @@ func TestStartARPEnsure(t *testing.T) {
 		ctx := context.Background()
 
 		networkMock := networkmock.NewMockNetworkInterface(ctrl)
-		networkMock.EXPECT().EnsureIP(ip.IP).Return(nil).MinTimes(1)
+		networkMock.EXPECT().EnsureIP(ip.IP).Return(nil).MaxTimes(config.ARPGratuitousCount)
 		lockerMock := lockermock.NewMockLocker(ctrl)
 		lockerMock.EXPECT().Unlock(gomock.Any()).Return(nil)
 
@@ -118,7 +119,7 @@ func TestStartARPEnsure(t *testing.T) {
 			manager.startArpEnsure(ctx)
 			doneChan <- true
 		}()
-		time.Sleep(50 * time.Millisecond)
+		time.Sleep(100 * time.Millisecond)
 		manager.Stop(ctx, func(context.Context) error { return nil })
 
 		timer := time.NewTimer(500 * time.Millisecond)
