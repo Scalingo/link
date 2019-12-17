@@ -10,6 +10,7 @@ import (
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/models/modelsmock"
 	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
@@ -126,6 +127,21 @@ func TestRefresh(t *testing.T) {
 				txnMock := etcdmock.NewMockTxn(ctrl)
 				txnMock.EXPECT().If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0)).Return(txnMock)
 				txnMock.EXPECT().Then(clientv3.OpPut(key, "locked", clientv3.WithLease(12))).Return(txnMock)
+				txnMock.EXPECT().Commit().Return(nil, nil)
+
+				mock.EXPECT().Txn(gomock.Any()).Return(txnMock)
+			},
+			ExpectedLeaseID: 0,
+		}, {
+			Name:           "When keepalive fail because lease is not found",
+			InitialLeaseID: 123,
+			ExpectedLease: func(mock *etcdmock.MockLease) {
+				mock.EXPECT().KeepAliveOnce(gomock.Any(), clientv3.LeaseID(123)).Return(nil, rpctypes.ErrLeaseNotFound)
+			},
+			ExpectedKV: func(ctrl *gomock.Controller, mock *etcdmock.MockKV) {
+				txnMock := etcdmock.NewMockTxn(ctrl)
+				txnMock.EXPECT().If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0)).Return(txnMock)
+				txnMock.EXPECT().Then(clientv3.OpPut(key, "locked", clientv3.WithLease(123))).Return(txnMock)
 				txnMock.EXPECT().Commit().Return(nil, nil)
 
 				mock.EXPECT().Txn(gomock.Any()).Return(txnMock)
