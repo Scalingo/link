@@ -10,6 +10,7 @@ import (
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/models"
 	"github.com/coreos/etcd/clientv3"
+	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -80,7 +81,10 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	if err != nil {
 		if l.leaseExpired() {
 			l.leaseID = 0
-			log.WithError(err).Error("Keep alive failed: Regenerate lease")
+			log.WithError(err).Error("Keep alive failed: expired, regenerate lease")
+		} else if err, ok := err.(rpctypes.EtcdError); ok && rpctypes.Error(err) == rpctypes.ErrLeaseNotFound {
+			l.leaseID = 0
+			log.WithError(err).Error("Keep alive failed: lease not found, regenerate lease")
 		} else {
 			// We got an error while sending keepalive
 			log.WithError(err).Error("Keep alive failed")
