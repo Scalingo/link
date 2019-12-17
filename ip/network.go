@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Scalingo/go-utils/logger"
+	"github.com/Scalingo/link/config"
 	"github.com/looplab/fsm"
 )
 
@@ -42,20 +43,29 @@ func (m *manager) setFailing(ctx context.Context, _ *fsm.Event) {
 }
 
 func (m *manager) startArpEnsure(ctx context.Context) {
+	var (
+		garpCount int
+	)
 	log := logger.Get(ctx).WithField("process", "arp_ensure")
 	for {
 		if m.isStopping() {
 			return
 		}
+		currentState := m.stateMachine.Current()
 
-		if m.stateMachine.Current() == ACTIVATED {
+		if currentState == ACTIVATED && garpCount < m.config.ARPGratuitousCount {
 			log.Debug("Send gratuitous ARP request")
 			err := m.networkInterface.EnsureIP(m.ip.IP)
 			if err != nil {
 				log.WithError(err).Error("Fail to ensure IP")
+			} else {
+				garpCount++
 			}
+		} else if currentState != ACTIVATED {
+			garpCount = 0
 		}
 
-		time.Sleep(m.config.ARPGratuitousInterval)
+		timeToSleep := config.PlusMinusDeltaDuration(m.config.ARPGratuitousInterval, config.DefaultDelta)
+		time.Sleep(timeToSleep)
 	}
 }
