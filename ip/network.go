@@ -65,7 +65,7 @@ func (m *manager) startArpEnsure(ctx context.Context) {
 			garpCount = 0
 		}
 
-		timeToSleep := config.PlusMinusDeltaDuration(m.config.ARPGratuitousInterval, config.DefaultDelta)
+		timeToSleep := config.RandomDurationAround(m.config.ARPGratuitousInterval, 0.25)
 		time.Sleep(timeToSleep)
 	}
 }
