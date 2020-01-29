@@ -9,13 +9,13 @@ import (
 	"github.com/Scalingo/link/etcdmock"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/models/modelsmock"
-	"github.com/coreos/etcd/clientv3"
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.etcd.io/etcd/clientv3"
 )
 
 func TestRefresh(t *testing.T) {

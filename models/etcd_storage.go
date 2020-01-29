@@ -9,9 +9,9 @@ import (
 
 	"github.com/Scalingo/go-utils/etcd"
 	"github.com/Scalingo/link/config"
-	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
+	"go.etcd.io/etcd/clientv3"
 )
 
 const (

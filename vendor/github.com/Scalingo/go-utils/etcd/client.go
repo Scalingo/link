@@ -3,7 +3,7 @@ package etcd
 import (
 	"fmt"
 
-	"github.com/coreos/etcd/clientv3"
+	"go.etcd.io/etcd/clientv3"
 )
 
 // ClientFromEnv generates a etcd client (API v3) from the environment

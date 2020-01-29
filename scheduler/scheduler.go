@@ -9,9 +9,9 @@ import (
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/ip"
 	"github.com/Scalingo/link/models"
-	"github.com/coreos/etcd/clientv3"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/clientv3"
 )
 
 type Scheduler interface {

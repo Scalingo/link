@@ -10,10 +10,10 @@ import (
 	"github.com/Scalingo/link/locker"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/network"
-	"github.com/coreos/etcd/clientv3"
 	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+	"go.etcd.io/etcd/clientv3"
 )
 
 type Manager interface {

@@ -24,17 +24,17 @@
        "src_package" : "locker"
     }, {
        "external" : true,
-       "src_package" : "github.com/coreos/etcd/clientv3",
+	     "src_package": "go.etcd.io/etcd/clientv3",
        "interface" : "KV",
        "mock_file" : "etcdmock/kv_mock.go"
     }, {
        "external" : true,
-       "src_package" : "github.com/coreos/etcd/clientv3",
+	     "src_package": "go.etcd.io/etcd/clientv3",
        "interface" : "Lease",
        "mock_file" : "etcdmock/lease_mock.go"
     }, {
        "external" : true,
-       "src_package" : "github.com/coreos/etcd/clientv3",
+	     "src_package": "go.etcd.io/etcd/clientv3",
        "interface" : "Txn",
        "mock_file" : "etcdmock/txn_mock.go"
     }
