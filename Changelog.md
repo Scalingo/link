@@ -1,5 +1,9 @@
 # To be released
 
+# [2020-01-29] 1.7.1
+
+* Dependencies: Update etcd and go-utils libraries
+
 # [2019-12-17] 1.7.0
 
 * Bugfix: when a save leased is no found, consider it expired to renew it completely
