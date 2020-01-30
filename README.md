@@ -114,7 +114,7 @@ This is what the state machine looks like:
 
 ## Dev environment
 
-To make it work in dev you might want to some a dummy interfaces:
+To make it work in dev you might want to make some dummy interfaces:
 
 ```shell
 modprobe dummy
