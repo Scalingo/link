@@ -1,5 +1,9 @@
 # To be released
 
+# [2020-03-06] 1.8.4
+
+* Fix condition leading to extra lease renewal for short keepalive durations
+
 # [2020-03-06] 1.8.3
 
 * Make LeaseTime according to the IP KeepaliveInterval if set
