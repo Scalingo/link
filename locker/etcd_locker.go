@@ -43,7 +43,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	log := logger.Get(ctx)
 
 	if l.leaseID == 0 {
-		grant, err := l.leaseEtcd.Grant(ctx, int64(l.config.LeaseTime().Seconds()))
+		grant, err := l.leaseEtcd.Grant(ctx, int64(l.config.LeaseTime(l.ip.KeepaliveInterval).Seconds()))
 		if err != nil {
 			return errors.Wrap(err, "fail to generate grant")
 		}
@@ -56,7 +56,11 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	// The goal of this transaction is to create the key with our leaseID only if this key does not exist
 	// We use a transaction to make sure that concurrent tries wont interfere with each others.
 
-	transactionCtx, cancel := context.WithTimeout(ctx, l.config.KeepAliveInterval)
+	transactionTimeout := time.Duration(l.ip.KeepaliveInterval) * time.Second
+	if transactionTimeout != 0 {
+		transactionTimeout = l.config.KeepAliveInterval
+	}
+	transactionCtx, cancel := context.WithTimeout(ctx, transactionTimeout)
 	defer cancel()
 
 	_, err := l.kvEtcd.Txn(transactionCtx).
@@ -96,7 +100,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 }
 
 func (l *etcdLocker) leaseExpired() bool {
-	return l.lastLeaseRefresh.IsZero() || time.Now().After(l.lastLeaseRefresh.Add(l.config.LeaseTime()))
+	return l.lastLeaseRefresh.IsZero() || time.Now().After(l.lastLeaseRefresh.Add(l.config.LeaseTime(l.ip.KeepaliveInterval)))
 }
 
 func (l *etcdLocker) Unlock(ctx context.Context) error {
