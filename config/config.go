@@ -28,8 +28,14 @@ type Config struct {
 	FailCountBeforeFailover int `envconfig:"FAIL_COUNT_BEFORE_FAILOVER" default:"3"`
 }
 
-func (c Config) LeaseTime() time.Duration {
-	return 5 * c.KeepAliveInterval
+// LeaseTime is either 5* the global keepalive interval, or 5 times the one
+// which is given as argument which can be speicific to the current IP.
+func (c Config) LeaseTime(ipKeepalive int) time.Duration {
+	duration := time.Duration(ipKeepalive) * time.Second
+	if duration == 0 {
+		duration = c.KeepAliveInterval
+	}
+	return 5 * duration
 }
 
 // RandomDurationAround returns a duration (1.0 - percent) * duration < n < (1.0 + percent) * duration
