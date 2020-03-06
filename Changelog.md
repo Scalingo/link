@@ -1,5 +1,9 @@
 # To be released
 
+# [2020-03-06] 1.8.0
+
+* Feature: Allow the configuration of KeepaliveInterval and HealthcheckInterval by IP
+
 # [2020-01-29] 1.7.1
 
 * Dependencies: Update etcd and go-utils libraries
