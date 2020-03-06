@@ -144,12 +144,11 @@ func main() {
 				}
 
 				params := api.AddIPParams{
-					IP:                  ip,
 					Checks:              checks,
 					HealthcheckInterval: c.Int("healthcheck-interval"),
 					KeepaliveInterval:   c.Int("keepalive-interval"),
 				}
-				newIP, err := client.AddIP(context.Background(), params)
+				newIP, err := client.AddIP(context.Background(), ip, params)
 				if err != nil {
 					return err
 				}

@@ -69,17 +69,16 @@ func (m *manager) closeEventChan() {
 }
 
 func (m *manager) eventManager(ctx context.Context) {
+	interval := time.Duration(m.IP().KeepaliveInterval) * time.Second
+	if interval == 0 {
+		interval = m.config.KeepAliveInterval
+	}
 	for {
 		shouldContinue := m.singleEventRun(ctx)
 		if !shouldContinue {
 			return
 		}
-
-		interval := time.Duration(m.IP().KeepaliveInterval) * time.Second
-		if interval == 0 {
-			interval = m.config.KeepAliveInterval
-		}
-		time.Sleep(m.config.KeepAliveInterval)
+		time.Sleep(interval)
 	}
 }
 
@@ -197,6 +196,11 @@ func (m *manager) singleEtcdRun(ctx context.Context) {
 }
 
 func (m *manager) healthChecker(ctx context.Context) {
+	interval := time.Duration(m.IP().HealthcheckInterval) * time.Second
+	if interval != 0 {
+		interval = m.config.HealthcheckInterval
+	}
+
 	for {
 		healthy, err := m.checker.IsHealthy(ctx)
 
@@ -210,10 +214,6 @@ func (m *manager) healthChecker(ctx context.Context) {
 			m.sendHealthcheckResults(ctx, healthy, err)
 		}
 
-		interval := time.Duration(m.IP().HealthcheckInterval) * time.Second
-		if interval != 0 {
-			interval = m.config.HealthcheckInterval
-		}
 		time.Sleep(interval)
 	}
 }

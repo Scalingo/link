@@ -148,16 +148,15 @@ func (c HTTPClient) TryGetLock(ctx context.Context, id string) error {
 }
 
 type AddIPParams struct {
-	IP                  string               `json:"ip"`
 	HealthcheckInterval int                  `json:"healthcheck_interval"`
 	KeepaliveInterval   int                  `json:"keepalive_interval"`
 	Checks              []models.Healthcheck `json:"checks"`
 }
 
-func (c HTTPClient) AddIP(ctx context.Context, params AddIPParams) (IP, error) {
+func (c HTTPClient) AddIP(ctx context.Context, ip string, params AddIPParams) (IP, error) {
 	buffer := &bytes.Buffer{}
 	err := json.NewEncoder(buffer).Encode(models.IP{
-		IP:                  params.IP,
+		IP:                  ip,
 		HealthcheckInterval: params.HealthcheckInterval,
 		KeepaliveInterval:   params.KeepaliveInterval,
 		Checks:              params.Checks,
