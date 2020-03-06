@@ -75,6 +75,10 @@ func (m *manager) eventManager(ctx context.Context) {
 			return
 		}
 
+		interval := time.Duration(m.IP().KeepaliveInterval) * time.Second
+		if interval == 0 {
+			interval = m.config.KeepAliveInterval
+		}
 		time.Sleep(m.config.KeepAliveInterval)
 	}
 }
@@ -206,7 +210,11 @@ func (m *manager) healthChecker(ctx context.Context) {
 			m.sendHealthcheckResults(ctx, healthy, err)
 		}
 
-		time.Sleep(m.config.HealthcheckInterval)
+		interval := time.Duration(m.IP().HealthcheckInterval) * time.Second
+		if interval != 0 {
+			interval = m.config.HealthcheckInterval
+		}
+		time.Sleep(interval)
 	}
 }
 
