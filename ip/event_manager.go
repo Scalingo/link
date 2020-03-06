@@ -197,7 +197,7 @@ func (m *manager) singleEtcdRun(ctx context.Context) {
 
 func (m *manager) healthChecker(ctx context.Context) {
 	interval := time.Duration(m.IP().HealthcheckInterval) * time.Second
-	if interval != 0 {
+	if interval == 0 {
 		interval = m.config.HealthcheckInterval
 	}
 
