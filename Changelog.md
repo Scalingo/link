@@ -1,5 +1,9 @@
 # To be released
 
+# [2020-03-06] 1.8.1
+
+* Update api.Client interface
+
 # [2020-03-06] 1.8.0
 
 * Feature: Allow the configuration of KeepaliveInterval and HealthcheckInterval by IP
