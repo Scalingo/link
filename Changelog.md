@@ -1,6 +1,10 @@
 # To be released
 
-# [2020-03-06] 1.8.1
+# [2020-03-06] 1.8.3
+
+* Make LeaseTime according to the IP KeepaliveInterval if set
+
+# [2020-03-06] 1.8.2
 
 * Update mocks for testing
 
