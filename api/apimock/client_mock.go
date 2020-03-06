@@ -9,7 +9,6 @@ import (
 	reflect "reflect"
 
 	api "github.com/Scalingo/link/api"
-	models "github.com/Scalingo/link/models"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -37,23 +36,18 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 }
 
 // AddIP mocks base method
-func (m *MockClient) AddIP(arg0 context.Context, arg1 string, arg2 ...models.Healthcheck) (api.IP, error) {
+func (m *MockClient) AddIP(arg0 context.Context, arg1 string, arg2 api.AddIPParams) (api.IP, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "AddIP", varargs...)
+	ret := m.ctrl.Call(m, "AddIP", arg0, arg1, arg2)
 	ret0, _ := ret[0].(api.IP)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddIP indicates an expected call of AddIP
-func (mr *MockClientMockRecorder) AddIP(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) AddIP(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIP", reflect.TypeOf((*MockClient)(nil).AddIP), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIP", reflect.TypeOf((*MockClient)(nil).AddIP), arg0, arg1, arg2)
 }
 
 // GetIP mocks base method
