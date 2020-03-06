@@ -57,7 +57,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	// We use a transaction to make sure that concurrent tries wont interfere with each others.
 
 	transactionTimeout := time.Duration(l.ip.KeepaliveInterval) * time.Second
-	if transactionTimeout != 0 {
+	if transactionTimeout == 0 {
 		transactionTimeout = l.config.KeepAliveInterval
 	}
 	transactionCtx, cancel := context.WithTimeout(ctx, transactionTimeout)
