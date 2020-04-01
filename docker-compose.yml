@@ -9,14 +9,8 @@ services:
     cap_add:
       - NET_ADMIN
     network_mode: 'host'
-    environment:
-      LOGGER_LEVEL: debug
-      PPROF_ENABLED: "true"
-      HOSTNAME: link-1
-      ETCD_HOSTS: http://172.17.0.1:32379
-      INTERFACE: eth10
-      USER: link
-      PASSWORD: password
+    env_file:
+      - .env
     command: reflex -r '\.go$$' -R '_test\.go$$' -s -- sh -c 'go build && ./link'
     depends_on:
       - etcd
@@ -36,6 +30,7 @@ services:
       INTERFACE: eth11
       USER: link
       PASSWORD: password
+      PPROF_ENABLED: "true"
       PORT: 1314
     command: reflex --all -r 'link' -s -- sh -c './link'
     depends_on:
@@ -56,6 +51,7 @@ services:
       INTERFACE: eth12
       USER: link
       PASSWORD: password
+      PPROF_ENABLED: "true"
       PORT: 1315
     command: reflex --all -r 'link' -s -- sh -c './link'
     depends_on:
@@ -74,7 +70,7 @@ services:
     volumes:
       - ./docker/etcd:/data/etcd
     image: quay.io/coreos/etcd:v3.2.11
-    command: etcd --name etcd-cluster --data-dir /data/etcd --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --advertise-client-urls http://172.17.0.1:22379
+    command: etcd --name etcd-cluster --data-dir /data/etcd --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --advertise-client-urls http://172.17.0.1:32379
     ports:
       - 32379:2379
 

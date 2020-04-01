@@ -4,53 +4,62 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/models"
-	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/clientv3"
 )
 
+var (
+	// ErrInvalidEtcdState is an error returned by IsMaster when the key supposed to contain the lock does not exist
+	ErrInvalidEtcdState = errors.New("Invalid etcd state: key not found")
+)
+
 type etcdLocker struct {
-	kvEtcd           clientv3.KV
-	leaseEtcd        clientv3.Lease
-	leaseID          clientv3.LeaseID
-	key              string
-	config           config.Config
-	lastLeaseRefresh time.Time
-	ip               models.IP
-	storage          models.Storage
+	kvEtcd            clientv3.KV
+	key               string
+	config            config.Config
+	ip                models.IP
+	leaseManager      EtcdLeaseManager
+	leaseSubscriberID string
+	lock              *sync.Mutex
 }
 
-func NewEtcdLocker(config config.Config, etcd *clientv3.Client, storage models.Storage, ip models.IP) *etcdLocker {
+// NewEtcdLocker return an implemtation of Locker based on the ETCD database
+func NewEtcdLocker(config config.Config, etcd *clientv3.Client, leaseManager EtcdLeaseManager, ip models.IP) Locker {
 	key := fmt.Sprintf("%s/default/%s", models.ETCD_LINK_DIRECTORY, strings.Replace(ip.IP, "/", "_", -1))
 	return &etcdLocker{
-		kvEtcd:    etcd,
-		leaseEtcd: etcd,
-		key:       key,
-		leaseID:   clientv3.LeaseID(ip.LeaseID),
-		config:    config,
-		ip:        ip,
-		storage:   storage,
+		kvEtcd:       etcd,
+		key:          key,
+		config:       config,
+		ip:           ip,
+		leaseManager: leaseManager,
+		lock:         &sync.Mutex{},
 	}
 }
 
 func (l *etcdLocker) Refresh(ctx context.Context) error {
+	l.lock.Lock()
+	defer l.lock.Unlock()
 	log := logger.Get(ctx)
 
-	if l.leaseID == 0 {
-		grant, err := l.leaseEtcd.Grant(ctx, int64(l.config.LeaseTime(l.ip.KeepaliveInterval).Seconds()))
+	// If we are not subscribed to lease changes yet
+	if l.leaseSubscriberID == "" {
+		id, err := l.leaseManager.SubscribeToLeaseChange(ctx, l.leaseChanged)
 		if err != nil {
-			return errors.Wrap(err, "fail to generate grant")
+			log.WithError(err).Error("fail to subscribe to lease manager, will retry next time")
+		} else {
+			l.leaseSubscriberID = id
 		}
+	}
 
-		l.leaseID = grant.ID
-
-		go l.storeNewLeaseID(ctx, l.ip, int64(l.leaseID))
+	leaseID, err := l.leaseManager.GetLease(ctx)
+	if err != nil {
+		return errors.Wrap(err, "fail to get lease ID")
 	}
 
 	// The goal of this transaction is to create the key with our leaseID only if this key does not exist
@@ -63,44 +72,22 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	transactionCtx, cancel := context.WithTimeout(ctx, transactionTimeout)
 	defer cancel()
 
-	_, err := l.kvEtcd.Txn(transactionCtx).
+	_, err = l.kvEtcd.Txn(transactionCtx).
 		// If the key does not exists (createRevision == 0)
 		If(clientv3.Compare(clientv3.CreateRevision(l.key), "=", 0)).
 		// Create it with our leaseID
-		Then(clientv3.OpPut(l.key, "locked", clientv3.WithLease(l.leaseID))).
+		Then(clientv3.OpPut(l.key, l.config.Hostname, clientv3.WithLease(leaseID))).
 		Commit()
 	if err != nil {
-		if l.leaseExpired() {
-			// We got an error, this can be because our leaseID is not valid anymore: Reset it
-			oldLeaseID := l.leaseID
-			l.leaseID = 0
-			return errors.Wrapf(err, "fail to refresh lock: probably expired (leaseID = %v)", oldLeaseID)
-		} else {
-			// We got an error. This is probably not related to an expired lease. Do not reset it
-			return errors.Wrapf(err, "fail to refresh lock")
+		// We got an error. Notify the lease manager that there might be an issue and send the error.
+		leaseManagerErr := l.leaseManager.MarkLeaseAsDirty(ctx, leaseID)
+		if err != nil {
+			log.WithError(leaseManagerErr).Error("fail to mark lease as dirty")
 		}
+		return errors.Wrapf(err, "fail to refresh lock")
 	}
 
-	_, err = l.leaseEtcd.KeepAliveOnce(ctx, l.leaseID)
-	if err != nil {
-		if l.leaseExpired() {
-			l.leaseID = 0
-			log.WithError(err).Error("Keep alive failed: expired, regenerate lease")
-		} else if err, ok := err.(rpctypes.EtcdError); ok && rpctypes.Error(err) == rpctypes.ErrLeaseNotFound {
-			l.leaseID = 0
-			log.WithError(err).Error("Keep alive failed: lease not found, regenerate lease")
-		} else {
-			// We got an error while sending keepalive
-			log.WithError(err).Error("Keep alive failed")
-		}
-	}
-
-	l.lastLeaseRefresh = time.Now()
 	return nil
-}
-
-func (l *etcdLocker) leaseExpired() bool {
-	return l.lastLeaseRefresh.IsZero() || time.Now().After(l.lastLeaseRefresh.Add(l.config.LeaseTime(l.ip.KeepaliveInterval)))
 }
 
 func (l *etcdLocker) Unlock(ctx context.Context) error {
@@ -108,41 +95,81 @@ func (l *etcdLocker) Unlock(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "fail to unlock key")
 	}
-	l.leaseID = 0
 	return nil
 }
 
 func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
+	// We do know that we are the master if:
+	// - The key exist
+	// - The lease associated to this key is our lease
 	resp, err := l.kvEtcd.Get(ctx, l.key)
 	if err != nil {
 		return false, errors.Wrap(err, "fail to get lock")
 	}
 
+	// This could be the cause of a failure. If no key exist, this mean that all leases are expired
+	// Or that all manager decided to stop managing this key
 	if len(resp.Kvs) != 1 {
-		// DAFUK :/
-		return false, errors.New("invalid etcd state (key not found!)")
+		return false, ErrInvalidEtcdState
 	}
 
-	return resp.Kvs[0].Lease == int64(l.leaseID), nil
-}
-
-func (l *etcdLocker) Stop(ctx context.Context) error {
-	// Reset the lease and let the old lease die.
-	// Setting the leaseID to 0 will ensure that the next time `Refresh` is
-	// called, we will work with a new lease.
-	l.leaseID = 0
-	return nil
-}
-
-func (l *etcdLocker) storeNewLeaseID(ctx context.Context, ip models.IP, leaseID int64) {
-	log := logger.Get(ctx).WithFields(logrus.Fields{
-		"LeaseID": leaseID,
-	})
-	log.Info("Storing new lease ID")
-	ip.LeaseID = leaseID
-
-	err := l.storage.UpdateIP(ctx, ip)
+	leaseID, err := l.leaseManager.GetLease(ctx)
 	if err != nil {
-		log.WithError(err).Error("fail to update IP leaseID")
+		return false, errors.Wrap(err, "fail to get current lease ID from manager")
 	}
+
+	return resp.Kvs[0].Lease == int64(leaseID), nil
+}
+
+func (l *etcdLocker) leaseChanged(ctx context.Context, oldLeaseID, newLeaseID clientv3.LeaseID) {
+	log := logger.Get(ctx).WithFields(l.ip.ToLogrusFields())
+
+	_, err := l.kvEtcd.Txn(ctx).
+		// If the key does exists (createRevision != 0)
+		If(clientv3.Compare(clientv3.CreateRevision(l.key), "!=", 0),
+			// And we had the lock previously
+			clientv3.Compare(clientv3.LeaseValue(l.key), "=", oldLeaseID)).
+		// Replace it with the newLease
+		Then(clientv3.OpPut(l.key, l.config.Hostname, clientv3.WithLease(newLeaseID))).
+		Commit()
+
+	if err != nil {
+		log.WithError(err).Errorf("fail to change lease of key %s", l.key)
+	}
+}
+
+// Stop will stop the lock we currently own. This will remove our lock if we are master and remove any subscription added to the lease manager
+// If we fail to know if we are master or not, this will still try to delete the key (to prevent a situation where we could habe the key indefinitely)
+// This is a failsafe since we should have called Unlock() a long time before calling this method
+func (l *etcdLocker) Stop(ctx context.Context) error {
+	log := logger.Get(ctx)
+	log.Info("Stopping the locker")
+
+	// First remove the subscription, if it fails: continue
+	if l.leaseSubscriberID != "" {
+		err := l.leaseManager.UnSubscribeToLeaseChange(ctx, l.leaseSubscriberID)
+		if err != nil {
+			log.WithError(err).Error("fail to remove subscription on lease changes")
+		}
+	}
+
+	// Then check if we currently are master. (if there are any error: we are master!)
+	isMaster, err := l.IsMaster(ctx)
+	// Here the ErrInvalidEtcdState is expected if we are the last node: since no other node had taken this lock, the key is not found leading to this error
+	if err != nil && err != ErrInvalidEtcdState {
+		log.WithError(err).Error("We do not know if we are master or not. In doubt, delete lock. This may trigger a failover")
+		isMaster = true
+	}
+
+	log.Info("We were master, deleting lock")
+	if isMaster {
+		// If we are the key master we should remove the key. Overwise since the lease is always
+		// refreshed, we will be master forever.
+		_, err := l.kvEtcd.Delete(ctx, l.key)
+		if err != nil {
+			return errors.Wrap(err, "fail to delete lock while stopping")
+		}
+	}
+
+	return nil
 }
