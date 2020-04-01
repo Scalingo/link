@@ -23,6 +23,10 @@
        "interface" : "Locker",
        "src_package" : "locker"
     }, {
+       "interface": "EtcdLeaseManager",
+       "mock_file": "locker/etcd_lease_manager_mock.go",
+       "src_package": "locker"
+    }, {
        "external" : true,
 	     "src_package": "go.etcd.io/etcd/clientv3",
        "interface" : "KV",

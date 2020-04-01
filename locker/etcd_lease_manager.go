@@ -222,15 +222,11 @@ func (m *etcdLeaseManager) refresh(ctx context.Context) error {
 	// Here the lease is still valid, we just need to refresh it.
 	_, err := m.leases.KeepAliveOnce(ctx, m.leaseID)
 	if err != nil {
-		if m.hasLeaseExpired(ctx) {
-			log.WithError(err).Error("Keep alive lease expired, regenerate lease")
-			m.leaseID = 0
-			m.leaseErrorNotifier <- true
-		}
 		if err, ok := err.(rpctypes.EtcdError); ok && rpctypes.Error(err) == rpctypes.ErrLeaseNotFound {
 			log.WithError(err).Error("Keep alive failed: lease not found, regenerate lease")
 			m.leaseID = 0
 			m.leaseErrorNotifier <- true
+			return nil
 		}
 		return errors.Wrap(err, "keep alive failed but the lease might still be valid, continuing")
 	}
