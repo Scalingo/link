@@ -70,7 +70,7 @@ func TestSetFailing(t *testing.T) {
 			ID: "test-1234",
 		}
 		networkMock.EXPECT().RemoveIP(ip.IP).Return(nil)
-		lockerMock.EXPECT().Stop(gomock.Any()).Return(nil)
+		lockerMock.EXPECT().Unlock(gomock.Any()).Return(nil)
 
 		manager := &manager{
 			networkInterface: networkMock,

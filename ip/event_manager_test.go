@@ -149,6 +149,8 @@ func TestManager_HealthChecker(t *testing.T) {
 			defer ctrl.Finish()
 			checker := healthcheckmock.NewMockChecker(ctrl)
 			example.Checker(checker)
+			lock := lockermock.NewMockLocker(ctrl)
+			lock.EXPECT().Stop(gomock.Any()).Return(nil)
 
 			manager := &manager{
 				checker:      checker,
@@ -158,6 +160,7 @@ func TestManager_HealthChecker(t *testing.T) {
 					FailCountBeforeFailover: 3,
 					KeepAliveInterval:       10 * time.Millisecond,
 				},
+				locker: lock,
 			}
 
 			eventChan := make(chan string, 1)
@@ -298,6 +301,7 @@ func TestSingleEventRun(t *testing.T) {
 
 			stopCalled := false
 			if example.shouldStop {
+				locker.EXPECT().Stop(gomock.Any()).Return(nil)
 				manager.stopper = func(ctx context.Context) error {
 					stopCalled = true
 					return nil
