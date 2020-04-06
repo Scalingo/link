@@ -16,6 +16,12 @@ import (
 	"go.etcd.io/etcd/clientv3"
 )
 
+type updadeResults struct {
+	called     bool
+	oldLeaseID clientv3.LeaseID
+	newLeaseID clientv3.LeaseID
+}
+
 func Test_refresh(t *testing.T) {
 	examples := []struct {
 		Name                      string
@@ -120,15 +126,29 @@ func Test_refresh(t *testing.T) {
 				callbacks:          make(map[string]LeaseChangedCallback),
 			}
 
-			subscriberCalled := false
-			var oldLeaseID, newLeaseID clientv3.LeaseID
+			leaseChangedChan := make(chan updadeResults)
 
-			leaseManager.SubscribeToLeaseChange(ctx, func(_ context.Context, o, n clientv3.LeaseID) {
-				subscriberCalled = true
-				newLeaseID = n
-				oldLeaseID = o
+			go func() {
+				time.Sleep(100 * time.Millisecond)
+				// If the LeaseChanged callback has not been sent, send default
+				select {
+				case leaseChangedChan <- updadeResults{
+					called: false,
+				}:
+				default:
+				}
+			}()
+
+			_, err := leaseManager.SubscribeToLeaseChange(ctx, func(_ context.Context, o, n clientv3.LeaseID) {
+				leaseChangedChan <- updadeResults{
+					called:     true,
+					newLeaseID: n,
+					oldLeaseID: o,
+				}
 			})
-			err := leaseManager.refresh(ctx)
+			require.NoError(t, err)
+
+			err = leaseManager.refresh(ctx)
 			if example.ExpectedError == "" {
 				require.NoError(t, err)
 			} else {
@@ -144,10 +164,10 @@ func Test_refresh(t *testing.T) {
 			}
 
 			// Wait for the corountine to be called
-			time.Sleep(100 * time.Millisecond)
-			assert.Equal(t, example.ShouldCallLeaseSubscriber, subscriberCalled)
-			assert.Equal(t, clientv3.LeaseID(example.LeaseSubscriberNew), newLeaseID)
-			assert.Equal(t, clientv3.LeaseID(example.LeaseSubscriberOld), oldLeaseID)
+			result := <-leaseChangedChan
+			assert.Equal(t, example.ShouldCallLeaseSubscriber, result.called)
+			assert.Equal(t, clientv3.LeaseID(example.LeaseSubscriberNew), result.newLeaseID)
+			assert.Equal(t, clientv3.LeaseID(example.LeaseSubscriberOld), result.oldLeaseID)
 		})
 	}
 }
