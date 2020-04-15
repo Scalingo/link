@@ -7,13 +7,14 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Scalingo/link/models"
-	"github.com/Scalingo/link/scheduler"
-	"github.com/Scalingo/link/scheduler/schedulermock"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/scheduler"
+	"github.com/Scalingo/link/scheduler/schedulermock"
 )
 
 func TestIPController_Create(t *testing.T) {
@@ -35,6 +36,11 @@ func TestIPController_Create(t *testing.T) {
 			Input:              `{"ip": "INVALID!!!"}`,
 			ExpectedStatusCode: http.StatusBadRequest,
 			ExpectedBody:       `{"msg": "invalid IP"}`,
+		}, {
+			Name:               "With a port of 0 for the health check",
+			Input:              `{"ip": "10.0.0.1/32", "checks": [{"port": 0}]}`,
+			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedBody:       `{"msg": "health check port cannot be 0"}`,
 		}, {
 			Name:  "With an IP that already has been assigned",
 			Input: `{"ip": "10.0.0.1/32"}`,
