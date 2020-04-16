@@ -40,7 +40,12 @@ func TestIPController_Create(t *testing.T) {
 			Name:               "With a port of 0 for the health check",
 			Input:              `{"ip": "10.0.0.1/32", "checks": [{"port": 0}]}`,
 			ExpectedStatusCode: http.StatusBadRequest,
-			ExpectedBody:       `{"msg": "health check port cannot be 0"}`,
+			ExpectedBody:       `{"msg": "health check port cannot be negative"}`,
+		}, {
+			Name:               "With a port of 0 for the health check",
+			Input:              `{"ip": "10.0.0.1/32", "checks": [{"port": 65536}]}`,
+			ExpectedStatusCode: http.StatusBadRequest,
+			ExpectedBody:       `{"msg": "health check port cannot be greater than 65535"}`,
 		}, {
 			Name:  "With an IP that already has been assigned",
 			Input: `{"ip": "10.0.0.1/32"}`,

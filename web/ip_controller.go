@@ -86,9 +86,14 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		return nil
 	}
 	for _, check := range ip.Checks {
-		if check.Port == 0 {
+		if check.Port <= 0 {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"msg": "health check port cannot be 0"}`))
+			w.Write([]byte(`{"msg": "health check port cannot be negative"}`))
+			return nil
+		}
+		if check.Port > 65535 {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"msg": "health check port cannot be greater than 65535"}`))
 			return nil
 		}
 	}
