@@ -49,7 +49,27 @@ website](https://coreos.com/etcd/docs/latest/getting-started-with-etcd.html).
 The easiest way to get LinK up and running is to use pre-build binary available
 on the [release pages](https://github.com/Scalingo/link/releases).
 
-### Configuration
+## State machine
+
+Each LinK agent can be in any of these three states:
+
+- `ACTIVATED`: This machine owns the virtual IP
+- `STANDBY`: This machine does not own the virtual IP but is available for election
+- `FAILING`: Health checks for this host failed, this machine is not available for election
+
+At any point five types of events can happen:
+- `fault`: There was some error when coordinating with other nodes.
+- `elected`: This machine was elected to own the virtual IP.
+- `demoted`: This machine just lost ownership of the virtual IP.
+- `health_check_fail`: The health checks configured with this IP failed.
+- `health_check_success`: The health checks configured with this IP succeeded.
+
+
+This is what the state machine looks like:
+
+![LinK state machine](./state_machine.png)
+
+## Configuration
 
 LinK configuration is entirely done by setting environment variables.
 
@@ -90,27 +110,6 @@ This is the equivalent of:
 ```shell
 ip addr del MY_IP dev MY_INTERFACE
 ```
-
-## State machine
-
-Each IP can be in any of these three states:
-
-- `ACTIVATED`: This machine owns the IP
-- `STANDBY`: This machine does not own the IP but is available for election
-- `FAILING`: Health checks for this IP failed, this machine is not available for election
-
-At any point five types of events can happen:
-- `fault`: There was some error when coordinating with other nodes
-- `elected`: This machine was elected to own the IP
-- `demoted`: This machine just loosed ownership on the IP
-- `health_check_fail`: The health checks configured with this IP failed.
-- `health_check_success`: The health checks configured with this IP succeeded.
-
-
-This is what the state machine looks like:
-
-![Sate Machine](./state_machine.png)
-
 
 ## Dev environment
 
