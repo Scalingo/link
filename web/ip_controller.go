@@ -5,13 +5,14 @@ import (
 	"encoding/json"
 	"net/http"
 
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	"github.com/vishvananda/netlink"
+
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/api"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/scheduler"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"github.com/vishvananda/netlink"
 )
 
 type ipController struct {
@@ -83,6 +84,18 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`{"msg": "invalid IP"}`))
 		return nil
+	}
+	for _, check := range ip.Checks {
+		if check.Port <= 0 {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"msg": "health check port cannot be negative"}`))
+			return nil
+		}
+		if check.Port > 65535 {
+			w.WriteHeader(http.StatusBadRequest)
+			w.Write([]byte(`{"msg": "health check port cannot be greater than 65535"}`))
+			return nil
+		}
 	}
 
 	ctx = logger.ToCtx(context.Background(), log)
