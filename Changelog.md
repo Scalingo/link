@@ -1,5 +1,7 @@
 # To be released
 
+* Validate the health check port value to be in the range [1:65535]
+
 # [2020-03-06] 1.8.4
 
 * Fix condition leading to extra lease renewal for short keepalive durations
