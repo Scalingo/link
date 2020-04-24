@@ -20,6 +20,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Version is the current LinK version. During release build it will be overwritten by the compiler
 var Version = "dev"
 
 func main() {
@@ -85,7 +86,7 @@ func main() {
 	r.HandleFunc("/ips", ipController.Create).Methods("POST")
 	r.HandleFunc("/ips/{id}", ipController.Destroy).Methods("DELETE")
 	r.HandleFunc("/ips/{id}", ipController.Get).Methods("GET")
-	r.HandleFunc("/ips/{id}/lock", ipController.TryGetLock).Methods("POST")
+	//TODO: /ips/{id}/failover
 	r.HandleFunc("/version", versionController.Version).Methods("GET")
 
 	globalRouter := mux.NewRouter()

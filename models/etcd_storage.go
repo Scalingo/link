@@ -15,8 +15,14 @@ import (
 )
 
 const (
-	ETCD_LINK_DIRECTORY = "/link"
+	EtcdLinkDirectory = "/link"
 )
+
+// Used keys:
+// /link/default/IP => Locks
+// /link/hosts/HOSTNAME/IP => IP config
+// /link/config/HOSTNAME => Hostname config
+// /link/ips/IP/HOSTNAME => Link between IP and host
 
 var (
 	ErrIPAlreadyPresent = errors.New("IP already present")
@@ -43,7 +49,7 @@ func (e etcdStorage) GetIPs(ctx context.Context) ([]IP, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	resp, err := client.Get(ctx, fmt.Sprintf("%s/hosts/%s", ETCD_LINK_DIRECTORY, e.hostname), clientv3.WithPrefix())
+	resp, err := client.Get(ctx, fmt.Sprintf("%s/hosts/%s", EtcdLinkDirectory, e.hostname), clientv3.WithPrefix())
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to get list of IPs from etcd")
 	}
@@ -139,14 +145,23 @@ func (e etcdStorage) RemoveIP(ctx context.Context, id string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	_, err = client.Delete(ctx, fmt.Sprintf("%s/hosts/%s/%s", ETCD_LINK_DIRECTORY, e.hostname, id))
+	_, err = client.Delete(ctx, fmt.Sprintf("%s/hosts/%s/%s", EtcdLinkDirectory, e.hostname, id))
 	if err != nil {
 		return errors.Wrap(err, "fail to delete IP")
 	}
 	return nil
 }
 
-func (e etcdStorage) GetHost(ctx context.Context) (Host, error) {
+func (e etcdStorage) GetCurrentHost(ctx context.Context) (Host, error) {
+	host, err := e.GetHost(ctx, e.hostname)
+	if err != nil {
+		return host, errors.Wrap(err, "fail to get current host")
+	}
+
+	return host, nil
+}
+
+func (e etcdStorage) GetHost(ctx context.Context, hostname string) (Host, error) {
 	var host Host
 	client, close, err := e.NewEtcdClient()
 	if err != nil {
@@ -157,7 +172,7 @@ func (e etcdStorage) GetHost(ctx context.Context) (Host, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	resp, err := client.Get(ctx, e.keyForHost())
+	resp, err := client.Get(ctx, e.keyForHost(hostname))
 	if err != nil {
 		return host, errors.Wrap(err, "fail to get host from etcd")
 	}
@@ -188,12 +203,71 @@ func (e etcdStorage) SaveHost(ctx context.Context, host Host) error {
 
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	_, err = client.Put(etcdCtx, e.keyForHost(), string(value))
+	_, err = client.Put(etcdCtx, e.keyForHost(e.hostname), string(value))
 	if err != nil {
 		return errors.Wrapf(err, "fail to save host")
 	}
 
 	return nil
+}
+
+func (e etcdStorage) LinkIP(ctx context.Context, ip IP) error {
+	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, ip.StorableIP(), e.hostname)
+	client, closer, err := e.NewEtcdClient()
+	if err != nil {
+		return errors.Wrap(err, "fail to get etcd client")
+	}
+	defer closer.Close()
+
+	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	_, err = client.Put(etcdCtx, key, "{}")
+	if err != nil {
+		return errors.Wrap(err, "fail to save ip link")
+	}
+	return nil
+}
+
+func (e etcdStorage) UnlinkIP(ctx context.Context, ip IP) error {
+	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, ip.StorableIP(), e.hostname)
+	client, closer, err := e.NewEtcdClient()
+	if err != nil {
+		return errors.Wrap(err, "fail to get etcd client")
+	}
+	defer closer.Close()
+
+	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	_, err = client.Delete(etcdCtx, key)
+	if err != nil {
+		return errors.Wrap(err, "fail to delete IP link")
+	}
+	return nil
+}
+
+func (e etcdStorage) IPHosts(ctx context.Context, ip IP) ([]string, error) {
+	key := fmt.Sprintf("%s/ips/%s", EtcdLinkDirectory, ip.StorableIP())
+
+	client, closer, err := e.NewEtcdClient()
+	if err != nil {
+		return nil, errors.Wrap(err, "fail to get etcd client")
+	}
+	defer closer.Close()
+
+	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	resp, err := client.Get(etcdCtx, key, clientv3.WithPrefix())
+	if err != nil {
+		return nil, errors.Wrap(err, "fail to list ip links")
+	}
+
+	results := make([]string, resp.Count)
+	for i, kv := range resp.Kvs {
+		// TODO: Should we filter ourself out ?
+		results[i] = string(kv.Key)
+	}
+	return results, nil
 }
 
 func (e etcdStorage) NewEtcdClient() (clientv3.KV, io.Closer, error) {
@@ -206,9 +280,9 @@ func (e etcdStorage) NewEtcdClient() (clientv3.KV, io.Closer, error) {
 }
 
 func (e etcdStorage) keyFor(ip IP) string {
-	return fmt.Sprintf("%s/hosts/%s/%s", ETCD_LINK_DIRECTORY, e.hostname, ip.ID)
+	return fmt.Sprintf("%s/hosts/%s/%s", EtcdLinkDirectory, e.hostname, ip.ID)
 }
 
-func (e etcdStorage) keyForHost() string {
-	return fmt.Sprintf("%s/config/%s", ETCD_LINK_DIRECTORY, e.hostname)
+func (e etcdStorage) keyForHost(hostname string) string {
+	return fmt.Sprintf("%s/config/%s", EtcdLinkDirectory, hostname)
 }

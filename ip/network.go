@@ -48,7 +48,7 @@ func (m *manager) startArpEnsure(ctx context.Context) {
 	)
 	log := logger.Get(ctx).WithField("process", "arp_ensure")
 	for {
-		if m.isStopping() {
+		if m.isStopped() {
 			return
 		}
 		currentState := m.stateMachine.Current()

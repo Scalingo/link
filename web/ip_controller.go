@@ -101,7 +101,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 	ctx = logger.ToCtx(context.Background(), log)
 	ip, err = c.scheduler.Start(ctx, ip)
 	if err != nil {
-		if errors.Cause(err) == scheduler.ErrNotStopping {
+		if err == scheduler.ErrIPAlreadyAssigned {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(`{"msg": "IP already assigned"}`))
 			return nil
@@ -128,23 +128,6 @@ func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map
 	err := c.scheduler.Stop(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "fail to stop IP manager")
-	}
-
-	w.WriteHeader(http.StatusNoContent)
-	return nil
-}
-
-func (c ipController) TryGetLock(w http.ResponseWriter, r *http.Request, params map[string]string) error {
-	ctx := r.Context()
-	id := params["id"]
-
-	w.Header().Set("Content-Type", "application/json")
-
-	found := c.scheduler.TryGetLock(ctx, id)
-	if !found {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(`{"error": "not found"}`))
-		return nil
 	}
 
 	w.WriteHeader(http.StatusNoContent)

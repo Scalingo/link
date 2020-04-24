@@ -33,6 +33,7 @@ func Test_refresh(t *testing.T) {
 		ExpectedError             string
 		ShouldNotifyLeaseError    bool
 		ShouldCallLeaseSubscriber bool
+		ShouldForceLeaseRefresh   bool
 		LeaseSubscriberOld        int64
 		LeaseSubscriberNew        int64
 	}{
@@ -78,8 +79,9 @@ func Test_refresh(t *testing.T) {
 			MockLease: func(mock *etcdmock.MockLease) {
 				mock.EXPECT().KeepAliveOnce(gomock.Any(), clientv3.LeaseID(1234)).Return(nil, rpctypes.ErrLeaseNotFound)
 			},
-			ExpectedLeaseID:        0,
-			ShouldNotifyLeaseError: true,
+			ExpectedLeaseID:         1234,
+			ShouldNotifyLeaseError:  true,
+			ShouldForceLeaseRefresh: true,
 		},
 		{
 			Name:                   "When the lease bas been generated but Etcd refuse the KeepAlive",
@@ -168,6 +170,7 @@ func Test_refresh(t *testing.T) {
 			assert.Equal(t, example.ShouldCallLeaseSubscriber, result.called)
 			assert.Equal(t, clientv3.LeaseID(example.LeaseSubscriberNew), result.newLeaseID)
 			assert.Equal(t, clientv3.LeaseID(example.LeaseSubscriberOld), result.oldLeaseID)
+			assert.Equal(t, example.ShouldForceLeaseRefresh, leaseManager.forceLeaseRefresh)
 		})
 	}
 }

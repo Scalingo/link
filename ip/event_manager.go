@@ -5,169 +5,118 @@ import (
 	"time"
 
 	"github.com/Scalingo/go-utils/logger"
+	"github.com/Scalingo/link/locker"
+	"github.com/pkg/errors"
 )
 
-func (m *manager) Stop(ctx context.Context, stopper func(context.Context) error) {
-	log := logger.Get(ctx)
-	m.stopMutex.Lock()
-	m.stopper = stopper
-	m.stopMutex.Unlock()
+var (
+	// ErrReallocationTimedOut is an error returned by waitForReallocation is the reallocation did not happen in less than KeepAliveInterval
+	ErrReallocationTimedOut = errors.New("Reallocation timed out")
+)
 
-	if m.stateMachine.Current() == ACTIVATED {
-		err := m.locker.Unlock(ctx)
-		if err != nil {
-			log.WithError(err).Error("fail to release etcd lease")
-			return
+/* Stop process:
+  1. Fetch information about other hosts registered on this IP and our state on the IP
+  3. Begin the shutdown process (/!\ THIS SHOULD BE PROTECTED BY THE STOP MUTEX OR IT COULD LEAD TO INVALID STATE)
+	3.1. Set the stop flag to true, since we are in the lock it will not impact the other process yet but it will ensure that if the process stop unexpectedly, all the other goroutine will stop and we will remove the IP by letting it decay.
+	3.2. If we are the owner of the lock on the IP remove it
+	3.3. Remove us from the list of potential hosts for this IP (UnlinkIP). This will trigger other hosts to try to get the IP
+	3.4. Set the state machine to a state where it will remove the IP.
+	3.5. Remove the IP from the interface.
+*/
+
+func (m *manager) Stop(ctx context.Context) error {
+	log := logger.Get(ctx).WithField("task", "stop")
+	ctx = logger.ToCtx(ctx, log)
+
+	log.Info("Start stop preflight checks")
+	hosts, err := m.storage.IPHosts(ctx, m.IP())
+	if err != nil {
+		return errors.Wrap(err, "fail to get new hosts")
+	}
+
+	isMaster, err := m.locker.IsMaster(ctx)
+	if err != nil {
+		if err == locker.ErrInvalidEtcdState { // If the key does not exist!
+			isMaster = false
+		} else {
+			return errors.Wrap(err, "fail to know if we are master")
 		}
 	}
-}
-
-func (m *manager) CancelStopping(ctx context.Context) bool {
-	log := logger.Get(ctx)
-	if !m.isStopping() {
-		log.Debug("Do not cancel stopping of a non-stopping IP")
-		return false
-	}
-	log.Info("Cancel manager stopping")
 
 	m.stopMutex.Lock()
 	defer m.stopMutex.Unlock()
-	m.stopper = nil
-	return true
-}
+	log.Info("Start stop process")
 
-func (m *manager) TryGetLock(ctx context.Context) {
-	m.singleEtcdRun(ctx)
-}
+	m.stopped = true
 
-func (m *manager) isStopping() bool {
-	m.stopMutex.RLock()
-	defer m.stopMutex.RUnlock()
-	return m.stopper != nil
-}
-
-func (m *manager) isStopped() bool {
-	m.stopMutex.RLock()
-	defer m.stopMutex.RUnlock()
-	return m.stopped
-}
-
-func (m *manager) sendEvent(status string) {
-	m.messageMutex.Lock()
-	defer m.messageMutex.Unlock()
-	if m.closed {
-		return
+	log.Info("Stop the locker")
+	err = m.locker.Stop(ctx)
+	if err != nil {
+		return errors.Wrap(err, "fail to stop locker")
 	}
-	m.eventChan <- status
-}
 
-func (m *manager) closeEventChan() {
-	m.messageMutex.Lock()
-	defer m.messageMutex.Unlock()
-	m.closed = true
+	log.Info("Stop the watcher")
+	err = m.watcher.Stop(ctx)
+	if err != nil {
+		log.WithError(err).Error("Fail to stop watcher")
+	}
+
+	log.Info("Unlink IP from the host")
+	err = m.storage.UnlinkIP(ctx, m.ip)
+	if err != nil {
+		return errors.Wrap(err, "fail to unlink IP")
+	}
+
+	if isMaster && len(hosts) > 1 {
+		log.Info("We were not alone, wait for other hosts to remove the IP")
+		err := m.waitForReallocation(ctx)
+		if err != nil {
+			log.WithError(err).Error("Fail to reallocate IP, continuing shutdown")
+		}
+	}
+
+	log.Info("Demoting ourself")
+	if m.stateMachine.Current() != FAILING {
+		// We cannot use SendEvent here because the isStopping method is blocked by the stopMutex
+		m.eventChan <- DemotedEvent
+	}
+
+	// We can stop the FSM we do not need it anymore
 	close(m.eventChan)
+
+	log.Info("Remove the IP from our interface")
+	err = m.networkInterface.RemoveIP(m.ip.IP)
+	if err != nil {
+		return errors.Wrap(err, "fail to remove IP from interface")
+	}
+
+	log.Info("Stop process ended!")
+	return nil
 }
 
-func (m *manager) eventManager(ctx context.Context) {
+// ipCheckLoop checks every KeepaliveInterval if we should try to get the IP
+// if we should try to get the IP, it will launch the tryToGetIP method that will do the heavy lifting.
+func (m *manager) ipCheckLoop(ctx context.Context) {
 	interval := time.Duration(m.IP().KeepaliveInterval) * time.Second
 	if interval == 0 {
 		interval = m.config.KeepAliveInterval
 	}
 	for {
-		shouldContinue := m.singleEventRun(ctx)
-		if !shouldContinue {
+		if m.isStopped() {
 			return
 		}
+
+		m.tryToGetIP(ctx)
+
 		time.Sleep(interval)
 	}
 }
 
-func (m *manager) singleEventRun(ctx context.Context) bool {
-	log := logger.Get(ctx).WithField("process", "event_manager")
-	if m.isStopping() {
-		// Sleeping twice the lease time will ensure that we've lost our lease and another node was elected MASTER.
-		// So after this sleep, we can safely remove our IP.
-
-		log.Infof("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
-		m.waitTwiceLeaseTimeOrReallocation(ctx)
-		if m.stopOrder(ctx) {
-			log.Infof("Removing IP %s", m.ip.IP)
-			err := m.networkInterface.RemoveIP(m.ip.IP)
-			if err != nil {
-				log.WithError(err).Error("fail to remove IP")
-			}
-			return false
-		}
-		log.Info("Stop order has been cancelled")
+func (m *manager) tryToGetIP(ctx context.Context) {
+	if m.stateMachine.Current() == FAILING {
+		return
 	}
 
-	if m.stateMachine.Current() != FAILING {
-		m.singleEtcdRun(ctx)
-	}
-
-	return true
-}
-
-func (m *manager) waitTwiceLeaseTimeOrReallocation(ctx context.Context) {
-	log := logger.Get(ctx)
-	timer := time.NewTimer(2 * m.config.LeaseTime())
-	defer timer.Stop()
-
-	ticker := time.NewTicker(500 * time.Millisecond)
-	defer ticker.Stop()
-
-	for {
-		select {
-		case <-timer.C:
-			return
-		case <-ticker.C:
-			log.Debug("tick wait twice lease time")
-			if !m.isStopping() {
-				return
-			}
-			master, err := m.locker.IsMaster(ctx)
-			// This can return a key not found error
-			// This is likely to happen during re-election and is perfectly normal
-			if err == nil && !master {
-				log.Debug("Someone else took the lock, beginning premature shutdown")
-				return
-			}
-		}
-	}
-}
-
-// stopOrder actually handles the stopping. It returns true if it has been stopped, false
-// otherwise. It can happen if the current manager stopping has been cancelled.
-func (m *manager) stopOrder(ctx context.Context) bool {
-	m.stopMutex.Lock()
-	defer m.stopMutex.Unlock()
-
-	log := logger.Get(ctx)
-
-	// The stopping might have been cancelled during the two lease time sleep. We execute the
-	// stopper function only if it is still in stopping state
-	if m.stopper != nil {
-		log.Info("Stopping!")
-		if m.stateMachine.Current() != FAILING {
-			m.sendEvent(DemotedEvent)
-		}
-		err := m.stopper(ctx)
-		if err != nil {
-			log.WithError(err).Error("fail to execute the stopper function")
-		}
-		m.closeEventChan()
-		err = m.locker.Stop(ctx)
-		if err != nil {
-			log.WithError(err).Error("Fail to stop locker")
-		}
-
-		m.stopped = true
-		return true
-	}
-	return false
-}
-
-func (m *manager) singleEtcdRun(ctx context.Context) {
 	log := logger.Get(ctx)
 	err := m.locker.Refresh(ctx)
 	if err != nil {
@@ -190,54 +139,46 @@ func (m *manager) singleEtcdRun(ctx context.Context) {
 		// Fault event should only be handled in the Refresh operation where the
 		// retry loop is present
 		return
+	}
+
+	if isMaster {
+		log.Debug("we are master, sending elected event")
+		m.sendEvent(ElectedEvent)
 	} else {
-		if isMaster {
-			log.Debug("we are master, sending elected event")
-			m.sendEvent(ElectedEvent)
-		} else {
-			log.Debug("we are not master, sending demoted event")
-			m.sendEvent(DemotedEvent)
-		}
+		log.Debug("we are not master, sending demoted event")
+		m.sendEvent(DemotedEvent)
 	}
 }
 
-func (m *manager) healthChecker(ctx context.Context) {
-	interval := time.Duration(m.IP().HealthcheckInterval) * time.Second
-	if interval == 0 {
-		interval = m.config.HealthcheckInterval
-	}
-
-	for {
-		healthy, err := m.checker.IsHealthy(ctx)
-
-		// The eventManager will close the chan when we receive the Stop order and we do not want to send things on a close channel.
-		// Since the checker can take up to 5s to run his checks, this check must be done between the health check and sending the results.
-		if m.isStopped() {
-			return
-		}
-
-		if !m.isStopping() {
-			m.sendHealthcheckResults(ctx, healthy, err)
-		}
-
-		time.Sleep(interval)
-	}
-}
-
-func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool, err error) {
+func (m *manager) onTopologyChange(ctx context.Context) {
 	log := logger.Get(ctx)
-	if healthy {
-		if m.failingCount > 0 {
-			log.Infof("healthcheck healthy after %v retries", m.failingCount)
-			m.failingCount = 0
+	if m.isStopped() {
+		return
+	}
+
+	log.Info("Network topology changed, trying to get the IP")
+	m.tryToGetIP(ctx)
+}
+
+func (m *manager) waitForReallocation(ctx context.Context) error {
+	log := logger.Get(ctx)
+	startTime := time.Now()
+	for {
+		time.Sleep(100 * time.Millisecond)
+		isMaster, err := m.locker.IsMaster(ctx)
+		if err != nil && err == locker.ErrInvalidEtcdState { // The key does not exist so nobody took the lease yet
+			continue
 		}
-		m.sendEvent(HealthCheckSuccessEvent)
-	} else {
-		m.failingCount++
-		log.WithField("failing_count", m.failingCount).WithError(err).Info("healthcheck failed (retry)")
-		if m.failingCount >= m.config.FailCountBeforeFailover {
-			log.WithError(err).Error("healthcheck failed")
-			m.sendEvent(HealthCheckFailEvent)
+		if err != nil {
+			log.WithError(err).Error("Fail to check if we are master, retrying...")
+		}
+
+		if !isMaster {
+			return nil // Someone else took the lease
+		}
+
+		if time.Now().Sub(startTime) > m.config.KeepAliveInterval {
+			return ErrReallocationTimedOut
 		}
 	}
 }

@@ -50,7 +50,7 @@ func TestIPController_Create(t *testing.T) {
 			Name:  "With an IP that already has been assigned",
 			Input: `{"ip": "10.0.0.1/32"}`,
 			SchedulerMock: func(mock *schedulermock.MockScheduler) {
-				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.IP{}, scheduler.ErrNotStopping)
+				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.IP{}, scheduler.ErrIPAlreadyAssigned)
 			},
 			ExpectedStatusCode: http.StatusBadRequest,
 			ExpectedBody:       `{"msg": "IP already assigned"}`,

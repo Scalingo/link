@@ -44,7 +44,7 @@ In order to be able to run LinK, you must have a working etcd cluster.
 Installation and configuration instructions are available on the [etcd
 website](https://coreos.com/etcd/docs/latest/getting-started-with-etcd.html).
 
-> LinK uses etcd v3 API. So you'll need etcd version 3.0.0 or higher.
+> LinK uses etcd v3 API and makes use of LeaseValue comparison in transactions, so you'll need etcd version 3.3.0 or higher.
 
 The easiest way to get LinK up and running is to use pre-build binary available
 on the [release pages](https://github.com/Scalingo/link/releases).
