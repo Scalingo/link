@@ -147,7 +147,7 @@ func (l *etcdLocker) Stop(ctx context.Context) error {
 
 	// First remove the subscription, if it fails: continue
 	if l.leaseSubscriberID != "" {
-		err := l.leaseManager.UnSubscribeToLeaseChange(ctx, l.leaseSubscriberID)
+		err := l.leaseManager.UnsubscribeToLeaseChange(ctx, l.leaseSubscriberID)
 		if err != nil {
 			log.WithError(err).Error("fail to remove subscription on lease changes")
 		}

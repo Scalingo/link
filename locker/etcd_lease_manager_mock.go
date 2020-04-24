@@ -105,16 +105,16 @@ func (mr *MockEtcdLeaseManagerMockRecorder) SubscribeToLeaseChange(arg0, arg1 in
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeToLeaseChange", reflect.TypeOf((*MockEtcdLeaseManager)(nil).SubscribeToLeaseChange), arg0, arg1)
 }
 
-// UnSubscribeToLeaseChange mocks base method
-func (m *MockEtcdLeaseManager) UnSubscribeToLeaseChange(arg0 context.Context, arg1 string) error {
+// UnsubscribeToLeaseChange mocks base method
+func (m *MockEtcdLeaseManager) UnsubscribeToLeaseChange(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UnSubscribeToLeaseChange", arg0, arg1)
+	ret := m.ctrl.Call(m, "UnsubscribeToLeaseChange", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UnSubscribeToLeaseChange indicates an expected call of UnSubscribeToLeaseChange
-func (mr *MockEtcdLeaseManagerMockRecorder) UnSubscribeToLeaseChange(arg0, arg1 interface{}) *gomock.Call {
+// UnsubscribeToLeaseChange indicates an expected call of UnsubscribeToLeaseChange
+func (mr *MockEtcdLeaseManagerMockRecorder) UnsubscribeToLeaseChange(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnSubscribeToLeaseChange", reflect.TypeOf((*MockEtcdLeaseManager)(nil).UnSubscribeToLeaseChange), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsubscribeToLeaseChange", reflect.TypeOf((*MockEtcdLeaseManager)(nil).UnsubscribeToLeaseChange), arg0, arg1)
 }

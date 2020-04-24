@@ -23,14 +23,14 @@ var ErrGetLeaseTimeout = errors.New("Timeout while trying to get lease")
 // LeaseChangedCallback is a callback called by the lease manager when the leaseID has changed so that all managers could try to regenerate their keys
 type LeaseChangedCallback func(ctx context.Context, oldLeaseID, newLeaseID clientv3.LeaseID)
 
-// EtcdLeaseManager let's you get the current server lease for the server
+// EtcdLeaseManager let you get the current server lease for the server
 type EtcdLeaseManager interface {
 	Start(ctx context.Context) error
 	Stop(ctx context.Context)
 	GetLease(ctx context.Context) (clientv3.LeaseID, error)                                    // This will get the current lease or wait for one to be generated
 	MarkLeaseAsDirty(ctx context.Context, leaseID clientv3.LeaseID) error                      // This is sent by clients if they think that there might be an issue with the Lease
 	SubscribeToLeaseChange(ctx context.Context, callback LeaseChangedCallback) (string, error) // Subscribe to lease changes. This function returns an ID that should be used to unsubscribe.
-	UnSubscribeToLeaseChange(ctx context.Context, id string) error                             // Unsubscribe from the lease changes
+	UnsubscribeToLeaseChange(ctx context.Context, id string) error                             // Unsubscribe from the lease changes
 }
 
 type etcdLeaseManager struct {
@@ -85,7 +85,7 @@ func (m *etcdLeaseManager) GetLease(ctx context.Context) (clientv3.LeaseID, erro
 	if err != nil {
 		return clientv3.NoLease, errors.Wrap(err, "fail to subscribe to leaseID changes")
 	}
-	defer m.UnSubscribeToLeaseChange(ctx, id) // Do not forget to clean it
+	defer m.UnsubscribeToLeaseChange(ctx, id) // Do not forget to clean it
 
 	// Prepare a timer (to manage tiemout) this timer should not be above the KeepAliveInterval
 	timer := time.NewTimer(m.config.KeepAliveInterval)
@@ -119,7 +119,7 @@ func (m *etcdLeaseManager) SubscribeToLeaseChange(ctx context.Context, callback 
 	return id, nil
 }
 
-func (m *etcdLeaseManager) UnSubscribeToLeaseChange(ctx context.Context, id string) error {
+func (m *etcdLeaseManager) UnsubscribeToLeaseChange(ctx context.Context, id string) error {
 	m.callbackLock.Lock()
 	defer m.callbackLock.Unlock()
 
@@ -265,7 +265,7 @@ func (m etcdLeaseManager) isLeaseDirty(ctx context.Context, leaseID clientv3.Lea
 	}
 	// If the key has not expired, there's nothing to do. If there is an issue the refresher will pick that up and mange it by itself.
 	if m.hasLeaseExpired(ctx) {
-		log.Infof("We got notify that there was an issue with lease %v generated on %v and indeed it's expired. Resetting it.", leaseID, m.lastRefreshedAt)
+		log.Infof("We got notified that there was an issue with lease %v generated on %v and indeed it's expired. Resetting it.", leaseID, m.lastRefreshedAt)
 		m.leaseID = 0
 		return true
 	}
