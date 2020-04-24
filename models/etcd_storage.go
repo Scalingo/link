@@ -20,6 +20,7 @@ const (
 
 var (
 	ErrIPAlreadyPresent = errors.New("IP already present")
+	ErrHostNotFound     = errors.New("Host not found")
 )
 
 type etcdStorage struct {
@@ -145,6 +146,56 @@ func (e etcdStorage) RemoveIP(ctx context.Context, id string) error {
 	return nil
 }
 
+func (e etcdStorage) GetHost(ctx context.Context) (Host, error) {
+	var host Host
+	client, close, err := e.NewEtcdClient()
+	if err != nil {
+		return host, errors.Wrap(err, "fail to get etcd client")
+	}
+	defer close.Close()
+
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	resp, err := client.Get(ctx, e.keyForHost())
+	if err != nil {
+		return host, errors.Wrap(err, "fail to get host from etcd")
+	}
+
+	if len(resp.Kvs) == 0 {
+		return host, ErrHostNotFound
+	}
+
+	err = json.Unmarshal(resp.Kvs[0].Value, &host)
+	if err != nil {
+		return host, errors.Wrap(err, "fail to decode host config")
+	}
+
+	return host, nil
+}
+
+func (e etcdStorage) SaveHost(ctx context.Context, host Host) error {
+	client, closer, err := e.NewEtcdClient()
+	if err != nil {
+		return errors.Wrap(err, "fail to get etcd client")
+	}
+	defer closer.Close()
+
+	value, err := json.Marshal(host)
+	if err != nil {
+		return errors.Wrap(err, "fail to marshal host")
+	}
+
+	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	_, err = client.Put(etcdCtx, e.keyForHost(), string(value))
+	if err != nil {
+		return errors.Wrapf(err, "fail to save host")
+	}
+
+	return nil
+}
+
 func (e etcdStorage) NewEtcdClient() (clientv3.KV, io.Closer, error) {
 	c, err := etcd.ClientFromEnv()
 	if err != nil {
@@ -156,4 +207,8 @@ func (e etcdStorage) NewEtcdClient() (clientv3.KV, io.Closer, error) {
 
 func (e etcdStorage) keyFor(ip IP) string {
 	return fmt.Sprintf("%s/hosts/%s/%s", ETCD_LINK_DIRECTORY, e.hostname, ip.ID)
+}
+
+func (e etcdStorage) keyForHost() string {
+	return fmt.Sprintf("%s/config/%s", ETCD_LINK_DIRECTORY, e.hostname)
 }

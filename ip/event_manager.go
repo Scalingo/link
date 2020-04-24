@@ -88,7 +88,7 @@ func (m *manager) singleEventRun(ctx context.Context) bool {
 		// Sleeping twice the lease time will ensure that we've lost our lease and another node was elected MASTER.
 		// So after this sleep, we can safely remove our IP.
 
-		log.Infof("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime(m.ip.KeepaliveInterval)).String())
+		log.Infof("Stop order received, waiting %s to remove IP", (2 * m.config.LeaseTime()).String())
 		m.waitTwiceLeaseTimeOrReallocation(ctx)
 		if m.stopOrder(ctx) {
 			log.Infof("Removing IP %s", m.ip.IP)
@@ -110,7 +110,7 @@ func (m *manager) singleEventRun(ctx context.Context) bool {
 
 func (m *manager) waitTwiceLeaseTimeOrReallocation(ctx context.Context) {
 	log := logger.Get(ctx)
-	timer := time.NewTimer(2 * m.config.LeaseTime(m.ip.KeepaliveInterval))
+	timer := time.NewTimer(2 * m.config.LeaseTime())
 	defer timer.Stop()
 
 	ticker := time.NewTicker(500 * time.Millisecond)
@@ -156,6 +156,10 @@ func (m *manager) stopOrder(ctx context.Context) bool {
 			log.WithError(err).Error("fail to execute the stopper function")
 		}
 		m.closeEventChan()
+		err = m.locker.Stop(ctx)
+		if err != nil {
+			log.WithError(err).Error("Fail to stop locker")
+		}
 
 		m.stopped = true
 		return true
@@ -188,8 +192,10 @@ func (m *manager) singleEtcdRun(ctx context.Context) {
 		return
 	} else {
 		if isMaster {
+			log.Debug("we are master, sending elected event")
 			m.sendEvent(ElectedEvent)
 		} else {
+			log.Debug("we are not master, sending demoted event")
 			m.sendEvent(DemotedEvent)
 		}
 	}

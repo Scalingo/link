@@ -8,6 +8,7 @@ import (
 	"github.com/Scalingo/link/api"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/ip"
+	"github.com/Scalingo/link/locker"
 	"github.com/Scalingo/link/models"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -24,24 +25,26 @@ type Scheduler interface {
 }
 
 type IPScheduler struct {
-	mapMutex   sync.RWMutex
-	ipManagers map[string]ip.Manager
-	etcd       *clientv3.Client
-	config     config.Config
-	storage    models.Storage
+	mapMutex     sync.RWMutex
+	ipManagers   map[string]ip.Manager
+	etcd         *clientv3.Client
+	config       config.Config
+	storage      models.Storage
+	leaseManager locker.EtcdLeaseManager
 }
 
 var (
 	ErrNotStopping = errors.New("not stopping")
 )
 
-func NewIPScheduler(config config.Config, etcd *clientv3.Client, storage models.Storage) *IPScheduler {
+func NewIPScheduler(config config.Config, etcd *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) *IPScheduler {
 	return &IPScheduler{
-		mapMutex:   sync.RWMutex{},
-		ipManagers: make(map[string]ip.Manager),
-		etcd:       etcd,
-		config:     config,
-		storage:    storage,
+		mapMutex:     sync.RWMutex{},
+		ipManagers:   make(map[string]ip.Manager),
+		etcd:         etcd,
+		config:       config,
+		storage:      storage,
+		leaseManager: leaseManager,
 	}
 }
 
@@ -85,7 +88,7 @@ func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) (models.IP, e
 	}
 	log.Info("Initialize a new IP manager")
 
-	manager, err = ip.NewManager(ctx, s.config, newIP, s.etcd, s.storage)
+	manager, err = ip.NewManager(ctx, s.config, newIP, s.etcd, s.leaseManager)
 	if err != nil {
 		if ipAdded {
 			err := s.storage.RemoveIP(ctx, newIP.ID)

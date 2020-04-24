@@ -36,9 +36,9 @@ func (m *manager) setFailing(ctx context.Context, _ *fsm.Event) {
 		log.WithError(err).Error("Fail to de-activate IP")
 	}
 
-	err = m.locker.Stop(ctx)
+	err = m.locker.Unlock(ctx)
 	if err != nil {
-		log.WithError(err).Error("Fail to stop locker")
+		log.WithError(err).Error("Fail to unlock the key")
 	}
 }
 

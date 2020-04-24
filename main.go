@@ -12,6 +12,7 @@ import (
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/go-utils/logger/plugins/rollbarplugin"
 	"github.com/Scalingo/link/config"
+	"github.com/Scalingo/link/locker"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/scheduler"
 	"github.com/Scalingo/link/web"
@@ -22,25 +23,35 @@ import (
 var Version = "dev"
 
 func main() {
-	config, err := config.Build()
-	if err != nil {
-		panic(err)
-	}
-
 	rollbarplugin.Register()
 	log := logger.Default()
 	ctx := logger.ToCtx(context.Background(), log)
 
+	config, err := config.Build()
+	if err != nil {
+		log.WithError(err).Error("fail to init config")
+		panic(err)
+	}
+
 	etcd, err := etcd.ClientFromEnv()
 	if err != nil {
+		log.WithError(err).Error("fail to get etcd client")
 		panic(err)
 	}
 
 	storage := models.NewEtcdStorage(config)
-	scheduler := scheduler.NewIPScheduler(config, etcd, storage)
+	leaseManager := locker.NewEtcdLeaseManager(ctx, config, storage, etcd)
+	err = leaseManager.Start(ctx)
+	if err != nil {
+		log.WithError(err).Error("fail to start lease manager")
+		panic(err)
+	}
+
+	scheduler := scheduler.NewIPScheduler(config, etcd, storage, leaseManager)
 
 	ips, err := storage.GetIPs(ctx)
 	if err != nil {
+		log.WithError(err).Error("fail to list configured IPs")
 		panic(err)
 	}
 
