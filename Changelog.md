@@ -1,5 +1,6 @@
 # To be released
 
+* Use a single ETCD lease per server instead of one per IP to reduce load on the etcd cluster
 * Validate the health check port value to be in the range [1:65535]
 
 # [2020-03-06] 1.8.4
