@@ -88,7 +88,7 @@ LinK configuration is entirely done by setting environment variables.
 - `POST /ips`: Add an IP
 - `GET /ips/:id`: Get a single IP
 - `DELETE /ips/:id`: Remove an IP
-- `POST /ips/:id/lock`: Try to get the lock on this IP
+- `POST /ips/:id/failover`: Trigger a failover on this IP (can only be launched on the master)
 
 ## How do we bind the IPs?
 
