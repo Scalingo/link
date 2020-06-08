@@ -99,6 +99,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		}
 	}
 
+	ip.ID = ""
 	ctx = logger.ToCtx(context.Background(), log)
 	ip, err = c.scheduler.Start(ctx, ip)
 	if err != nil {

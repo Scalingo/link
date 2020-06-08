@@ -74,7 +74,7 @@ func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) (models.IP, e
 	if err != nil {
 		if errors.Cause(err) != models.ErrIPAlreadyPresent {
 			return newIP, errors.Wrap(err, "fail to add IP to storage")
-		} else {
+		} else if ipAddr.ID == "" { // If the ID is not empty we are in the startup process
 			return newIP, ErrIPAlreadyAssigned
 		}
 	}
