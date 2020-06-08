@@ -32,5 +32,5 @@ func (i IP) StorableIP() string {
 
 // IPLink is the structure stored when an IP is linked to an Host
 type IPLink struct {
-	UpdatedAt time.Time `json:"updated_at`
+	UpdatedAt time.Time `json:"updated_at"`
 }
