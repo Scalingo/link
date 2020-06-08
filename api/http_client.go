@@ -129,8 +129,8 @@ func (c HTTPClient) GetIP(ctx context.Context, id string) (IP, error) {
 	return res["ip"], nil
 }
 
-func (c HTTPClient) TryGetLock(ctx context.Context, id string) error {
-	req, err := c.getRequest(http.MethodPost, fmt.Sprintf("/ips/%s/lock", id), nil)
+func (c HTTPClient) Failover(ctx context.Context, id string) error {
+	req, err := c.getRequest(http.MethodPost, fmt.Sprintf("/ips/%s/failover", id), nil)
 	if err != nil {
 		return err
 	}

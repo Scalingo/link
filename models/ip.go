@@ -2,6 +2,7 @@ package models
 
 import (
 	"strings"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -24,6 +25,12 @@ func (i IP) ToLogrusFields() logrus.Fields {
 	}
 }
 
-func (ip IP) StorableIP() string {
-	return strings.Replace(ip.IP, "/", "_", -1)
+// StorableIP transform the IP to a string that is compatible with ETCD key naming rules
+func (i IP) StorableIP() string {
+	return strings.Replace(i.IP, "/", "_", -1)
+}
+
+// IPLink is the structure stored when an IP is linked to an Host
+type IPLink struct {
+	UpdatedAt time.Time `json:"updated_at`
 }

@@ -11,6 +11,7 @@ import (
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/api"
+	"github.com/Scalingo/link/ip"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/scheduler"
 )
@@ -127,9 +128,38 @@ func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map
 	id := params["id"]
 	err := c.scheduler.Stop(ctx, id)
 	if err != nil {
+		if err == scheduler.ErrIPNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(`{"msg": "IP not found"}`))
+			return nil
+		}
 		return errors.Wrap(err, "fail to stop IP manager")
 	}
 
+	w.WriteHeader(http.StatusNoContent)
+	return nil
+}
+
+func (c ipController) Failover(w http.ResponseWriter, r *http.Request, params map[string]string) error {
+	ctx := r.Context()
+	id := params["id"]
+	err := c.scheduler.Failover(ctx, id)
+	if err != nil {
+		if err == scheduler.ErrIPNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(`{"msg": "IP not found"}`))
+			return nil
+		}
+		cause := errors.Cause(err)
+		if cause == ip.ErrIsNotMaster || cause == ip.ErrNoOtherHosts {
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{
+				"msg": err.Error(),
+			})
+			return nil
+		}
+		return errors.Wrap(err, "fail to stop IP manager")
+	}
 	w.WriteHeader(http.StatusNoContent)
 	return nil
 }

@@ -83,7 +83,7 @@ func main() {
 				return nil
 			},
 		}, {
-			Name:      "try-get-lock",
+			Name:      "failover",
 			ArgsUsage: "ID",
 			Action: func(c *cli.Context) error {
 				if c.NArg() != 1 {
@@ -91,7 +91,7 @@ func main() {
 					return nil
 				}
 				client := getClientFromCtx(c)
-				err := client.TryGetLock(context.Background(), c.Args().First())
+				err := client.Failover(context.Background(), c.Args().First())
 				if err != nil {
 					return err
 				}

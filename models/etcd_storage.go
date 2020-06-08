@@ -219,9 +219,16 @@ func (e etcdStorage) LinkIP(ctx context.Context, ip IP) error {
 	}
 	defer closer.Close()
 
+	payload, err := json.Marshal(IPLink{
+		UpdatedAt: time.Now(),
+	})
+	if err != nil {
+		return errors.Wrap(err, "fail to encode IP Link")
+	}
+
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	_, err = client.Put(etcdCtx, key, "{}")
+	_, err = client.Put(etcdCtx, key, string(payload))
 	if err != nil {
 		return errors.Wrap(err, "fail to save ip link")
 	}

@@ -50,6 +50,20 @@ func (mr *MockClientMockRecorder) AddIP(arg0, arg1, arg2 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIP", reflect.TypeOf((*MockClient)(nil).AddIP), arg0, arg1, arg2)
 }
 
+// Failover mocks base method
+func (m *MockClient) Failover(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Failover", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Failover indicates an expected call of Failover
+func (mr *MockClientMockRecorder) Failover(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Failover", reflect.TypeOf((*MockClient)(nil).Failover), arg0, arg1)
+}
+
 // GetIP mocks base method
 func (m *MockClient) GetIP(arg0 context.Context, arg1 string) (api.IP, error) {
 	m.ctrl.T.Helper()
@@ -92,20 +106,6 @@ func (m *MockClient) RemoveIP(arg0 context.Context, arg1 string) error {
 func (mr *MockClientMockRecorder) RemoveIP(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveIP", reflect.TypeOf((*MockClient)(nil).RemoveIP), arg0, arg1)
-}
-
-// TryGetLock mocks base method
-func (m *MockClient) TryGetLock(arg0 context.Context, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TryGetLock", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// TryGetLock indicates an expected call of TryGetLock
-func (mr *MockClientMockRecorder) TryGetLock(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TryGetLock", reflect.TypeOf((*MockClient)(nil).TryGetLock), arg0, arg1)
 }
 
 // Version mocks base method

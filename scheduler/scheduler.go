@@ -18,6 +18,9 @@ import (
 var (
 	// ErrIPAlreadyAssigned can be sent by AddIP if the IP has already been assigned to this scheduler
 	ErrIPAlreadyAssigned = errors.New("IP already assigned")
+
+	// ErrIPNotFound can be sent if an operation has been called on an unregistered IP
+	ErrIPNotFound = errors.New("IP not found")
 )
 
 // Scheduler is the central point of LinK it will keep track all of IPs registered on this node
@@ -25,6 +28,7 @@ var (
 type Scheduler interface {
 	Start(context.Context, models.IP) (models.IP, error)
 	Stop(ctx context.Context, id string) error
+	Failover(ctx context.Context, id string) error
 	Status(string) string
 	ConfiguredIPs(ctx context.Context) []api.IP
 	GetIP(ctx context.Context, id string) *api.IP
@@ -108,7 +112,7 @@ func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 	manager, ok := s.ipManagers[id]
 	s.mapMutex.RUnlock()
 	if !ok {
-		return errors.New("not found")
+		return ErrIPNotFound
 	}
 
 	err := manager.Stop(ctx)
@@ -124,6 +128,23 @@ func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 	s.mapMutex.Lock()
 	defer s.mapMutex.Unlock()
 	delete(s.ipManagers, id)
+	return nil
+}
+
+// Failover will trigger a failover on a specific IP
+func (s *IPScheduler) Failover(ctx context.Context, id string) error {
+	s.mapMutex.RLock()
+	manager, ok := s.ipManagers[id]
+	s.mapMutex.RUnlock()
+	if !ok {
+		return ErrIPNotFound
+	}
+
+	err := manager.Failover(ctx)
+	if err != nil {
+		return errors.Wrap(err, "fail to failover")
+	}
+
 	return nil
 }
 

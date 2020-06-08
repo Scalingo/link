@@ -159,26 +159,3 @@ func (m *manager) onTopologyChange(ctx context.Context) {
 	log.Info("Network topology changed, trying to get the IP")
 	m.tryToGetIP(ctx)
 }
-
-func (m *manager) waitForReallocation(ctx context.Context) error {
-	log := logger.Get(ctx)
-	startTime := time.Now()
-	for {
-		time.Sleep(100 * time.Millisecond)
-		isMaster, err := m.locker.IsMaster(ctx)
-		if err != nil && err == locker.ErrInvalidEtcdState { // The key does not exist so nobody took the lease yet
-			continue
-		}
-		if err != nil {
-			log.WithError(err).Error("Fail to check if we are master, retrying...")
-		}
-
-		if !isMaster {
-			return nil // Someone else took the lease
-		}
-
-		if time.Now().Sub(startTime) > m.config.KeepAliveInterval {
-			return ErrReallocationTimedOut
-		}
-	}
-}

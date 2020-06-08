@@ -86,7 +86,7 @@ func main() {
 	r.HandleFunc("/ips", ipController.Create).Methods("POST")
 	r.HandleFunc("/ips/{id}", ipController.Destroy).Methods("DELETE")
 	r.HandleFunc("/ips/{id}", ipController.Get).Methods("GET")
-	//TODO: /ips/{id}/failover
+	r.HandleFunc("/ips/{id}/failover", ipController.Failover).Methods("POST")
 	r.HandleFunc("/version", versionController.Version).Methods("GET")
 
 	globalRouter := mux.NewRouter()
