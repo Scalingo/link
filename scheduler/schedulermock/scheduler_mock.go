@@ -106,17 +106,3 @@ func (mr *MockSchedulerMockRecorder) Stop(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockScheduler)(nil).Stop), arg0, arg1)
 }
-
-// TryGetLock mocks base method
-func (m *MockScheduler) TryGetLock(arg0 context.Context, arg1 string) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "TryGetLock", arg0, arg1)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// TryGetLock indicates an expected call of TryGetLock
-func (mr *MockSchedulerMockRecorder) TryGetLock(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TryGetLock", reflect.TypeOf((*MockScheduler)(nil).TryGetLock), arg0, arg1)
-}

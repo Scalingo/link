@@ -2,11 +2,15 @@ package ip
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/locker/lockermock"
+	"github.com/Scalingo/link/models/modelsmock"
+	"github.com/Scalingo/link/network/networkmock"
+	"github.com/Scalingo/link/watcher/watchermock"
 	"github.com/golang/mock/gomock"
 	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
@@ -120,6 +124,102 @@ func TestManager_TryToGetIP(t *testing.T) {
 			for i := 0; i < len(example.ExpectedEvents); i++ {
 				assert.Equal(t, example.ExpectedEvents[i], events[i])
 			}
+		})
+	}
+}
+
+func TestManager_Stop(t *testing.T) {
+	examples := []struct {
+		Name                      string
+		Locker                    func(*lockermock.MockLocker)
+		HostCount                 int
+		ShouldWaitForReallocation bool
+		CurrentState              string
+		Events                    []string
+	}{
+		{
+			Name: "When there are no other hosts",
+			Locker: func(l *lockermock.MockLocker) {
+				l.EXPECT().IsMaster(gomock.Any()).Return(true, nil)
+			},
+			HostCount:                 1,
+			ShouldWaitForReallocation: false,
+			CurrentState:              ACTIVATED,
+			Events:                    []string{DemotedEvent},
+		}, {
+			Name: "When there are no other host and we are not failing",
+			Locker: func(l *lockermock.MockLocker) {
+				l.EXPECT().IsMaster(gomock.Any()).Return(true, nil)
+			},
+			HostCount:                 1,
+			ShouldWaitForReallocation: false,
+			CurrentState:              FAILING,
+			Events:                    []string{},
+		}, {
+			Name: "When there are other hosts trying to take the ip",
+			Locker: func(l *lockermock.MockLocker) {
+				l.EXPECT().IsMaster(gomock.Any()).Return(true, nil)
+				l.EXPECT().IsMaster(gomock.Any()).Return(false, nil)
+			},
+			HostCount:                 2,
+			ShouldWaitForReallocation: true,
+			CurrentState:              STANDBY,
+			Events:                    []string{DemotedEvent},
+		},
+	}
+
+	for _, example := range examples {
+		t.Run(example.Name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+			lockerMock := lockermock.NewMockLocker(ctrl)
+			storageMock := modelsmock.NewMockStorage(ctrl)
+			watcherMock := watchermock.NewMockWatcher(ctrl)
+			networkMock := networkmock.NewMockNetworkInterface(ctrl)
+
+			hosts := make([]string, example.HostCount)
+			storageMock.EXPECT().IPHosts(gomock.Any(), gomock.Any()).Return(hosts, nil)
+			if example.Locker != nil {
+				example.Locker(lockerMock)
+			}
+			watcherMock.EXPECT().Stop(gomock.Any()).Return(nil)
+			lockerMock.EXPECT().Stop(gomock.Any()).Return(nil)
+			storageMock.EXPECT().UnlinkIP(gomock.Any(), gomock.Any()).Return(nil)
+			networkMock.EXPECT().RemoveIP(gomock.Any()).Return(nil)
+			eventChan := make(chan string, 2)
+			events := make([]string, 0)
+
+			manager := &manager{
+				stateMachine:     fsm.NewFSM(example.CurrentState, fsm.Events{}, fsm.Callbacks{}),
+				locker:           lockerMock,
+				storage:          storageMock,
+				watcher:          watcherMock,
+				networkInterface: networkMock,
+				eventChan:        eventChan,
+			}
+
+			err := manager.Stop(context.Background())
+			require.NoError(t, err)
+
+			timer := time.NewTimer(1 * time.Second)
+			stop := false
+			for !stop {
+				select {
+				case <-timer.C:
+					t.Fatal("eventChan was never closed")
+					break
+				case event, ok := <-eventChan:
+					fmt.Println(ok, event)
+					if !ok {
+						stop = true
+						break
+					}
+					events = append(events, event)
+				}
+			}
+
+			assert.True(t, manager.stopped)
+			assert.Equal(t, example.Events, events)
 		})
 	}
 }
