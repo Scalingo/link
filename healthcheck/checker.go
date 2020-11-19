@@ -3,8 +3,8 @@ package healthcheck
 import (
 	"context"
 
-	"github.com/Scalingo/go-philae/prober"
-	"github.com/Scalingo/go-philae/tcpprobe"
+	"github.com/Scalingo/go-philae/v4/prober"
+	"github.com/Scalingo/go-philae/v4/tcpprobe"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/models"
 )

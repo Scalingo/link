@@ -1,6 +1,7 @@
 package errgorollbar
 
 import (
+	"runtime"
 	"strings"
 
 	"github.com/rollbar/rollbar-go"
@@ -15,7 +16,7 @@ import (
 // }
 
 var (
-	_ rollbar.CauseStacker = wrappedError{}
+	_ rollbar.Stacker = wrappedError{}
 )
 
 type wrappedError struct {
@@ -36,18 +37,18 @@ func (err wrappedError) Cause() error {
 	return err.err
 }
 
-func (werr wrappedError) Stack() rollbar.Stack {
-	stack := rollbar.Stack{}
+func (werr wrappedError) Stack() []runtime.Frame {
+	stack := []runtime.Frame{}
 	err := werr.err
 	for err != nil {
 		if errgoErr, ok := err.(*errgo.Err); !ok {
 			break
 		} else {
-			frame := rollbar.Frame{
-				Filename: errgoErr.File,
-				Line:     errgoErr.Line,
+			frame := runtime.Frame{
+				File: errgoErr.File,
+				Line: errgoErr.Line,
 			}
-			stack = append([]rollbar.Frame{frame}, stack...)
+			stack = append([]runtime.Frame{frame}, stack...)
 			err = errgoErr.Underlying()
 		}
 	}
@@ -56,12 +57,35 @@ func (werr wrappedError) Stack() rollbar.Stack {
 	// execution flow and the stack determined by the pkg/errors error
 	// Plus we ignore all the intermediate frames from rollbar lib which
 	// is adding something around 4 levels of depth.
-	rawStack := rollbar.BuildStack(werr.skip + 2)
-	execStack := rollbar.Stack{}
+	rawStack := getCallersFrames(2 + werr.skip)
+	execStack := []runtime.Frame{}
 	for _, frame := range rawStack {
-		if !strings.Contains(frame.Filename, "rollbar/rollbar-go") {
+		if !strings.Contains(frame.File, "rollbar/rollbar-go") {
 			execStack = append(execStack, frame)
 		}
 	}
 	return append(stack, execStack...)
+}
+
+func getCallersFrames(skip int) []runtime.Frame {
+	pc := make([]uintptr, 100)
+	runtime.Callers(1+skip, pc)
+	fr := runtime.CallersFrames(pc)
+
+	return framesToSlice(fr)
+}
+
+// framesToSlice extracts all the runtime.Frame from runtime.Frames.
+func framesToSlice(fr *runtime.Frames) []runtime.Frame {
+	frames := make([]runtime.Frame, 0)
+
+	for frame, more := fr.Next(); frame != (runtime.Frame{}); frame, more = fr.Next() {
+		frames = append(frames, frame)
+
+		if !more {
+			break
+		}
+	}
+
+	return frames
 }

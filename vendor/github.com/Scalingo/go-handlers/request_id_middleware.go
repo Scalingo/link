@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/satori/go.uuid"
+	"github.com/gofrs/uuid"
 )
 
 func RequestIDMiddleware(next HandlerFunc) HandlerFunc {

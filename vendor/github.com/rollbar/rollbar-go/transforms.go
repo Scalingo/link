@@ -1,19 +1,21 @@
 package rollbar
 
 import (
-	"fmt"
-	"hash/adler32"
+	"context"
 	"net/http"
 	"net/url"
 	"reflect"
 	"regexp"
+	"runtime"
 	"strings"
 	"time"
 )
 
 // Build the main JSON structure that will be sent to Rollbar with the
 // appropriate metadata.
-func buildBody(configuration configuration, level, title string, extras map[string]interface{}) map[string]interface{} {
+func buildBody(ctx context.Context, configuration configuration, diagnostic diagnostic,
+	level, title string, extras map[string]interface{}) map[string]interface{} {
+
 	timestamp := time.Now().Unix()
 
 	data := map[string]interface{}{
@@ -31,6 +33,10 @@ func buildBody(configuration configuration, level, title string, extras map[stri
 		"notifier": map[string]interface{}{
 			"name":    NAME,
 			"version": VERSION,
+			"diagnostic": map[string]interface{}{
+				"languageVersion": diagnostic.languageVersion,
+				"configuredOptions": diagnostic.configuredOptions,
+			},
 		},
 	}
 
@@ -39,12 +45,15 @@ func buildBody(configuration configuration, level, title string, extras map[stri
 		data["custom"] = custom
 	}
 
-	person := configuration.person
-	if person.id != "" {
+	person, ok := PersonFromContext(ctx)
+	if !ok {
+		person = &configuration.person
+	}
+	if person.Id != "" {
 		data["person"] = map[string]string{
-			"id":       person.id,
-			"username": person.username,
-			"email":    person.email,
+			"id":       person.Id,
+			"username": person.Username,
+			"email":    person.Email,
 		}
 	}
 
@@ -80,20 +89,64 @@ func addErrorToBody(configuration configuration, body map[string]interface{}, er
 
 func requestDetails(configuration configuration, r *http.Request) map[string]interface{} {
 	cleanQuery := filterParams(configuration.scrubFields, r.URL.Query())
+	specialHeaders := map[string]struct{}{
+		"Content-Type": struct{}{},
+	}
 
 	return map[string]interface{}{
 		"url":     r.URL.String(),
 		"method":  r.Method,
-		"headers": flattenValues(filterParams(configuration.scrubHeaders, r.Header)),
+		"headers": filterFlatten(configuration.scrubHeaders, r.Header, specialHeaders),
 
 		// GET params
 		"query_string": url.Values(cleanQuery).Encode(),
 		"GET":          flattenValues(cleanQuery),
 
 		// POST / PUT params
-		"POST":    flattenValues(filterParams(configuration.scrubFields, r.Form)),
-		"user_ip": filterIp(r.RemoteAddr, configuration.captureIp),
+		"POST":    filterFlatten(configuration.scrubFields, r.Form, nil),
+		"user_ip": filterIp(remoteIP(r), configuration.captureIp),
 	}
+}
+
+// remoteIP attempts to extract the real remote IP address by looking first at the headers X-Real-IP
+// and X-Forwarded-For, and then falling back to RemoteAddr defined in http.Request
+func remoteIP(req *http.Request) string {
+	realIP := req.Header.Get("X-Real-IP")
+	if realIP != "" {
+		return realIP
+	}
+	forwardedIPs := req.Header.Get("X-Forwarded-For")
+	if forwardedIPs != "" {
+		ips := strings.Split(forwardedIPs, ", ")
+		return ips[0]
+	}
+	return req.RemoteAddr
+}
+
+// filterFlatten filters sensitive information like passwords from being sent to Rollbar, and
+// also lifts any values with length one up to be a standalone string. The optional specialKeys map
+// will force strings that exist in that map and also in values to have a single string value in the
+// resulting map by taking the first element in the list of strings if there are more than one.
+// This is essentially the same as the composition of filterParams and filterValues, plus the bit
+// extra about the special keys. The composition would range of the values twice when we really only
+// need to do it once, so I decided to combine them as the result is still quite easy to follow.
+// We keep the other two so that we can use url.Values.Encode on the filtered query params and not
+// run the filtering twice for the query.
+func filterFlatten(pattern *regexp.Regexp, values map[string][]string, specialKeys map[string]struct{}) map[string]interface{} {
+	result := make(map[string]interface{})
+
+	for k, v := range values {
+		switch _, special := specialKeys[k]; {
+		case pattern.Match([]byte(k)):
+			result[k] = FILTERED
+		case special || len(v) == 1:
+			result[k] = v[0]
+		default:
+			result[k] = v
+		}
+	}
+
+	return result
 }
 
 // filterParams filters sensitive information like passwords from being sent to
@@ -158,16 +211,17 @@ func filterIp(ip string, captureIp captureIp) string {
 // method, the causes will be traversed until nil.
 func errorBody(configuration configuration, err error, skip int) (map[string]interface{}, string) {
 	var parent error
+	// allocate the slice at all times since it will get marshaled into JSON later
 	traceChain := []map[string]interface{}{}
 	fingerprint := ""
 	for {
-		stack := getOrBuildStack(err, parent, skip)
+		stack := buildStack(getOrBuildFrames(err, parent, 1+skip, configuration.stackTracer))
 		traceChain = append(traceChain, buildTrace(err, stack))
 		if configuration.fingerprint {
 			fingerprint = fingerprint + stack.Fingerprint()
 		}
 		parent = err
-		err = getCause(err)
+		err = configuration.unwrapper(err)
 		if err == nil {
 			break
 		}
@@ -177,7 +231,7 @@ func errorBody(configuration configuration, err error, skip int) (map[string]int
 }
 
 // builds one trace element in trace_chain
-func buildTrace(err error, stack Stack) map[string]interface{} {
+func buildTrace(err error, stack stack) map[string]interface{} {
 	message := nilErrTitle
 	if err != nil {
 		message = err.Error()
@@ -191,27 +245,42 @@ func buildTrace(err error, stack Stack) map[string]interface{} {
 	}
 }
 
-func getCause(err error) error {
-	if cs, ok := err.(CauseStacker); ok {
-		return cs.Cause()
+// getOrBuildFrames gets stack frames from errors that provide one of their own
+// otherwise, it builds a new stack trace. It returns the stack frames if the error
+// is of a compatible type. If the error is not, but the parent error is, it assumes
+// the parent error will be processed later and therefore returns nil.
+func getOrBuildFrames(err error, parent error, skip int, tracer StackTracerFunc) []runtime.Frame {
+	if st, ok := tracer(err); ok && st != nil {
+		return st
 	}
-	return nil
+	if _, ok := tracer(parent); ok {
+		return nil
+	}
+
+	return getCallersFrames(1 + skip)
 }
 
-// gets Stack from errors that provide one of their own
-// otherwise, builds a new stack
-func getOrBuildStack(err error, parent error, skip int) Stack {
-	if cs, ok := err.(CauseStacker); ok {
-		if s := cs.Stack(); s != nil {
-			return s
-		}
-	} else {
-		if _, ok := parent.(CauseStacker); !ok {
-			return BuildStack(4 + skip)
+func getCallersFrames(skip int) []runtime.Frame {
+	pc := make([]uintptr, 100)
+	runtime.Callers(2+skip, pc)
+	fr := runtime.CallersFrames(pc)
+
+	return framesToSlice(fr)
+}
+
+// framesToSlice extracts all the runtime.Frame from runtime.Frames.
+func framesToSlice(fr *runtime.Frames) []runtime.Frame {
+	frames := make([]runtime.Frame, 0)
+
+	for frame, more := fr.Next(); frame != (runtime.Frame{}); frame, more = fr.Next() {
+		frames = append(frames, frame)
+
+		if !more {
+			break
 		}
 	}
 
-	return make(Stack, 0)
+	return frames
 }
 
 // Build a message inner-body for the given message string.
@@ -231,9 +300,6 @@ func errorClass(err error) string {
 	class := reflect.TypeOf(err).String()
 	if class == "" {
 		return "panic"
-	} else if class == "*errors.errorString" {
-		checksum := adler32.Checksum([]byte(err.Error()))
-		return fmt.Sprintf("{%x}", checksum)
 	} else {
 		return strings.TrimPrefix(class, "*")
 	}

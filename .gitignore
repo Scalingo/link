@@ -1,5 +1,6 @@
-docker
-link
+/_docker
+/link
+/link-client
 generate-mock
 cmd/link-client/link-client
 /dist/link*

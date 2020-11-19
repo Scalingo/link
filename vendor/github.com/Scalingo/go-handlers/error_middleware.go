@@ -7,10 +7,11 @@ import (
 	"net/http"
 	"runtime/debug"
 
+	"github.com/sirupsen/logrus"
+	"github.com/urfave/negroni"
+
 	"github.com/Scalingo/go-utils/errors"
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/codegangsta/negroni"
-	"github.com/sirupsen/logrus"
 )
 
 var ErrorMiddleware MiddlewareFunc = MiddlewareFunc(func(handler HandlerFunc) HandlerFunc {
@@ -54,15 +55,22 @@ func writeError(w negroni.ResponseWriter, err error) {
 		w.Header().Set("Content-Type", "text/plain")
 	}
 
-	// If the status is 0, In means WriteHeader has not been called
-	// and we've to write it, otherwise it has been done in the handler
-	// with another response code.
-	if w.Status() == 0 {
+	isCauseValidationErrors := errors.IsRootCause(err, &errors.ValidationErrors{})
+	if isCauseValidationErrors {
+		w.WriteHeader(422)
+	} else if w.Status() == 0 {
+		// If the status is 0, it means WriteHeader has not been called and we've to
+		// write it, otherwise it has been done in the handler with another response
+		// code.
 		w.WriteHeader(500)
 	}
 
 	if w.Header().Get("Content-Type") == "application/json" {
-		json.NewEncoder(w).Encode(&(map[string]string{"error": err.Error()}))
+		if isCauseValidationErrors {
+			json.NewEncoder(w).Encode(errors.RootCause(err))
+		} else {
+			json.NewEncoder(w).Encode(&(map[string]string{"error": err.Error()}))
+		}
 	} else {
 		fmt.Fprintln(w, err)
 	}
