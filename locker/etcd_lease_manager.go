@@ -11,7 +11,7 @@ import (
 	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/v3/clientv3"
 )
 
 // ErrCallbackNotFound is launched when a user tries to delete a callback that does not exist

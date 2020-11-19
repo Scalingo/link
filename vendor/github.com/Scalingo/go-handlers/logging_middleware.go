@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/codegangsta/negroni"
 	"github.com/sirupsen/logrus"
+	"github.com/urfave/negroni"
 )
 
 var (
@@ -64,14 +64,23 @@ func (l *LoggingMiddleware) Apply(next HandlerFunc) HandlerFunc {
 			logger = logger.WithField("request_id", id)
 		}
 
+		from := r.RemoteAddr
+		if r.Header.Get("X-Forwarded-For") != "" {
+			from = r.Header.Get("X-Forwarded-For")
+		}
+		proto := r.Proto
+		if r.Header.Get("X-Forwarded-Proto") != "" {
+			proto = r.Header.Get("X-Forwarded-Proto")
+		}
+
 		r = r.WithContext(context.WithValue(r.Context(), "logger", logger))
 
 		fields := logrus.Fields{
 			"method":     r.Method,
 			"path":       r.URL.String(),
 			"host":       r.Host,
-			"from":       r.RemoteAddr,
-			"protocol":   r.Proto,
+			"from":       from,
+			"protocol":   proto,
 			"referer":    r.Referer(),
 			"user_agent": r.UserAgent(),
 		}

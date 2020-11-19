@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:8b6db3b490230af0836cd57f2da94e092ac0c2837fe24e762458006531749b53"
+  digest = "1:45664418c24f2b108c39071adf241dc2dac4d6790026a44cd4192d7c925cf271"
   name = "github.com/rollbar/rollbar-go"
   packages = ["."]
   pruneopts = "UT"
-  revision = "5f41889d7c6a59e4add07998cf776b1d335d287f"
-  version = "v1.0.1"
+  revision = "09607ac17f660e27a1e3d38b6e1ec728cefa1f72"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:9f0c81ca4b497d3723d0a66495d8a1efe277068b77ef3ad2d6460e480bf09bb3"

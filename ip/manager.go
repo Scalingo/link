@@ -13,7 +13,7 @@ import (
 	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/v3/clientv3"
 )
 
 type Manager interface {

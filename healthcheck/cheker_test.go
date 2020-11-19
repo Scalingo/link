@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Scalingo/go-philae/prober"
-	"github.com/Scalingo/go-philae/sampleprobe"
+	"github.com/Scalingo/go-philae/v4/prober"
+	"github.com/Scalingo/go-philae/v4/sampleprobe"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/models"
 	"github.com/stretchr/testify/assert"

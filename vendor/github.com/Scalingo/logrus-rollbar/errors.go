@@ -2,6 +2,7 @@ package logrus_rollbar
 
 import (
 	"fmt"
+	"runtime"
 	"strconv"
 
 	"github.com/pkg/errors"
@@ -44,8 +45,8 @@ func (err wrappedError) Cause() error {
 	return err.err
 }
 
-func (werr wrappedError) Stack() rollbar.Stack {
-	stack := rollbar.Stack{}
+func (werr wrappedError) Stack() []runtime.Frame {
+	stack := []runtime.Frame{}
 	err := werr.err
 
 	// We're going to the deepest call
@@ -67,12 +68,12 @@ func (werr wrappedError) Stack() rollbar.Stack {
 	for i := len(errorsStack) - 1; i >= 0; i-- {
 		f := errorsStack[i]
 		line, _ := strconv.Atoi(fmt.Sprintf("%d", f))
-		frame := rollbar.Frame{
-			Filename: fmt.Sprintf("%+s", f),
+		frame := runtime.Frame{
+			File:     fmt.Sprintf("%+s", f),
 			Line:     line,
-			Method:   fmt.Sprintf("%n", f),
+			Function: fmt.Sprintf("%n", f),
 		}
-		stack = append([]rollbar.Frame{frame}, stack...)
+		stack = append([]runtime.Frame{frame}, stack...)
 	}
 
 	return stack

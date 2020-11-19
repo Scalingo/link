@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  branch = "master"
-  digest = "1:7691025cfc4a2c68051e3b44b612e2ecf3f3537f3516a9e85b0b3c29522309e6"
+  digest = "1:3bb0747f711daabb4f804b5e78f5710048a26122f8e69b7e98d18b941f9259fb"
   name = "github.com/Soulou/errgo-rollbar"
   packages = ["."]
   pruneopts = "UT"
-  revision = "9d551cd3bae923dc236ca5f8d951686c7bbcfe94"
+  revision = "77469913cd68bc7aa12d62433bbc565e068a74a9"
+  version = "v0.1.0"
 
 [[projects]]
   branch = "master"
@@ -26,12 +26,12 @@
   version = "v0.8.0"
 
 [[projects]]
-  digest = "1:8b6db3b490230af0836cd57f2da94e092ac0c2837fe24e762458006531749b53"
+  digest = "1:45664418c24f2b108c39071adf241dc2dac4d6790026a44cd4192d7c925cf271"
   name = "github.com/rollbar/rollbar-go"
   packages = ["."]
   pruneopts = "UT"
-  revision = "5f41889d7c6a59e4add07998cf776b1d335d287f"
-  version = "v1.0.1"
+  revision = "09607ac17f660e27a1e3d38b6e1ec728cefa1f72"
+  version = "v1.2.0"
 
 [[projects]]
   digest = "1:dc2d85c13ac22c22a1f3170a41a8e1b897fa05134aaf533f16df44f66a25b4a1"

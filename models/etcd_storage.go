@@ -11,7 +11,7 @@ import (
 	"github.com/Scalingo/link/config"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
-	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/v3/clientv3"
 )
 
 const (
