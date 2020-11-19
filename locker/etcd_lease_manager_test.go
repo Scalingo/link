@@ -9,11 +9,11 @@ import (
 
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/etcdmock"
-	"github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.etcd.io/etcd/v3/clientv3"
+	"go.etcd.io/etcd/v3/etcdserver/api/v3rpc/rpctypes"
 )
 
 type updadeResults struct {

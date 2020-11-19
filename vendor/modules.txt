@@ -15,9 +15,6 @@ github.com/Scalingo/go-utils/logger/plugins/rollbarplugin
 github.com/Scalingo/logrus-rollbar
 # github.com/Soulou/errgo-rollbar v0.1.1
 github.com/Soulou/errgo-rollbar
-# github.com/coreos/etcd v3.3.13+incompatible
-github.com/coreos/etcd/etcdserver/api/v3rpc/rpctypes
-github.com/coreos/etcd/mvcc/mvccpb
 # github.com/coreos/go-semver v0.3.0
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd/v22 v22.1.0

@@ -8,7 +8,6 @@ require (
 	github.com/Scalingo/go-philae/v4 v4.4.1
 	github.com/Scalingo/go-utils/etcd v1.0.1
 	github.com/Scalingo/go-utils/logger v1.0.0
-	github.com/coreos/etcd v3.3.13+incompatible
 	github.com/coreos/go-systemd/v22 v22.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/gofrs/uuid v3.3.0+incompatible
