@@ -8,12 +8,12 @@ import (
 
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/etcdmock"
-	"github.com/coreos/etcd/mvcc/mvccpb"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.etcd.io/etcd/v3/clientv3"
+	"go.etcd.io/etcd/v3/mvcc/mvccpb"
 )
 
 func TestRefresh(t *testing.T) {
