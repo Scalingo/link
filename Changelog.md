@@ -1,5 +1,9 @@
 # To be released
 
+## [2020-11-19] 1.9.2
+
+* Update deps: use go.etcd.io/etcd/v3 instead of github.com/coreos/etcd
+
 ## [2020-11-19] 1.9.1
 
 * Update deps: github.com/Scalingo/go-utils, use submodules instead of global
