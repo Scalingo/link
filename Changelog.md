@@ -1,5 +1,9 @@
 # To be released
 
+## [2020-11-20] 1.9.3
+
+* Update deps: use github.com/Scalingo/go-philae/v4@v4.4.2
+
 ## [2020-11-19] 1.9.2
 
 * Update deps: use go.etcd.io/etcd/v3 instead of github.com/coreos/etcd

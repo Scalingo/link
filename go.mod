@@ -4,8 +4,7 @@ go 1.12
 
 require (
 	github.com/Scalingo/go-handlers v1.3.1
-	github.com/Scalingo/go-philae v4.3.0+incompatible // indirect
-	github.com/Scalingo/go-philae/v4 v4.4.1
+	github.com/Scalingo/go-philae/v4 v4.4.2
 	github.com/Scalingo/go-utils/etcd v1.0.1
 	github.com/Scalingo/go-utils/logger v1.0.0
 	github.com/coreos/go-systemd/v22 v22.1.0 // indirect
