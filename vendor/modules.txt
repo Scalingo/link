@@ -1,14 +1,18 @@
 # github.com/Scalingo/go-handlers v1.3.1
+## explicit
 github.com/Scalingo/go-handlers
 # github.com/Scalingo/go-philae/v4 v4.4.2
+## explicit
 github.com/Scalingo/go-philae/v4/prober
 github.com/Scalingo/go-philae/v4/sampleprobe
 github.com/Scalingo/go-philae/v4/tcpprobe
 # github.com/Scalingo/go-utils/errors v1.0.0
 github.com/Scalingo/go-utils/errors
 # github.com/Scalingo/go-utils/etcd v1.0.1
+## explicit
 github.com/Scalingo/go-utils/etcd
 # github.com/Scalingo/go-utils/logger v1.0.0
+## explicit
 github.com/Scalingo/go-utils/logger
 github.com/Scalingo/go-utils/logger/plugins/rollbarplugin
 # github.com/Scalingo/logrus-rollbar v1.3.2
@@ -18,18 +22,22 @@ github.com/Soulou/errgo-rollbar
 # github.com/coreos/go-semver v0.3.0
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd/v22 v22.1.0
+## explicit
 github.com/coreos/go-systemd/v22/journal
 # github.com/cpuguy83/go-md2man/v2 v2.0.0
+## explicit
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/gofrs/uuid v3.4.0+incompatible
+## explicit
 github.com/gofrs/uuid
 # github.com/gogo/protobuf v1.3.1
 github.com/gogo/protobuf/gogoproto
 github.com/gogo/protobuf/proto
 github.com/gogo/protobuf/protoc-gen-gogo/descriptor
 # github.com/golang/mock v1.4.4
+## explicit
 github.com/golang/mock/gomock
 # github.com/golang/protobuf v1.4.3
 github.com/golang/protobuf/proto
@@ -40,20 +48,28 @@ github.com/golang/protobuf/ptypes/timestamp
 # github.com/google/uuid v1.1.2
 github.com/google/uuid
 # github.com/gorilla/mux v1.8.0
+## explicit
 github.com/gorilla/mux
 # github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56
+## explicit
 github.com/j-keck/arping
 # github.com/kelseyhightower/envconfig v1.4.0
+## explicit
 github.com/kelseyhightower/envconfig
 # github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e
+## explicit
 github.com/logrusorgru/aurora
 # github.com/looplab/fsm v0.0.0-20180515091235-f980bdb68a89
+## explicit
 github.com/looplab/fsm
 # github.com/mattn/go-runewidth v0.0.3
+## explicit
 github.com/mattn/go-runewidth
 # github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
+## explicit
 github.com/olekukonko/tablewriter
 # github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
@@ -62,24 +78,30 @@ github.com/rollbar/rollbar-go
 # github.com/russross/blackfriday/v2 v2.0.1
 github.com/russross/blackfriday/v2
 # github.com/satori/go.uuid v0.0.0-20180103174451-36e9d2ebbde5
+## explicit
 github.com/satori/go.uuid
 # github.com/shurcooL/sanitized_anchor_name v1.0.0
 github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.7.0
+## explicit
 github.com/sirupsen/logrus
 # github.com/stretchr/testify v1.7.0
+## explicit
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 # github.com/urfave/cli v1.22.5
+## explicit
 github.com/urfave/cli
 # github.com/urfave/negroni v1.0.0
 github.com/urfave/negroni
-# github.com/vishvananda/netlink v1.0.0
+# github.com/vishvananda/netlink v1.1.0
+## explicit
 github.com/vishvananda/netlink
 github.com/vishvananda/netlink/nl
-# github.com/vishvananda/netns v0.0.0-20180720170159-13995c7128cc
+# github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df
 github.com/vishvananda/netns
 # go.etcd.io/etcd/v3 v3.3.0-rc.0.0.20200826232710-c20cc05fc548
+## explicit
 go.etcd.io/etcd/v3/auth/authpb
 go.etcd.io/etcd/v3/clientv3
 go.etcd.io/etcd/v3/clientv3/balancer
@@ -114,6 +136,10 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
+# golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9
+## explicit
+# golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f
+## explicit
 # golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
@@ -123,6 +149,7 @@ golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
 # golang.org/x/sys v0.0.0-20201118182958-a01c418693c7
+## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
@@ -132,6 +159,7 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 # google.golang.org/genproto v0.0.0-20201117123952-62d171c70ae1
+## explicit
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.29.1
 google.golang.org/grpc
