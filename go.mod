@@ -13,7 +13,7 @@ require (
 	github.com/golang/mock v1.4.4
 	github.com/gorilla/mux v1.8.0
 	github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56
-	github.com/kelseyhightower/envconfig v1.3.0
+	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e
 	github.com/looplab/fsm v0.0.0-20180515091235-f980bdb68a89
 	github.com/mattn/go-runewidth v0.0.3 // indirect
