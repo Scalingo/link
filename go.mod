@@ -1,6 +1,6 @@
 module github.com/Scalingo/link
 
-go 1.12
+go 1.15
 
 require (
 	github.com/Scalingo/go-handlers v1.3.1
@@ -23,8 +23,7 @@ require (
 	github.com/sirupsen/logrus v1.7.0
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli v1.22.5
-	github.com/vishvananda/netlink v1.0.0
-	github.com/vishvananda/netns v0.0.0-20180720170159-13995c7128cc // indirect
+	github.com/vishvananda/netlink v1.1.0
 	go.etcd.io/etcd/v3 v3.3.0-rc.0.0.20200826232710-c20cc05fc548
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
 	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect

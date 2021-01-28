@@ -1,4 +1,8 @@
-# To be released
+# Changelog
+
+## To be released
+
+* chore(Dependabot): Update various dependencies
 
 ## [2020-11-20] 1.9.3
 
