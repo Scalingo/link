@@ -10,7 +10,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/gofrs/uuid v3.4.0+incompatible
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.5.0
 	github.com/gorilla/mux v1.8.0
 	github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56
 	github.com/kelseyhightower/envconfig v1.4.0

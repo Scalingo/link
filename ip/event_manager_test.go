@@ -277,6 +277,7 @@ func TestSingleEventRun(t *testing.T) {
 		t.Run(example.Name, func(t *testing.T) {
 
 			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 			config := config.Config{
 				KeepAliveInterval: 100 * time.Millisecond,
 			}
@@ -301,7 +302,7 @@ func TestSingleEventRun(t *testing.T) {
 
 			stopCalled := false
 			if example.shouldStop {
-				locker.EXPECT().Stop(gomock.Any()).Return(nil)
+				locker.EXPECT().Stop(gomock.Any()).Return(nil).AnyTimes()
 				manager.stopper = func(ctx context.Context) error {
 					stopCalled = true
 					return nil
