@@ -3,6 +3,7 @@
 ## To be released
 
 * chore(Dependabot): Update various dependencies
+* Bump github.com/sirupsen/logrus from 1.8.0 to 1.8.1
 
 ## [2020-11-20] 1.9.3
 
