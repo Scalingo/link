@@ -62,9 +62,6 @@ github.com/logrusorgru/aurora
 # github.com/looplab/fsm v0.0.0-20180515091235-f980bdb68a89
 ## explicit
 github.com/looplab/fsm
-# github.com/magefile/mage v1.10.0
-github.com/magefile/mage/mg
-github.com/magefile/mage/sh
 # github.com/mattn/go-runewidth v0.0.3
 ## explicit
 github.com/mattn/go-runewidth
@@ -85,7 +82,7 @@ github.com/russross/blackfriday/v2
 github.com/satori/go.uuid
 # github.com/shurcooL/sanitized_anchor_name v1.0.0
 github.com/shurcooL/sanitized_anchor_name
-# github.com/sirupsen/logrus v1.8.0
+# github.com/sirupsen/logrus v1.8.1
 ## explicit
 github.com/sirupsen/logrus
 # github.com/stretchr/testify v1.7.0

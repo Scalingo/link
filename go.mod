@@ -20,7 +20,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v0.0.0-20180103174451-36e9d2ebbde5
-	github.com/sirupsen/logrus v1.8.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.7.0
 	github.com/urfave/cli v1.22.5
 	github.com/vishvananda/netlink v1.1.0
