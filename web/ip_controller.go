@@ -3,16 +3,16 @@ package web
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	"github.com/vishvananda/netlink"
-
+	scalingoerrors "github.com/Scalingo/go-utils/errors"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/api"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/scheduler"
+	"github.com/pkg/errors"
+	"github.com/vishvananda/netlink"
 )
 
 type ipController struct {
@@ -25,7 +25,7 @@ func NewIPController(scheduler scheduler.Scheduler) ipController {
 	}
 }
 
-func (c ipController) List(w http.ResponseWriter, r *http.Request, p map[string]string) error {
+func (c ipController) List(w http.ResponseWriter, r *http.Request, _ map[string]string) error {
 	ctx := r.Context()
 	log := logger.Get(ctx)
 	w.Header().Set("Content-Type", "application/json")
@@ -66,7 +66,60 @@ func (c ipController) Get(w http.ResponseWriter, r *http.Request, params map[str
 	return nil
 }
 
-func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[string]string) error {
+// Patch updates the healthchecks configured on the given IP. It actually **replaces** the currently configured healthchecks.
+func (c ipController) Patch(w http.ResponseWriter, r *http.Request, params map[string]string) error {
+	ctx := r.Context()
+	log := logger.Get(ctx)
+	w.Header().Set("Content-Type", "application/json")
+
+	ip := c.scheduler.GetIP(ctx, params["id"])
+	if ip == nil {
+		w.WriteHeader(http.StatusNotFound)
+		_, _ = w.Write([]byte(`{"error": "not found"}`))
+		return nil
+	}
+	log = log.WithFields(ip.ToLogrusFields())
+	ctx = logger.ToCtx(ctx, log)
+	log.Info("Updating a LinK IP healthchecks")
+
+	var patchParams api.UpdateIPParams
+	err := json.NewDecoder(r.Body).Decode(&patchParams)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(`{"error": "invalid json"}`))
+		return nil
+	}
+
+	err = checkIPHealthchecks(ctx, patchParams.Healthchecks)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(fmt.Sprintf(`{"msg": "%s"}`, err.Error())))
+		return nil
+	}
+
+	ip.Checks = patchParams.Healthchecks
+	err = c.scheduler.UpdateIP(ctx, ip.IP)
+	if err != nil {
+		if scalingoerrors.RootCause(err) == scheduler.ErrManagerNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			_, _ = w.Write([]byte(fmt.Sprintf(`{"msg": "%s"}`, err.Error())))
+			return nil
+		}
+		return errors.Wrapf(err, "fail to update the LinK IP '%s'", ip.ID)
+	}
+
+	err = json.NewEncoder(w).Encode(map[string]api.IP{
+		"ip": *ip,
+	})
+	if err != nil {
+		log.WithError(err).Error("fail to encode the IP after patching it")
+		return nil
+	}
+
+	return nil
+}
+
+func (c ipController) Create(w http.ResponseWriter, r *http.Request, _ map[string]string) error {
 	ctx := r.Context()
 	log := logger.Get(ctx)
 
@@ -78,6 +131,9 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		w.Write([]byte(`{"msg": "invalid json"}`))
 		return nil
 	}
+	log = log.WithFields(ip.ToLogrusFields())
+	ctx = logger.ToCtx(ctx, log)
+	log.Info("Creating a new LinK IP")
 
 	_, err = netlink.ParseAddr(ip.IP)
 	if err != nil {
@@ -85,17 +141,11 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		w.Write([]byte(`{"msg": "invalid IP"}`))
 		return nil
 	}
-	for _, check := range ip.Checks {
-		if check.Port <= 0 {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"msg": "health check port cannot be negative"}`))
-			return nil
-		}
-		if check.Port > 65535 {
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"msg": "health check port cannot be greater than 65535"}`))
-			return nil
-		}
+	err = checkIPHealthchecks(ctx, ip.Checks)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		_, _ = w.Write([]byte(fmt.Sprintf(`{"msg": "%s"}`, err.Error())))
+		return nil
 	}
 
 	ctx = logger.ToCtx(context.Background(), log)
@@ -108,10 +158,6 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		}
 		return errors.Wrap(err, "fail to start IP manager")
 	}
-	log = log.WithFields(logrus.Fields{
-		"id": ip.ID,
-		"ip": ip.IP,
-	})
 
 	w.WriteHeader(http.StatusCreated)
 
@@ -148,5 +194,18 @@ func (c ipController) TryGetLock(w http.ResponseWriter, r *http.Request, params 
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+	return nil
+}
+
+func checkIPHealthchecks(ctx context.Context, healthchecks []models.Healthcheck) error {
+	for _, check := range healthchecks {
+		if check.Port <= 0 {
+			return errors.New("health check port cannot be negative")
+		}
+		if check.Port > 65535 {
+			return errors.New("health check port cannot be greater than 65535")
+		}
+	}
+
 	return nil
 }

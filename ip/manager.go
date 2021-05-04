@@ -23,6 +23,7 @@ type Manager interface {
 	Status() string
 	IP() models.IP
 	TryGetLock(context.Context)
+	SetHealthchecks(context.Context, config.Config, []models.Healthcheck)
 }
 
 type manager struct {

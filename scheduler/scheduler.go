@@ -22,9 +22,11 @@ type Scheduler interface {
 	ConfiguredIPs(ctx context.Context) []api.IP
 	GetIP(ctx context.Context, id string) *api.IP
 	TryGetLock(ctx context.Context, id string) bool
+	UpdateIP(ctx context.Context, ip models.IP) error
 }
 
 type IPScheduler struct {
+	// TODO This is unclear to me whether this mutex protects only ipManager or also the storage. Do you know?
 	mapMutex     sync.RWMutex
 	ipManagers   map[string]ip.Manager
 	etcd         *clientv3.Client
@@ -34,7 +36,8 @@ type IPScheduler struct {
 }
 
 var (
-	ErrNotStopping = errors.New("not stopping")
+	ErrNotStopping     = errors.New("not stopping")
+	ErrManagerNotFound = errors.New("IP manager not found")
 )
 
 func NewIPScheduler(config config.Config, etcd *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) *IPScheduler {
@@ -64,10 +67,7 @@ func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) (models.IP, e
 	if err != nil && errors.Cause(err) != models.ErrIPAlreadyPresent {
 		return newIP, errors.Wrap(err, "fail to add IP to storage")
 	}
-	log = log.WithFields(logrus.Fields{
-		"ip": newIP.IP,
-		"id": newIP.ID,
-	})
+	log = log.WithFields(newIP.ToLogrusFields())
 	ctx = logger.ToCtx(ctx, log)
 	ipAdded := (err == nil)
 
@@ -166,4 +166,22 @@ func (s *IPScheduler) TryGetLock(ctx context.Context, id string) bool {
 
 	manager.TryGetLock(ctx)
 	return true
+}
+
+// UpdateIP updates the IP in the storage, and update the healthchecks in the manager.
+func (s *IPScheduler) UpdateIP(ctx context.Context, ip models.IP) error {
+	s.mapMutex.RLock()
+	manager, ok := s.ipManagers[ip.ID]
+	s.mapMutex.RUnlock()
+	if !ok {
+		return ErrManagerNotFound
+	}
+
+	err := s.storage.UpdateIP(ctx, ip)
+	if err != nil {
+		return errors.Wrap(err, "fail to update the IP from storage")
+	}
+
+	manager.SetHealthchecks(ctx, s.config, ip.Checks)
+	return nil
 }

@@ -85,6 +85,7 @@ func main() {
 	r.HandleFunc("/ips", ipController.Create).Methods("POST")
 	r.HandleFunc("/ips/{id}", ipController.Destroy).Methods("DELETE")
 	r.HandleFunc("/ips/{id}", ipController.Get).Methods("GET")
+	r.HandleFunc("/ips/{id}", ipController.Patch).Methods("PUT", "PATCH")
 	r.HandleFunc("/ips/{id}/lock", ipController.TryGetLock).Methods("POST")
 	r.HandleFunc("/version", versionController.Version).Methods("GET")
 

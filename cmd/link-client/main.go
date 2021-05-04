@@ -10,6 +10,7 @@ import (
 	"github.com/Scalingo/link/api"
 	"github.com/Scalingo/link/models"
 	"github.com/logrusorgru/aurora"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
 
@@ -96,6 +97,49 @@ func main() {
 					return err
 				}
 				fmt.Println(aurora.Green("Request sent."))
+				return nil
+			},
+		}, {
+			Name:      "update",
+			ArgsUsage: "ID [CHECK_TYPE CHECK_ENDPOINT]...",
+			Action: func(c *cli.Context) error {
+				if len(c.Args())%2 == 0 {
+					// 1 For the IP
+					// And 2 per Healthchecks
+					// So NArgs % 2 must be == 1
+					cli.ShowCommandHelp(c, c.Command.Name)
+					return nil
+				}
+
+				var healthchecks []models.Healthcheck
+				curArg := 1
+				for curArg < c.NArg() {
+					endpoint := c.Args().Get(curArg + 1)
+					host, port, err := net.SplitHostPort(endpoint)
+					if err != nil {
+						return fmt.Errorf("Invalid endpoint: %s", endpoint)
+					}
+					portI, err := strconv.Atoi(port)
+					if err != nil {
+						return fmt.Errorf("Invalid endpoint: %s", endpoint)
+					}
+					healthchecks = append(healthchecks, models.Healthcheck{
+						Type: models.HealthcheckType(c.Args().Get(curArg)),
+						Host: host,
+						Port: portI,
+					})
+					curArg += 2
+				}
+
+				id := c.Args().First()
+
+				client := getClientFromCtx(c)
+				ip, err := client.UpdateIP(context.Background(), id, api.UpdateIPParams{Healthchecks: healthchecks})
+				if err != nil {
+					return errors.Wrapf(err, "fail to update the IP '%s'", id)
+				}
+
+				fmt.Println(aurora.Green(fmt.Sprintf("IP %s (%s) successfully updated", ip.IP.IP, ip.ID)))
 				return nil
 			},
 		}, {

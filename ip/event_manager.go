@@ -5,6 +5,9 @@ import (
 	"time"
 
 	"github.com/Scalingo/go-utils/logger"
+	"github.com/Scalingo/link/config"
+	"github.com/Scalingo/link/healthcheck"
+	"github.com/Scalingo/link/models"
 )
 
 func (m *manager) Stop(ctx context.Context, stopper func(context.Context) error) {
@@ -38,6 +41,10 @@ func (m *manager) CancelStopping(ctx context.Context) bool {
 
 func (m *manager) TryGetLock(ctx context.Context) {
 	m.singleEtcdRun(ctx)
+}
+
+func (m *manager) SetHealthchecks(ctx context.Context, config config.Config, healthchecks []models.Healthcheck) {
+	m.checker = healthcheck.FromChecks(config, healthchecks)
 }
 
 func (m *manager) isStopping() bool {
