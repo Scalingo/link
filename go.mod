@@ -10,7 +10,7 @@ require (
 	github.com/coreos/go-systemd/v22 v22.1.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/gofrs/uuid v3.4.0+incompatible
-	github.com/golang/mock v1.5.0
+	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.0
 	github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -27,6 +27,5 @@ require (
 	go.etcd.io/etcd/v3 v3.3.0-rc.0.0.20200826232710-c20cc05fc548
 	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
 	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
-	golang.org/x/sys v0.0.0-20201118182958-a01c418693c7 // indirect
 	google.golang.org/genproto v0.0.0-20201117123952-62d171c70ae1 // indirect
 )
