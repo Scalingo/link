@@ -56,6 +56,7 @@ Each LinK agent can be in any of these three states:
 - `ACTIVATED`: This machine owns the virtual IP
 - `STANDBY`: This machine does not own the virtual IP but is available for election
 - `FAILING`: Health checks for this host failed, this machine is not available for election
+- `BOOTING`: The VIP just started to join the cluster and is waiting for an election
 
 At any point five types of events can happen:
 - `fault`: There was some error when coordinating with other nodes.
@@ -74,9 +75,17 @@ This is what the state machine looks like:
 LinK configuration is entirely done by setting environment variables.
 
 - `INTERFACE`: Name of the interface where LinK should add and remove IPs.
+- `HOSTNAME`: Name of the host.
 - `USER`: Username used for basic auth
 - `PASSWORD`: Password used for basic auth
 - `PORT` (default: 1313): Port where the LinK HTTP interface will be available
+- `KEEPALIVE_INTERVAL`: Duration of the lease given to an VIP. If a node is down, it can take up to KEEPALIVE_INTERVAL seconds to failover.
+- `KEEPALIVE_RETRY`: Number of communication error with ETCD needed before considering the etcd cluster down.
+- `HEALTH_CHECK_INTERVAL`: Interval between two health check query.
+- `HEALTH_CHECK_TIMEOUT`: Max duration of an health check.
+- `FAIL_COUNT_BEFORE_FAILOVER`: Number of failed healthcheck needed before failing over.
+- `ARP_GRATUITOUS_INTERVAL`: Time between two gratuitous ARP packets.
+- `ARP_GRATUITOUS_COUNT`: Number of gratuitous ARP packets sent when an IP becomes ACTIVATED.
 - `ETCD_HOSTS`: The different endpoints of etcd members
 - `ETCD_TLS_CERT`: Path to the TLS X.509 certificate
 - `ETCD_TLS_KEY`: Path to the private key authenticating the certificate
