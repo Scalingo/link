@@ -5,6 +5,7 @@ go:
 
 before_install:
   - go get github.com/mitchellh/gox
+  - go mod vendor
 
 script:
   - go test -race -p=1 ./...
