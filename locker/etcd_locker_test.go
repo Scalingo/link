@@ -176,3 +176,82 @@ func Test_IsMaster(t *testing.T) {
 		})
 	}
 }
+
+func Test_Unlock(t *testing.T) {
+	key := "/test"
+
+	examples := []struct {
+		Name               string
+		CurrentLeaseID     clientv3.LeaseID
+		ExpectLeaseManager func(mock *MockEtcdLeaseManager)
+		ExpectKV           func(*etcdmock.MockKV)
+		ExpectedError      string
+	}{
+		{
+			Name: "when we are not master",
+			ExpectLeaseManager: func(mock *MockEtcdLeaseManager) {
+				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(10), nil)
+			},
+			CurrentLeaseID: 11,
+			ExpectedError:  ErrNotMaster.Error(),
+		}, {
+			Name: "when we are master and etcd is not sending any error",
+			ExpectLeaseManager: func(mock *MockEtcdLeaseManager) {
+				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(10), nil)
+			},
+			CurrentLeaseID: 10,
+			ExpectKV: func(m *etcdmock.MockKV) {
+				m.EXPECT().Delete(gomock.Any(), key).Return(nil, nil)
+			},
+		}, {
+			Name: "when we are master and etcd is sending an error",
+			ExpectLeaseManager: func(mock *MockEtcdLeaseManager) {
+				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(10), nil)
+			},
+			CurrentLeaseID: 10,
+			ExpectKV: func(m *etcdmock.MockKV) {
+				m.EXPECT().Delete(gomock.Any(), key).Return(nil, errors.New("HAHA NOPE!"))
+			},
+			ExpectedError: "HAHA NOPE!",
+		},
+	}
+
+	for _, example := range examples {
+		t.Run(example.Name, func(t *testing.T) {
+			ctx := context.Background()
+
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
+
+			etcdLeaseManager := NewMockEtcdLeaseManager(ctrl)
+			if example.ExpectLeaseManager != nil {
+				example.ExpectLeaseManager(etcdLeaseManager)
+			}
+
+			etcdMock := etcdmock.NewMockKV(ctrl)
+			etcdMock.EXPECT().Get(gomock.Any(), key).Return(&clientv3.GetResponse{
+				Kvs: []*mvccpb.KeyValue{
+					{Lease: int64(example.CurrentLeaseID)},
+				},
+			}, nil)
+
+			if example.ExpectKV != nil {
+				example.ExpectKV(etcdMock)
+			}
+
+			locker := &etcdLocker{
+				kvEtcd:       etcdMock,
+				key:          key,
+				leaseManager: etcdLeaseManager,
+			}
+
+			err := locker.Unlock(ctx)
+			if len(example.ExpectedError) > 0 {
+				require.Error(t, err)
+				assert.Contains(t, err.Error(), example.ExpectedError)
+			} else {
+				assert.NoError(t, err)
+			}
+		})
+	}
+}

@@ -79,6 +79,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		w.Write([]byte(`{"msg": "invalid json"}`))
 		return nil
 	}
+	ip.ID = ""
 
 	_, err = netlink.ParseAddr(ip.IP)
 	if err != nil {
@@ -99,7 +100,6 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		}
 	}
 
-	ip.ID = ""
 	ctx = logger.ToCtx(context.Background(), log)
 	ip, err = c.scheduler.Start(ctx, ip)
 	if err != nil {
@@ -143,7 +143,9 @@ func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map
 
 func (c ipController) Failover(w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	ctx := r.Context()
+
 	id := params["id"]
+	log := logger.Get(ctx).WithField("vip_id", id)
 	err := c.scheduler.Failover(ctx, id)
 	if err != nil {
 		if err == scheduler.ErrIPNotFound {
@@ -153,9 +155,10 @@ func (c ipController) Failover(w http.ResponseWriter, r *http.Request, params ma
 		}
 		cause := errors.Cause(err)
 		if cause == ip.ErrIsNotMaster || cause == ip.ErrNoOtherHosts {
+			log.WithError(err).Info("bad request: cannot failover")
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]string{
-				"msg": err.Error(),
+				"msg": cause.Error(),
 			})
 			return nil
 		}

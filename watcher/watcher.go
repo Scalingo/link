@@ -12,11 +12,11 @@ import (
 type KeyChangedCallback func(ctx context.Context)
 
 type EtcdWatcher struct {
-	client     clientv3.Watcher
-	prefix     string
-	cancelLock *sync.Mutex
-	cancel     context.CancelFunc
-	callback   KeyChangedCallback
+	client      clientv3.Watcher
+	prefix      string
+	cancelLock  *sync.Mutex
+	cancelWatch context.CancelFunc
+	callback    KeyChangedCallback
 }
 
 type Watcher interface {
@@ -39,14 +39,14 @@ func (w *EtcdWatcher) Start(ctx context.Context) error {
 }
 
 func (w *EtcdWatcher) Stop(ctx context.Context) error {
-	if w.cancel == nil {
-		w.cancel()
+	if w.cancelWatch != nil {
+		w.cancelWatch()
 	}
 	return nil
 }
 
 // worker does all the heavy lifting on the etcd side. It returns true if it finished successfully or false if there was an error (and should be retried)
-func (w *EtcdWatcher) worker(ctx context.Context, resp clientv3.WatchChan) bool {
+func (w *EtcdWatcher) readEtcdWatchEvents(ctx context.Context, resp clientv3.WatchChan) bool {
 	log := logger.Get(ctx).WithField("prefix", w.prefix)
 	for change := range resp {
 		if change.Err() != nil {
@@ -71,10 +71,10 @@ func (w *EtcdWatcher) mainEtcdLoop(ctx context.Context) {
 	for {
 		ctx, cancel := context.WithCancel(ctx)
 		w.cancelLock.Lock()
-		w.cancel = cancel
+		w.cancelWatch = cancel
 		w.cancelLock.Unlock()
 		respChan := w.client.Watch(ctx, w.prefix, clientv3.WithPrefix())
-		stopped := w.worker(ctx, respChan)
+		stopped := w.readEtcdWatchEvents(ctx, respChan)
 		if stopped {
 			return
 		}

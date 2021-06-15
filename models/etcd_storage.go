@@ -211,7 +211,7 @@ func (e etcdStorage) SaveHost(ctx context.Context, host Host) error {
 	return nil
 }
 
-func (e etcdStorage) LinkIP(ctx context.Context, ip IP) error {
+func (e etcdStorage) LinkIPWithCurrentHost(ctx context.Context, ip IP) error {
 	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, ip.StorableIP(), e.hostname)
 	client, closer, err := e.NewEtcdClient()
 	if err != nil {
@@ -235,7 +235,7 @@ func (e etcdStorage) LinkIP(ctx context.Context, ip IP) error {
 	return nil
 }
 
-func (e etcdStorage) UnlinkIP(ctx context.Context, ip IP) error {
+func (e etcdStorage) UnlinkIPFromCurrentHost(ctx context.Context, ip IP) error {
 	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, ip.StorableIP(), e.hostname)
 	client, closer, err := e.NewEtcdClient()
 	if err != nil {
@@ -252,7 +252,7 @@ func (e etcdStorage) UnlinkIP(ctx context.Context, ip IP) error {
 	return nil
 }
 
-func (e etcdStorage) IPHosts(ctx context.Context, ip IP) ([]string, error) {
+func (e etcdStorage) GetIPHosts(ctx context.Context, ip IP) ([]string, error) {
 	key := fmt.Sprintf("%s/ips/%s", EtcdLinkDirectory, ip.StorableIP())
 
 	client, closer, err := e.NewEtcdClient()
@@ -271,7 +271,6 @@ func (e etcdStorage) IPHosts(ctx context.Context, ip IP) ([]string, error) {
 
 	results := make([]string, resp.Count)
 	for i, kv := range resp.Kvs {
-		// TODO: Should we filter ourself out ?
 		results[i] = string(kv.Key)
 	}
 	return results, nil

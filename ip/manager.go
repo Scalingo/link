@@ -84,7 +84,7 @@ func (m *manager) Start(ctx context.Context) {
 	log.Info("Starting manager")
 
 	err := m.retry.Do(ctx, func(ctx context.Context) error {
-		return m.storage.LinkIP(ctx, m.ip)
+		return m.storage.LinkIPWithCurrentHost(ctx, m.ip)
 	})
 	if err != nil {
 		log.WithError(err).Error("fail to link IP")
@@ -117,12 +117,6 @@ func (m *manager) Status() string {
 // IP returns the ip model linked to this manager
 func (m *manager) IP() models.IP {
 	return m.ip
-}
-
-func (m *manager) isStopped() bool {
-	m.stopMutex.RLock()
-	defer m.stopMutex.RUnlock()
-	return m.stopped
 }
 
 // sendEvent sends an event to the state machine

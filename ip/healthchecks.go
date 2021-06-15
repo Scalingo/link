@@ -36,18 +36,18 @@ func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool, err 
 			m.failingCount = 0
 		}
 		m.sendEvent(HealthCheckSuccessEvent)
-	} else {
-		m.failingCount++
-		log.WithField("failing_count", m.failingCount).WithError(err).Info("healthcheck failed (retry)")
-		if m.failingCount >= m.config.FailCountBeforeFailover {
-			log.WithError(err).Error("healthcheck failed")
-			if m.stateMachine.Current() == ACTIVATED {
-				err := m.locker.Unlock(ctx)
-				if err != nil {
-					log.WithError(err).Error(("Fail to remove lock when healthcheck failed"))
-				}
-			}
-			m.sendEvent(HealthCheckFailEvent)
-		}
+		return
 	}
+
+	m.failingCount++
+	if m.failingCount < m.config.FailCountBeforeFailover {
+		log.WithField("failing_count", m.failingCount).WithError(err).Info("healthcheck failed (will be retried)")
+		return
+	}
+
+	if m.failingCount == m.config.FailCountBeforeFailover {
+		log.WithError(err).Error("healthcheck failed")
+	}
+
+	m.sendEvent(HealthCheckFailEvent)
 }

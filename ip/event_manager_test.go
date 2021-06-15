@@ -178,13 +178,13 @@ func TestManager_Stop(t *testing.T) {
 			networkMock := networkmock.NewMockNetworkInterface(ctrl)
 
 			hosts := make([]string, example.HostCount)
-			storageMock.EXPECT().IPHosts(gomock.Any(), gomock.Any()).Return(hosts, nil)
+			storageMock.EXPECT().GetIPHosts(gomock.Any(), gomock.Any()).Return(hosts, nil)
 			if example.Locker != nil {
 				example.Locker(lockerMock)
 			}
 			watcherMock.EXPECT().Stop(gomock.Any()).Return(nil)
 			lockerMock.EXPECT().Stop(gomock.Any()).Return(nil)
-			storageMock.EXPECT().UnlinkIP(gomock.Any(), gomock.Any()).Return(nil)
+			storageMock.EXPECT().UnlinkIPFromCurrentHost(gomock.Any(), gomock.Any()).Return(nil)
 			networkMock.EXPECT().RemoveIP(gomock.Any()).Return(nil)
 			eventChan := make(chan string, 2)
 			events := make([]string, 0)

@@ -6,6 +6,7 @@ import (
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/config"
+	"github.com/Scalingo/link/locker"
 	"github.com/looplab/fsm"
 )
 
@@ -27,7 +28,7 @@ func (m *manager) setStandBy(ctx context.Context, _ *fsm.Event) {
 	}
 }
 
-func (m *manager) setFailing(ctx context.Context, _ *fsm.Event) {
+func (m *manager) setFailing(ctx context.Context, e *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: FAILING")
 
@@ -37,7 +38,8 @@ func (m *manager) setFailing(ctx context.Context, _ *fsm.Event) {
 	}
 
 	err = m.locker.Unlock(ctx)
-	if err != nil {
+	if err != nil && err != locker.ErrNotMaster {
+		// If we are not master, we can safely ignore this error
 		log.WithError(err).Error("Fail to unlock the key")
 	}
 }
@@ -51,7 +53,7 @@ func (m *manager) startArpEnsure(ctx context.Context) {
 		if m.isStopped() {
 			return
 		}
-		currentState := m.stateMachine.Current()
+		currentState := m.Status()
 
 		if currentState == ACTIVATED && garpCount < m.config.ARPGratuitousCount {
 			log.Debug("Send gratuitous ARP request")

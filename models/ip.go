@@ -13,7 +13,7 @@ type IP struct {
 	IP                  string        `json:"ip"`                   // Full IP with mask (i.e. 10.0.0.1/32)
 	Status              string        `json:"status,omitempty"`     // Status of this VIP
 	Checks              []Healthcheck `json:"checks,omitempty"`     // Healthcheck configured with this VIP
-	KeepaliveInterval   int           `json:"keepalive_interval"`   // Deprecated
+	KeepaliveInterval   int           `json:"keepalive_interval"`   // Interval between each try to get the VIP (in seconds)
 	HealthcheckInterval int           `json:"healthcheck_interval"` // HealthcheckIntevals for this VIP
 }
 

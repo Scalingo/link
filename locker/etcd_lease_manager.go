@@ -284,8 +284,6 @@ func (m etcdLeaseManager) storeLeaseChange(ctx context.Context, _, leaseID clien
 	// TODO: Split this in two methods: saveHost and updateHost ?
 	err := m.storage.SaveHost(ctx, models.Host{
 		Hostname: m.config.Hostname,
-		Username: m.config.User,
-		Password: m.config.Password,
 		LeaseID:  int64(leaseID),
 	})
 	if err != nil {

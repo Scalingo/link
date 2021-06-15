@@ -9,19 +9,17 @@ import (
 	"github.com/pkg/errors"
 )
 
-var (
-	// ErrReallocationTimedOut is an error returned by waitForReallocation is the reallocation did not happen in less than KeepAliveInterval
-	ErrReallocationTimedOut = errors.New("Reallocation timed out")
-)
-
 /* Stop process:
   1. Fetch information about other hosts registered on this IP and our state on the IP
-  3. Begin the shutdown process (/!\ THIS SHOULD BE PROTECTED BY THE STOP MUTEX OR IT COULD LEAD TO INVALID STATE)
-	3.1. Set the stop flag to true, since we are in the lock it will not impact the other process yet but it will ensure that if the process stop unexpectedly, all the other goroutine will stop and we will remove the IP by letting it decay.
-	3.2. If we are the owner of the lock on the IP remove it
-	3.3. Remove us from the list of potential hosts for this IP (UnlinkIP). This will trigger other hosts to try to get the IP
-	3.4. Set the state machine to a state where it will remove the IP.
-	3.5. Remove the IP from the interface.
+  2. Begin the shutdown process (/!\ THIS SHOULD BE PROTECTED BY THE STOP MUTEX OR IT COULD LEAD TO INVALID STATE)
+	2.1. Set the stop flag to true, since we are in the lock it will not impact
+	the other process yet but it will ensure that if the process stop
+	unexpectedly, all the other goroutine will stop and we will remove the IP by
+	letting it decay.
+	2.2. If we are the owner of the lock on the IP remove it
+	2.3. Remove us from the list of potential hosts for this IP (UnlinkIP). This will trigger other hosts to try to get the IP
+	2.4. Set the state machine to a state where it will remove the IP.
+	2.5. Remove the IP from the interface.
 */
 
 func (m *manager) Stop(ctx context.Context) error {
@@ -29,7 +27,7 @@ func (m *manager) Stop(ctx context.Context) error {
 	ctx = logger.ToCtx(ctx, log)
 
 	log.Info("Start stop preflight checks")
-	hosts, err := m.storage.IPHosts(ctx, m.IP())
+	hosts, err := m.storage.GetIPHosts(ctx, m.IP())
 	if err != nil {
 		return errors.Wrap(err, "fail to get new hosts")
 	}
@@ -62,7 +60,7 @@ func (m *manager) Stop(ctx context.Context) error {
 	}
 
 	log.Info("Unlink IP from the host")
-	err = m.storage.UnlinkIP(ctx, m.ip)
+	err = m.storage.UnlinkIPFromCurrentHost(ctx, m.ip)
 	if err != nil {
 		return errors.Wrap(err, "fail to unlink IP")
 	}
@@ -76,26 +74,29 @@ func (m *manager) Stop(ctx context.Context) error {
 	}
 
 	log.Info("Demoting ourself")
-	if m.stateMachine.Current() != FAILING {
+	if m.Status() != FAILING {
 		// We cannot use SendEvent here because the isStopping method is blocked by the stopMutex
 		m.eventChan <- DemotedEvent
 	}
 
 	// We can stop the FSM we do not need it anymore
+	// TODO: There's a race condition here !!!!
 	close(m.eventChan)
 
+	// The DemotedEvent should have told the FSM to remove IP. However to be
+	// extra safe, we duplicate the call here.
 	log.Info("Remove the IP from our interface")
 	err = m.networkInterface.RemoveIP(m.ip.IP)
 	if err != nil {
-		return errors.Wrap(err, "fail to remove IP from interface")
+		log.WithError(err).Error("Fail to remove IP from interface")
 	}
 
 	log.Info("Stop process ended!")
 	return nil
 }
 
-// ipCheckLoop checks every KeepaliveInterval if we should try to get the IP
-// if we should try to get the IP, it will launch the tryToGetIP method that will do the heavy lifting.
+// ipCheckLoop will try to get the VIP at regular intervals
+// This loop will try to get the IP if the current primary crashed.
 func (m *manager) ipCheckLoop(ctx context.Context) {
 	interval := time.Duration(m.IP().KeepaliveInterval) * time.Second
 	if interval == 0 {
@@ -113,22 +114,32 @@ func (m *manager) ipCheckLoop(ctx context.Context) {
 }
 
 func (m *manager) tryToGetIP(ctx context.Context) {
-	if m.stateMachine.Current() == FAILING {
+	if m.Status() == FAILING {
 		return
 	}
 
 	log := logger.Get(ctx)
+	// Refresh will try to set the lock on Etcd, if it fails, this mean that
+	// there was an issue while trying to communicate with the Etcd cluser.
 	err := m.locker.Refresh(ctx)
 	if err != nil {
+		// We do not want to send a fault event on every connection error. We will
+		// wait to have multiple connection failure before sending an event to the
+		// state machine.
+		// This is done because the Fault event will make this instance PRIMARY
+		// even if there is another PRIAMRY node in the cluster. This could lead to
+		// connection RESET and client connection errors.
 		m.keepaliveRetry++
 		log.WithError(err).Info("Fail to refresh lock (retry)")
 		if m.keepaliveRetry > m.config.KeepAliveRetry {
+			// The connection with etcd is definitely lost, send a Fault event.
 			log.WithError(err).Error("Fail to refresh lock")
 			m.sendEvent(FaultEvent)
 		}
 		return
 	}
 	if m.keepaliveRetry > 0 {
+		// We restored the connection with etcd, reset the fault counter.
 		log.Infof("Lock refreshed after %v retries", m.keepaliveRetry)
 		m.keepaliveRetry = 0
 	}
@@ -150,6 +161,10 @@ func (m *manager) tryToGetIP(ctx context.Context) {
 	}
 }
 
+// onTopologyChange is the called by the watcher. This will be called in one of 3 cases:
+// 1. There is a node that joined the pool of nodes interested by this IP
+// 2. There is a node that leaved the pool of nodes interested by this IP
+// 3. The current master node is trying to initiate a failover
 func (m *manager) onTopologyChange(ctx context.Context) {
 	log := logger.Get(ctx)
 	if m.isStopped() {
@@ -158,4 +173,10 @@ func (m *manager) onTopologyChange(ctx context.Context) {
 
 	log.Info("Network topology changed, trying to get the IP")
 	m.tryToGetIP(ctx)
+}
+
+func (m *manager) isStopped() bool {
+	m.stopMutex.RLock()
+	defer m.stopMutex.RUnlock()
+	return m.stopped
 }

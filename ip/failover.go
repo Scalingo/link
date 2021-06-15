@@ -5,42 +5,56 @@ import (
 	"time"
 
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/locker"
+	"github.com/Scalingo/go-utils/retry"
 	"github.com/pkg/errors"
 )
 
 var (
 	// ErrIsNotMaster is an error sent by Failover when the node is not currently master
-	ErrIsNotMaster = errors.New("This node is not master of this IP")
+	ErrIsNotMaster = errors.New("this node is not master of this IP")
 
 	// ErrNoOtherHosts is an error sent by Failover when there is no other node to fail over.
-	ErrNoOtherHosts = errors.New("No other nodes are listening for this IP")
+	ErrNoOtherHosts = errors.New("no other nodes are listening for this IP")
+
+	// ErrReallocationTimedOut is an error returned by waitForReallocation is the reallocation did not happen in less than KeepAliveInterval
+	ErrReallocationTimedOut = errors.New("Reallocation timed out")
 )
 
 func (m *manager) waitForReallocation(ctx context.Context) error {
-	log := logger.Get(ctx)
-	startTime := time.Now()
-	for {
-		time.Sleep(100 * time.Millisecond)
+	log := logger.Get(ctx).WithField("process", "wait-for-reallocation")
+
+	retryer := retry.New(retry.WithMaxDuration(m.config.KeepAliveInterval),
+		retry.WithWaitDuration(100*time.Millisecond),
+		retry.WithoutMaxAttempts())
+
+	err := retryer.Do(ctx, func(ctx context.Context) error {
 		isMaster, err := m.locker.IsMaster(ctx)
-		if err != nil && err == locker.ErrInvalidEtcdState { // The key does not exist so nobody took the lease yet
-			continue
-		}
 		if err != nil {
-			log.WithError(err).Error("Fail to check if we are master, retrying...")
+			log.WithError(err).Debug("fail to check if we are still master")
+			return err
 		}
 
-		if !isMaster {
-			return nil // Someone else took the lease
+		if isMaster {
+			log.Debug("we are still master")
+			return errors.New("still master")
+		}
+		return nil
+	})
+
+	if err != nil {
+		if retryErr, ok := err.(retry.RetryError); ok {
+			if retryErr.Scope == retry.MaxDurationScope {
+				return ErrReallocationTimedOut
+			}
 		}
 
-		if time.Now().Sub(startTime) > m.config.KeepAliveInterval {
-			return ErrReallocationTimedOut
-		}
+		return errors.Wrap(err, "fail to wait for IP reallocation")
 	}
+	return nil
 }
 
-// Failover trigger a failover on the current IP
+// Failover can only be run on the current master instance for an IP.
+// If there is another node available for this IP, it steps down as a master and ensure that another node becomes master.
 // This function will refuse to trigger a failover if the node is not master or if there are no other nodes.
 // To trigger the failover, we will Unlock the IP (remove the lock key) and update the Link between the Host and the IP
 // Updating the link will notify watchers on this IP and other hosts will try to get the IP.
@@ -52,7 +66,7 @@ func (m *manager) Failover(ctx context.Context) error {
 	if !isMaster {
 		return ErrIsNotMaster
 	}
-	hosts, err := m.storage.IPHosts(ctx, m.IP())
+	hosts, err := m.storage.GetIPHosts(ctx, m.IP())
 	if err != nil {
 		return errors.Wrap(err, "fail to list other nodes listening for this IP")
 	}
@@ -66,8 +80,9 @@ func (m *manager) Failover(ctx context.Context) error {
 		return errors.Wrap(err, "fail to unlock current IP")
 	}
 
+	// TODO: There's a chance that we will become primary again there !
 	// LinkIP will update the IP Link that will trigger every other Watchers on this IP
-	err = m.storage.LinkIP(ctx, m.IP())
+	err = m.storage.LinkIPWithCurrentHost(ctx, m.IP())
 	if err != nil {
 		return errors.Wrap(err, "fail to update the IP Link")
 	}

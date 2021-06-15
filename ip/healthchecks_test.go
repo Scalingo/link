@@ -7,7 +7,6 @@ import (
 
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/healthcheck/healthcheckmock"
-	"github.com/Scalingo/link/locker/lockermock"
 	"github.com/golang/mock/gomock"
 	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
@@ -19,7 +18,6 @@ func TestManager_HealthChecker(t *testing.T) {
 		Name           string
 		Checker        func(*healthcheckmock.MockChecker)
 		ExpectedEvents []string
-		Locker         func(*lockermock.MockLocker)
 		CurrentState   string
 	}{
 		{
@@ -46,9 +44,6 @@ func TestManager_HealthChecker(t *testing.T) {
 			},
 			ExpectedEvents: []string{HealthCheckFailEvent, HealthCheckSuccessEvent},
 			CurrentState:   ACTIVATED,
-			Locker: func(l *lockermock.MockLocker) {
-				l.EXPECT().Unlock(gomock.Any()).Return(nil)
-			},
 		}, {
 			Name: "With a success event and a stop",
 			Checker: func(mock *healthcheckmock.MockChecker) {
@@ -66,10 +61,6 @@ func TestManager_HealthChecker(t *testing.T) {
 			defer ctrl.Finish()
 			checker := healthcheckmock.NewMockChecker(ctrl)
 			example.Checker(checker)
-			lock := lockermock.NewMockLocker(ctrl)
-			if example.Locker != nil {
-				example.Locker(lock)
-			}
 
 			manager := &manager{
 				checker:      checker,
@@ -79,7 +70,6 @@ func TestManager_HealthChecker(t *testing.T) {
 					FailCountBeforeFailover: 3,
 					KeepAliveInterval:       10 * time.Millisecond,
 				},
-				locker: lock,
 			}
 
 			eventChan := make(chan string, 1)
