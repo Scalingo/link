@@ -1,13 +1,14 @@
 language: go
 
 go:
-  - "1.x"
+  - "1.15.x"
 
 before_install:
   - go get github.com/mitchellh/gox
+  - go mod vendor
 
 script:
-  - go test ./...
+  - go test -race -p=1 ./...
   - gox -os="linux" -arch="amd64 386" -output="dist/link-$TRAVIS_TAG-{{.OS}}-{{.Arch}}/{{.Dir}}" -ldflags="-X main.Version=$TRAVIS_TAG" . ./cmd/...
   - tar -C dist -czvf "dist/link-$TRAVIS_TAG-linux-386.tar.gz" "link-$TRAVIS_TAG-linux-386"
   - tar -C dist -czvf "dist/link-$TRAVIS_TAG-linux-amd64.tar.gz" "link-$TRAVIS_TAG-linux-amd64"
