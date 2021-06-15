@@ -185,7 +185,6 @@ func TestManager_Stop(t *testing.T) {
 			watcherMock.EXPECT().Stop(gomock.Any()).Return(nil)
 			lockerMock.EXPECT().Stop(gomock.Any()).Return(nil)
 			storageMock.EXPECT().UnlinkIPFromCurrentHost(gomock.Any(), gomock.Any()).Return(nil)
-			networkMock.EXPECT().RemoveIP(gomock.Any()).Return(nil)
 			eventChan := make(chan string, 2)
 			events := make([]string, 0)
 

@@ -75,21 +75,12 @@ func (m *manager) Stop(ctx context.Context) error {
 
 	log.Info("Demoting ourself")
 	if m.Status() != FAILING {
-		// We cannot use SendEvent here because the isStopping method is blocked by the stopMutex
+		// We cannot use SendEvent here because the isStopped method is blocked by the stopMutex
 		m.eventChan <- DemotedEvent
 	}
 
 	// We can stop the FSM we do not need it anymore
-	// TODO: There's a race condition here !!!!
 	close(m.eventChan)
-
-	// The DemotedEvent should have told the FSM to remove IP. However to be
-	// extra safe, we duplicate the call here.
-	log.Info("Remove the IP from our interface")
-	err = m.networkInterface.RemoveIP(m.ip.IP)
-	if err != nil {
-		log.WithError(err).Error("Fail to remove IP from interface")
-	}
 
 	log.Info("Stop process ended!")
 	return nil
@@ -168,6 +159,15 @@ func (m *manager) tryToGetIP(ctx context.Context) {
 func (m *manager) onTopologyChange(ctx context.Context) {
 	log := logger.Get(ctx)
 	if m.isStopped() {
+		return
+	}
+
+	// If we are already master we do not want to failover because:
+	// 1. We already are master and our lock is still valid, no reason to refresh it.
+	// 2. Another host has left the pool but since we are master, he was standby, no actions to take there.
+	// 3. If there was a failover, it was initiated by the master node (us) and we do not want to take back the lock.
+	if m.Status() == ACTIVATED {
+		log.Info("Network topology changed but we are master, no actions needed")
 		return
 	}
 
