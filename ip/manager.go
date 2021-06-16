@@ -87,7 +87,7 @@ func (m *manager) Start(ctx context.Context) {
 		return m.storage.LinkIPWithCurrentHost(ctx, m.ip)
 	})
 	if err != nil {
-		log.WithError(err).Error("fail to link IP")
+		log.WithError(err).Error("Fail to link IP")
 	}
 
 	ctx = logger.ToCtx(ctx, log)

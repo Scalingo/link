@@ -32,7 +32,7 @@ func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool, err 
 	log := logger.Get(ctx)
 	if healthy {
 		if m.failingCount > 0 {
-			log.Infof("healthcheck healthy after %v retries", m.failingCount)
+			log.Infof("Healthcheck healthy after %v retries", m.failingCount)
 			m.failingCount = 0
 		}
 		m.sendEvent(HealthCheckSuccessEvent)
@@ -41,12 +41,12 @@ func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool, err 
 
 	m.failingCount++
 	if m.failingCount < m.config.FailCountBeforeFailover {
-		log.WithField("failing_count", m.failingCount).WithError(err).Info("healthcheck failed (will be retried)")
+		log.WithField("failing_count", m.failingCount).WithError(err).Info("Healthcheck failed (will be retried)")
 		return
 	}
 
 	if m.failingCount == m.config.FailCountBeforeFailover {
-		log.WithError(err).Error("healthcheck failed")
+		log.WithError(err).Error("Healthcheck failed")
 	}
 
 	m.sendEvent(HealthCheckFailEvent)

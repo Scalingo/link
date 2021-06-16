@@ -30,12 +30,12 @@ func (m *manager) waitForReallocation(ctx context.Context) error {
 	err := retryer.Do(ctx, func(ctx context.Context) error {
 		isMaster, err := m.locker.IsMaster(ctx)
 		if err != nil {
-			log.WithError(err).Debug("fail to check if we are still master")
+			log.WithError(err).Debug("Fail to check if we are still master")
 			return err
 		}
 
 		if isMaster {
-			log.Debug("we are still master")
+			log.Debug("We are still master")
 			return errors.New("still master")
 		}
 		return nil

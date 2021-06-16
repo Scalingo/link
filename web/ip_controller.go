@@ -155,7 +155,7 @@ func (c ipController) Failover(w http.ResponseWriter, r *http.Request, params ma
 		}
 		cause := errors.Cause(err)
 		if cause == ip.ErrIsNotMaster || cause == ip.ErrNoOtherHosts {
-			log.WithError(err).Info("bad request: cannot failover")
+			log.WithError(err).Info("Bad request: cannot failover")
 			w.WriteHeader(http.StatusBadRequest)
 			json.NewEncoder(w).Encode(map[string]string{
 				"msg": cause.Error(),

@@ -92,7 +92,7 @@ func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) (models.IP, e
 		if ipAdded {
 			err := s.storage.RemoveIP(ctx, newIP.ID)
 			if err != nil {
-				log.WithError(err).Error("fail to remove IP from storage after failed initialization of IP manager")
+				log.WithError(err).Error("Fail to remove IP from storage after failed initialization of IP manager")
 			}
 		}
 		return newIP, errors.Wrap(err, "fail to initialize manager")

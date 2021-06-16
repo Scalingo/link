@@ -79,7 +79,7 @@ func (w *EtcdWatcher) mainEtcdLoop(ctx context.Context) {
 			return
 		}
 
-		log.Info("Connection to ETCD lost, waiting 1s and retrying")
+		log.Info("Connection to etcd lost, waiting 1s and retrying")
 		time.Sleep(1 * time.Second)
 	}
 }

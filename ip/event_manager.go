@@ -22,10 +22,10 @@ import (
 */
 
 func (m *manager) Stop(ctx context.Context) error {
-	log := logger.Get(ctx).WithField("task", "stop")
+	log := logger.Get(ctx).WithField("process", "stop")
 	ctx = logger.ToCtx(ctx, log)
 
-	log.Info("Start stop preflight checks")
+	log.Info("Stops the IP manager")
 	hosts, err := m.storage.GetIPHosts(ctx, m.IP())
 	if err != nil {
 		return errors.Wrap(err, "fail to get new hosts")
@@ -42,7 +42,7 @@ func (m *manager) Stop(ctx context.Context) error {
 
 	m.stopMutex.Lock()
 	defer m.stopMutex.Unlock()
-	log.Info("Start stop process")
+	log.Info("Start the stop process")
 
 	m.stopped = true
 
@@ -55,7 +55,7 @@ func (m *manager) Stop(ctx context.Context) error {
 	log.Info("Stop the watcher")
 	err = m.watcher.Stop(ctx)
 	if err != nil {
-		log.WithError(err).Error("Fail to stop watcher")
+		log.WithError(err).Error("Fail to stop the watcher")
 	}
 
 	log.Info("Unlink IP from the host")
@@ -65,7 +65,7 @@ func (m *manager) Stop(ctx context.Context) error {
 	}
 
 	if isMaster && len(hosts) > 1 {
-		log.Info("We were not alone, wait for other hosts to remove the IP")
+		log.Info("We were not alone, wait for an other host to get the IP")
 		err := m.waitForReallocation(ctx)
 		if err != nil {
 			log.WithError(err).Error("Fail to reallocate IP, continuing shutdown")
@@ -142,10 +142,10 @@ func (m *manager) tryToGetIP(ctx context.Context) {
 	}
 
 	if isMaster {
-		log.Debug("we are master, sending elected event")
+		log.Debug("We are master, sending elected event")
 		m.sendEvent(ElectedEvent)
 	} else {
-		log.Debug("we are not master, sending demoted event")
+		log.Debug("We are not master, sending demoted event")
 		m.sendEvent(DemotedEvent)
 	}
 }

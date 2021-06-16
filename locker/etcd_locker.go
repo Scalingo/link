@@ -86,7 +86,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 		// We got an error. Notify the lease manager that there might be an issue and send the error.
 		leaseManagerErr := l.leaseManager.MarkLeaseAsDirty(ctx, leaseID)
 		if leaseManagerErr != nil {
-			log.WithError(leaseManagerErr).Error("fail to mark lease as dirty")
+			log.WithError(leaseManagerErr).Error("Fail to mark lease as dirty")
 		}
 		return errors.Wrapf(err, "fail to refresh lock")
 	}
