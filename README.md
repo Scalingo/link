@@ -44,7 +44,7 @@ In order to be able to run LinK, you must have a working etcd cluster.
 Installation and configuration instructions are available on the [etcd
 website](https://coreos.com/etcd/docs/latest/getting-started-with-etcd.html).
 
-> LinK uses etcd v3 API and makes use of LeaseValue comparison in transactions, so you'll need etcd version 3.3.0 or higher.
+> LinK uses etcd v3 API and makes use of `LeaseValue` comparison in transactions. Hence you need etcd version 3.3.0 or higher.
 
 The easiest way to get LinK up and running is to use pre-build binary available
 on the [release pages](https://github.com/Scalingo/link/releases).
@@ -79,11 +79,11 @@ LinK configuration is entirely done by setting environment variables.
 - `USER`: Username used for basic auth
 - `PASSWORD`: Password used for basic auth
 - `PORT` (default: 1313): Port where the LinK HTTP interface will be available
-- `KEEPALIVE_INTERVAL`: Duration of the lease given to an VIP. If a node is down, it can take up to KEEPALIVE_INTERVAL seconds to failover.
-- `KEEPALIVE_RETRY`: Number of communication error with ETCD needed before considering the etcd cluster down.
-- `HEALTH_CHECK_INTERVAL`: Interval between two health check query.
-- `HEALTH_CHECK_TIMEOUT`: Max duration of an health check.
-- `FAIL_COUNT_BEFORE_FAILOVER`: Number of failed healthcheck needed before failing over.
+- `KEEPALIVE_INTERVAL`: Duration of the lease given to a VIP. If a node is down, it can take up to KEEPALIVE_INTERVAL seconds to failover.
+- `KEEPALIVE_RETRY`: Number of communication errors with etcd needed before considering the etcd cluster down.
+- `HEALTH_CHECK_INTERVAL`: Interval between two health check queries.
+- `HEALTH_CHECK_TIMEOUT`: Max duration of a health check.
+- `FAIL_COUNT_BEFORE_FAILOVER`: Number of failed health checks needed before failing over.
 - `ARP_GRATUITOUS_INTERVAL`: Time between two gratuitous ARP packets.
 - `ARP_GRATUITOUS_COUNT`: Number of gratuitous ARP packets sent when an IP becomes ACTIVATED.
 - `ETCD_HOSTS`: The different endpoints of etcd members
