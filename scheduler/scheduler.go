@@ -142,7 +142,7 @@ func (s *IPScheduler) Failover(ctx context.Context, id string) error {
 
 	err := manager.Failover(ctx)
 	if err != nil {
-		return errors.Wrap(err, "fail to failover")
+		return errors.Wrapf(err, "fail to failover the IP %v", id)
 	}
 
 	return nil
