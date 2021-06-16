@@ -94,7 +94,7 @@ func (m *manager) Start(ctx context.Context) {
 	go m.ipCheckLoop(ctx)    // Will continuously try to get the IP
 	go m.healthChecker(ctx)  // Healthchecker
 	go m.startArpEnsure(ctx) // ARP Gratuitous announces
-	go m.watcher.Start(ctx)  // Start a watcher that will notify us if the hosts are joining or leaving this IP
+	go m.watcher.Start(ctx)  // Start a watcher that will notify us if other hosts are joining or leaving this IP
 
 	for event := range m.eventChan {
 		err := m.stateMachine.Event(event)
@@ -109,7 +109,7 @@ func (m *manager) Start(ctx context.Context) {
 	log.Info("Manager stopped")
 }
 
-// Status returns the current state of the FSM
+// Status returns the current state of the state machine
 func (m *manager) Status() string {
 	return m.stateMachine.Current()
 }

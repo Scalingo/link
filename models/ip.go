@@ -17,7 +17,7 @@ type IP struct {
 	HealthcheckInterval int           `json:"healthcheck_interval"` // HealthcheckIntevals for this VIP
 }
 
-// ToLogrusFields this method is used to add important vip fields to our logger
+// ToLogrusFields returns a Logrus representation of an IP
 func (i IP) ToLogrusFields() logrus.Fields {
 	return logrus.Fields{
 		"ip":    i.IP,
@@ -25,7 +25,7 @@ func (i IP) ToLogrusFields() logrus.Fields {
 	}
 }
 
-// StorableIP transform the IP to a string that is compatible with ETCD key naming rules
+// StorableIP transforms the IP to a string that is compatible with ETCD key naming rules
 func (i IP) StorableIP() string {
 	return strings.Replace(i.IP, "/", "_", -1)
 }

@@ -44,7 +44,7 @@ type IPScheduler struct {
 	leaseManager locker.EtcdLeaseManager
 }
 
-// NewIPScheduler creates and configure a Scheduler
+// NewIPScheduler creates and configures a Scheduler
 func NewIPScheduler(config config.Config, etcd *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) *IPScheduler {
 	return &IPScheduler{
 		mapMutex:     sync.RWMutex{},
@@ -56,7 +56,7 @@ func NewIPScheduler(config config.Config, etcd *clientv3.Client, storage models.
 	}
 }
 
-// Status give you access to the FSM status of a specific IP
+// Status gives you access to the state machine status of a specific IP
 func (s *IPScheduler) Status(id string) string {
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()
@@ -67,7 +67,7 @@ func (s *IPScheduler) Status(id string) string {
 	return ""
 }
 
-// Start schedules a new IP on the host, it will launch a new manager for the IP and add it to the tracked IP on this host
+// Start schedules a new IP on the host. It launches a new manager for the IP and add it to the tracked IP on this host.
 func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) (models.IP, error) {
 	log := logger.Get(ctx)
 	newIP, err := s.storage.AddIP(ctx, ipAddr)
@@ -131,7 +131,7 @@ func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 	return nil
 }
 
-// Failover will trigger a failover on a specific IP
+// Failover triggers a failover on a specific IP
 func (s *IPScheduler) Failover(ctx context.Context, id string) error {
 	s.mapMutex.RLock()
 	manager, ok := s.ipManagers[id]
@@ -148,7 +148,7 @@ func (s *IPScheduler) Failover(ctx context.Context, id string) error {
 	return nil
 }
 
-// ConfiguredIPs list all IPs currently tracked by the scheduler
+// ConfiguredIPs lists all IPs currently tracked by the scheduler
 func (s *IPScheduler) ConfiguredIPs(ctx context.Context) []api.IP {
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()
@@ -163,7 +163,7 @@ func (s *IPScheduler) ConfiguredIPs(ctx context.Context) []api.IP {
 	return ips
 }
 
-// GetIP fetch basic information about a tracked IP
+// GetIP fetches basic information about a tracked IP
 func (s *IPScheduler) GetIP(ctx context.Context, id string) *api.IP {
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()

@@ -45,7 +45,7 @@ func (w *EtcdWatcher) Stop(ctx context.Context) error {
 	return nil
 }
 
-// worker does all the heavy lifting on the etcd side. It returns true if it finished successfully or false if there was an error (and should be retried)
+// readEtcdWatchEvents reads the watch notifications from etcd. It returns true if it finished successfully or false if there was an error (and should be retried).
 func (w *EtcdWatcher) readEtcdWatchEvents(ctx context.Context, resp clientv3.WatchChan) bool {
 	log := logger.Get(ctx).WithField("prefix", w.prefix)
 	for change := range resp {

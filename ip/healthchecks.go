@@ -16,8 +16,8 @@ func (m *manager) healthChecker(ctx context.Context) {
 	for {
 		healthy, err := m.checker.IsHealthy(ctx)
 
-		// The eventManager will close the chan when we receive the Stop order and we do not want to send things on a close channel.
-		// Since the checker can take up to 5s to run his checks, this check must be done between the health check and sending the results.
+		// The eventManager closes the channel `eventChan` when we receive the Stop order. We do not want to send anything on a closed channel.
+		// Since the checker can take up to 5s to run the checks, we need to check the manager stopped status between the health check and sending the results.
 		if m.isStopped() {
 			return
 		}

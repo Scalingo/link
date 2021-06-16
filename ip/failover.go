@@ -16,7 +16,7 @@ var (
 	// ErrNoOtherHosts is an error sent by Failover when there is no other node to fail over.
 	ErrNoOtherHosts = errors.New("no other nodes are listening for this IP")
 
-	// ErrReallocationTimedOut is an error returned by waitForReallocation is the reallocation did not happen in less than KeepAliveInterval
+	// ErrReallocationTimedOut is an error returned by waitForReallocation if the reallocation did not happen in less than KeepAliveInterval
 	ErrReallocationTimedOut = errors.New("Reallocation timed out")
 )
 
@@ -53,11 +53,11 @@ func (m *manager) waitForReallocation(ctx context.Context) error {
 	return nil
 }
 
-// Failover can only be run on the current master instance for an IP.
+// Failover forces a change of the master. It can only be run on the current master instance for an IP.
 // If there is another node available for this IP, it steps down as a master and ensure that another node becomes master.
-// This function will refuse to trigger a failover if the node is not master or if there are no other nodes.
-// To trigger the failover, we will Unlock the IP (remove the lock key) and update the Link between the Host and the IP
-// Updating the link will notify watchers on this IP and other hosts will try to get the IP.
+// This function refuses to trigger a failover if the node is not master or if there are no other nodes.
+// To trigger the failover, we unlock the IP (remove the lock key) and update the link between the host and the IP.
+// Updating the link notifies watchers on this IP and other hosts will try to get the IP.
 func (m *manager) Failover(ctx context.Context) error {
 	isMaster, err := m.locker.IsMaster(ctx)
 	if err != nil {
@@ -81,7 +81,7 @@ func (m *manager) Failover(ctx context.Context) error {
 	}
 
 	// TODO: There's a chance that we will become primary again there !
-	// LinkIP will update the IP Link that will trigger every other Watchers on this IP
+	// Update the IP link that will trigger every other watchers on this IP
 	err = m.storage.LinkIPWithCurrentHost(ctx, m.IP())
 	if err != nil {
 		return errors.Wrap(err, "fail to update the IP Link")
