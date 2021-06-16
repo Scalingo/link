@@ -17,7 +17,7 @@ var (
 	ErrNoOtherHosts = errors.New("no other nodes are listening for this IP")
 
 	// ErrReallocationTimedOut is an error returned by waitForReallocation if the reallocation did not happen in less than KeepAliveInterval
-	ErrReallocationTimedOut = errors.New("Reallocation timed out")
+	ErrReallocationTimedOut = errors.New("reallocation timed out")
 )
 
 func (m *manager) waitForReallocation(ctx context.Context) error {
