@@ -22,8 +22,8 @@ import (
 
 type Manager interface {
 	Start(context.Context)
-	Stop(ctx context.Context) error
-	Failover(ctx context.Context) error
+	Stop(context.Context) error
+	Failover(context.Context) error
 	Status() string
 	IP() models.IP
 }
