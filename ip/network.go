@@ -28,7 +28,7 @@ func (m *manager) setStandBy(ctx context.Context, _ *fsm.Event) {
 	}
 }
 
-func (m *manager) setFailing(ctx context.Context, e *fsm.Event) {
+func (m *manager) setFailing(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: FAILING")
 

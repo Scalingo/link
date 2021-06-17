@@ -75,7 +75,6 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	transactionCtx, cancel := context.WithTimeout(ctx, transactionTimeout)
 	defer cancel()
 
-	// /link/ips/locks/10.10.10.10/32
 	_, err = l.kvEtcd.Txn(transactionCtx).
 		// If the key does not exists (createRevision == 0)
 		If(clientv3.Compare(clientv3.CreateRevision(l.key), "=", 0)).

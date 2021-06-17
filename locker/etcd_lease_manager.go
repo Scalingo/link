@@ -281,7 +281,6 @@ func (m etcdLeaseManager) isLeaseDirty(ctx context.Context, leaseID clientv3.Lea
 
 func (m etcdLeaseManager) storeLeaseChange(ctx context.Context, _, leaseID clientv3.LeaseID) {
 	log := logger.Get(ctx)
-	// TODO: Split this in two methods: saveHost and updateHost ?
 	err := m.storage.SaveHost(ctx, models.Host{
 		Hostname: m.config.Hostname,
 		LeaseID:  int64(leaseID),

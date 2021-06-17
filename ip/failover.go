@@ -80,7 +80,6 @@ func (m *manager) Failover(ctx context.Context) error {
 		return errors.Wrap(err, "fail to unlock current IP")
 	}
 
-	// TODO: There's a chance that we will become primary again there !
 	// Update the IP link that will trigger every other watchers on this IP
 	err = m.storage.LinkIPWithCurrentHost(ctx, m.IP())
 	if err != nil {
