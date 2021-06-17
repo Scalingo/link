@@ -31,21 +31,21 @@ func (m *manager) healthChecker(ctx context.Context) {
 func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool, err error) {
 	log := logger.Get(ctx)
 	if healthy {
-		if m.failingCount > 0 {
-			log.Infof("Healthcheck healthy after %v retries", m.failingCount)
-			m.failingCount = 0
+		if m.healthcheckFailingCount > 0 {
+			log.Infof("Healthcheck healthy after %v retries", m.healthcheckFailingCount)
+			m.healthcheckFailingCount = 0
 		}
 		m.sendEvent(HealthCheckSuccessEvent)
 		return
 	}
 
-	m.failingCount++
-	if m.failingCount < m.config.FailCountBeforeFailover {
-		log.WithField("failing_count", m.failingCount).WithError(err).Info("Healthcheck failed (will be retried)")
+	m.healthcheckFailingCount++
+	if m.healthcheckFailingCount < m.config.FailCountBeforeFailover {
+		log.WithField("failing_count", m.healthcheckFailingCount).WithError(err).Info("Healthcheck failed (will be retried)")
 		return
 	}
 
-	if m.failingCount == m.config.FailCountBeforeFailover {
+	if m.healthcheckFailingCount == m.config.FailCountBeforeFailover {
 		log.WithError(err).Error("Healthcheck failed")
 	}
 

@@ -29,20 +29,20 @@ type Manager interface {
 }
 
 type manager struct {
-	networkInterface network.NetworkInterface
-	stateMachine     *fsm.FSM
-	ip               models.IP
-	stopMutex        sync.RWMutex
-	locker           locker.Locker
-	checker          healthcheck.Checker
-	config           config.Config
-	storage          models.Storage
-	watcher          watcher.Watcher
-	retry            retry.Retry
-	eventChan        chan string
-	keepaliveRetry   int
-	failingCount     int
-	stopped          bool
+	networkInterface        network.NetworkInterface
+	stateMachine            *fsm.FSM
+	ip                      models.IP
+	stopMutex               sync.RWMutex
+	locker                  locker.Locker
+	checker                 healthcheck.Checker
+	config                  config.Config
+	storage                 models.Storage
+	watcher                 watcher.Watcher
+	retry                   retry.Retry
+	eventChan               chan string
+	keepaliveRetry          int
+	healthcheckFailingCount int
+	stopped                 bool
 }
 
 func NewManager(ctx context.Context, config config.Config, ip models.IP, client *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) (*manager, error) {
@@ -57,15 +57,15 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 	ctx = logger.ToCtx(ctx, log)
 
 	m := &manager{
-		networkInterface: i,
-		ip:               ip,
-		locker:           locker.NewEtcdLocker(config, client, leaseManager, ip),
-		checker:          healthcheck.FromChecks(config, ip.Checks),
-		config:           config,
-		storage:          storage,
-		eventChan:        make(chan string),
-		failingCount:     0,
-		retry:            retry.New(retry.WithWaitDuration(10*time.Second), retry.WithMaxAttempts(5)),
+		networkInterface:        i,
+		ip:                      ip,
+		locker:                  locker.NewEtcdLocker(config, client, leaseManager, ip),
+		checker:                 healthcheck.FromChecks(config, ip.Checks),
+		config:                  config,
+		storage:                 storage,
+		eventChan:               make(chan string),
+		healthcheckFailingCount: 0,
+		retry:                   retry.New(retry.WithWaitDuration(10*time.Second), retry.WithMaxAttempts(5)),
 	}
 
 	prefix := fmt.Sprintf("%s/ips/%s", models.EtcdLinkDirectory, ip.StorableIP())
