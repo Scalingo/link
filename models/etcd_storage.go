@@ -153,7 +153,7 @@ func (e etcdStorage) RemoveIP(ctx context.Context, id string) error {
 }
 
 func (e etcdStorage) GetCurrentHost(ctx context.Context) (Host, error) {
-	host, err := e.GetHost(ctx, e.hostname)
+	host, err := e.getHost(ctx, e.hostname)
 	if err != nil {
 		return host, errors.Wrap(err, "fail to get current host")
 	}
@@ -161,7 +161,7 @@ func (e etcdStorage) GetCurrentHost(ctx context.Context) (Host, error) {
 	return host, nil
 }
 
-func (e etcdStorage) GetHost(ctx context.Context, hostname string) (Host, error) {
+func (e etcdStorage) getHost(ctx context.Context, hostname string) (Host, error) {
 	var host Host
 	client, close, err := e.NewEtcdClient()
 	if err != nil {

@@ -9,9 +9,8 @@ type Storage interface {
 	UpdateIP(ctx context.Context, ip IP) error
 	RemoveIP(context.Context, string) error
 
-	GetCurrentHost(context.Context) (Host, error)  // Get host configuration for the current host
-	GetHost(context.Context, string) (Host, error) // Get host configuration for a specific host
-	SaveHost(context.Context, Host) error          // Save host modifications
+	GetCurrentHost(context.Context) (Host, error) // Get host configuration for the current host
+	SaveHost(context.Context, Host) error         // Save host modifications
 
 	LinkIPWithCurrentHost(context.Context, IP) error   // Link an IP to the current host
 	UnlinkIPFromCurrentHost(context.Context, IP) error // Unlink an IP from the current host

@@ -65,21 +65,6 @@ func (mr *MockStorageMockRecorder) GetCurrentHost(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentHost", reflect.TypeOf((*MockStorage)(nil).GetCurrentHost), arg0)
 }
 
-// GetHost mocks base method.
-func (m *MockStorage) GetHost(arg0 context.Context, arg1 string) (models.Host, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetHost", arg0, arg1)
-	ret0, _ := ret[0].(models.Host)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetHost indicates an expected call of GetHost.
-func (mr *MockStorageMockRecorder) GetHost(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetHost", reflect.TypeOf((*MockStorage)(nil).GetHost), arg0, arg1)
-}
-
 // GetIPHosts mocks base method.
 func (m *MockStorage) GetIPHosts(arg0 context.Context, arg1 models.IP) ([]string, error) {
 	m.ctrl.T.Helper()
