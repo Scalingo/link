@@ -19,6 +19,8 @@ github.com/Scalingo/go-utils/etcd v1.0.1 h1:kqy350uu5vCbgsQMxYak/ZbOrBlqLKMx5BjO
 github.com/Scalingo/go-utils/etcd v1.0.1/go.mod h1:NxZaj5GxV0+tpSgVbUUJ5VSL1NNEV90R8Ztw2EjR3YM=
 github.com/Scalingo/go-utils/logger v1.0.0 h1:E0UHcvcxaESKwcMRL6MWHur+EIps3MhhkKk/mHmZqtw=
 github.com/Scalingo/go-utils/logger v1.0.0/go.mod h1:yVs3dRJyj2NvcOfgzcDVc1P8wkwUQP3PgCBDNS8vmB8=
+github.com/Scalingo/go-utils/retry v1.0.0 h1:aGT9Voe4rVEzn0bZ68x+nyBvk2sJWrzLP37+tTVdCuc=
+github.com/Scalingo/go-utils/retry v1.0.0/go.mod h1:Al8G5MSILdOURowTkhPiwTTYhpjXMuBgWJrenjLV1Ac=
 github.com/Scalingo/logrus-rollbar v1.3.2 h1:a10cwXd5tTZvWSyzbjhYGxe/tv79dU2/SsCrlvC2tPA=
 github.com/Scalingo/logrus-rollbar v1.3.2/go.mod h1:Mo38Fue00mdY/UM5gOMTXAWfiOIJK29/sxL3zxb/68I=
 github.com/Shopify/sarama v1.19.0/go.mod h1:FVkBWblsNy7DGZRfXLU0O9RCGt5g3g3yEuWXgklEdEo=
@@ -376,6 +378,7 @@ github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
+github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/tmc/grpc-websocket-proxy v0.0.0-20170815181823-89b8d40f7ca8/go.mod h1:ncp9v5uamzpCO7NfCPTXjqaC+bZgJeR0sMTm6dMHP7U=

@@ -101,8 +101,6 @@ func TestStartARPEnsure(t *testing.T) {
 
 		networkMock := networkmock.NewMockNetworkInterface(ctrl)
 		networkMock.EXPECT().EnsureIP(ip.IP).Return(nil).MaxTimes(config.ARPGratuitousCount)
-		lockerMock := lockermock.NewMockLocker(ctrl)
-		lockerMock.EXPECT().Unlock(gomock.Any()).Return(nil)
 
 		sm := NewStateMachine(ctx, NewStateMachineOpts{})
 		sm.SetState(ACTIVATED)
@@ -111,7 +109,6 @@ func TestStartARPEnsure(t *testing.T) {
 			stateMachine:     sm,
 			config:           config,
 			ip:               ip,
-			locker:           lockerMock,
 		}
 
 		doneChan := make(chan bool)
@@ -120,7 +117,10 @@ func TestStartARPEnsure(t *testing.T) {
 			doneChan <- true
 		}()
 		time.Sleep(100 * time.Millisecond)
-		manager.Stop(ctx, func(context.Context) error { return nil })
+
+		manager.stopMutex.Lock()
+		manager.stopped = true
+		manager.stopMutex.Unlock()
 
 		timer := time.NewTimer(500 * time.Millisecond)
 		select {
@@ -151,7 +151,10 @@ func TestStartARPEnsure(t *testing.T) {
 			doneChan <- true
 		}()
 		time.Sleep(50 * time.Millisecond)
-		manager.Stop(ctx, func(context.Context) error { return nil })
+
+		manager.stopMutex.Lock()
+		manager.stopped = true
+		manager.stopMutex.Unlock()
 
 		timer := time.NewTimer(500 * time.Millisecond)
 		select {

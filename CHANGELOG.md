@@ -5,6 +5,9 @@
 * chore(Dependabot): Update various dependencies
 * Bump github.com/sirupsen/logrus from 1.8.0 to 1.8.1
 * Bump github.com/golang/mock from 1.5.0 to 1.6.0
+* Add `/failover` route and `failover` command to force a failover on an ACTIVATED IP.
+* Remove `/try-get-lock` route and `try-get-lock` command in favor of `failover`
+* Destroying an IP is now synchronous
 
 ## [2020-11-20] 1.9.3
 

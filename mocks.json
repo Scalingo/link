@@ -23,6 +23,9 @@
        "interface" : "Locker",
        "src_package" : "locker"
     }, {
+       "interface": "Watcher",
+       "src_package": "watcher"
+    }, {
        "interface": "EtcdLeaseManager",
        "mock_file": "locker/etcd_lease_manager_mock.go",
        "src_package": "locker"

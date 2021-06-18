@@ -11,6 +11,7 @@ import (
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/api"
+	"github.com/Scalingo/link/ip"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/scheduler"
 )
@@ -78,6 +79,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 		w.Write([]byte(`{"msg": "invalid json"}`))
 		return nil
 	}
+	ip.ID = ""
 
 	_, err = netlink.ParseAddr(ip.IP)
 	if err != nil {
@@ -101,7 +103,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, p map[strin
 	ctx = logger.ToCtx(context.Background(), log)
 	ip, err = c.scheduler.Start(ctx, ip)
 	if err != nil {
-		if errors.Cause(err) == scheduler.ErrNotStopping {
+		if err == scheduler.ErrIPAlreadyAssigned {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(`{"msg": "IP already assigned"}`))
 			return nil
@@ -127,6 +129,11 @@ func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map
 	id := params["id"]
 	err := c.scheduler.Stop(ctx, id)
 	if err != nil {
+		if err == scheduler.ErrIPNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(`{"msg": "IP not found"}`))
+			return nil
+		}
 		return errors.Wrap(err, "fail to stop IP manager")
 	}
 
@@ -134,19 +141,29 @@ func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map
 	return nil
 }
 
-func (c ipController) TryGetLock(w http.ResponseWriter, r *http.Request, params map[string]string) error {
+func (c ipController) Failover(w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	ctx := r.Context()
+
 	id := params["id"]
-
-	w.Header().Set("Content-Type", "application/json")
-
-	found := c.scheduler.TryGetLock(ctx, id)
-	if !found {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(`{"error": "not found"}`))
-		return nil
+	log := logger.Get(ctx).WithField("vip_id", id)
+	err := c.scheduler.Failover(ctx, id)
+	if err != nil {
+		if err == scheduler.ErrIPNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(`{"msg": "IP not found"}`))
+			return nil
+		}
+		cause := errors.Cause(err)
+		if cause == ip.ErrIsNotMaster || cause == ip.ErrNoOtherHosts {
+			log.WithError(err).Info("Bad request: cannot failover")
+			w.WriteHeader(http.StatusBadRequest)
+			json.NewEncoder(w).Encode(map[string]string{
+				"msg": cause.Error(),
+			})
+			return nil
+		}
+		return errors.Wrap(err, "fail to stop IP manager")
 	}
-
 	w.WriteHeader(http.StatusNoContent)
 	return nil
 }

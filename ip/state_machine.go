@@ -28,7 +28,6 @@ type NewStateMachineOpts struct {
 }
 
 func NewStateMachine(ctx context.Context, opts NewStateMachineOpts) *fsm.FSM {
-
 	callbacks := fsm.Callbacks{}
 
 	if opts.ActivatedCallback != nil {

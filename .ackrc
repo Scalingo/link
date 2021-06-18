@@ -1,1 +1,3 @@
---ignore-dir=docker/etcd
+--ignore-dir=_docker/etcd
+--ignore-dir=vendor/
+--ignore-file=is:mocks_sig.json

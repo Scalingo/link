@@ -44,7 +44,7 @@ type etcdLeaseManager struct {
 	lastRefreshedAt    time.Time
 	leaseDirtyNotifier chan clientv3.LeaseID
 	leaseErrorNotifier chan bool
-	forceLeaseReresh   bool
+	forceLeaseRefresh  bool
 	callbackLock       *sync.RWMutex
 	leaseLock          *sync.RWMutex
 }
@@ -59,6 +59,7 @@ func NewEtcdLeaseManager(ctx context.Context, config config.Config, storage mode
 		kv:                 etcd,
 		config:             config,
 		storage:            storage,
+		forceLeaseRefresh:  false,
 		callbacks:          make(map[string]LeaseChangedCallback),
 		callbackLock:       &sync.RWMutex{},
 		leaseLock:          &sync.RWMutex{},
@@ -140,7 +141,7 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 	// might trigger unwanted failover since old lease will expire and we do
 	// not have any guarantee that we are the one that will take those locks.
 	log.Info("Getting old leaseID")
-	host, err := m.storage.GetHost(ctx)
+	host, err := m.storage.GetCurrentHost(ctx)
 	if err != nil && err != models.ErrHostNotFound {
 		return errors.Wrap(err, "fail to find host config")
 	}
@@ -150,6 +151,7 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 		m.lastRefreshedAt = time.Now()
 	} else {
 		log.Info("LeaseID not found, starting with LeaseID=0")
+		m.forceLeaseRefresh = true
 	}
 
 	_, err = m.SubscribeToLeaseChange(ctx, m.storeLeaseChange)
@@ -198,9 +200,11 @@ func (m *etcdLeaseManager) refresh(ctx context.Context) error {
 	log := logger.Get(ctx).WithField("source", "etcd-lease-manager")
 
 	// If the lese has not been generated yet (or if it is dirty)
-	if m.leaseID == 0 || m.hasLeaseExpired(ctx) {
-		if m.leaseID == 0 {
-			log.Info("Lease ID is 0, regenerating lease")
+	if m.leaseID == 0 || m.forceLeaseRefresh || m.hasLeaseExpired(ctx) {
+		if m.forceLeaseRefresh {
+			log.Info("New lease requested, regenerating lease")
+		} else if m.leaseID == 0 {
+			log.Info("LeaseID = 0, regenerating lease")
 		} else {
 			log.Info("The lease has expired, regenerating lease")
 		}
@@ -210,10 +214,11 @@ func (m *etcdLeaseManager) refresh(ctx context.Context) error {
 		if err != nil {
 			return errors.Wrap(err, "fail to regenerate lease")
 		}
-		log.WithField("lease_id", grant.ID).Info("New lease ID generated")
+		log.WithField("lease_id", grant.ID).Info("New LeaseID generated")
 
 		m.leaseID = grant.ID
 		m.lastRefreshedAt = time.Now()
+		m.forceLeaseRefresh = false
 		m.notifyLeaseChanged(ctx, oldLeaseID, m.leaseID)
 		return nil
 	}
@@ -224,7 +229,7 @@ func (m *etcdLeaseManager) refresh(ctx context.Context) error {
 	if err != nil {
 		if err, ok := err.(rpctypes.EtcdError); ok && rpctypes.Error(err) == rpctypes.ErrLeaseNotFound {
 			log.WithError(err).Error("Keep alive failed: lease not found, regenerate lease")
-			m.leaseID = 0
+			m.forceLeaseRefresh = true
 			m.leaseErrorNotifier <- true
 			return nil
 		}
@@ -266,7 +271,7 @@ func (m etcdLeaseManager) isLeaseDirty(ctx context.Context, leaseID clientv3.Lea
 	// If the key has not expired, there's nothing to do. If there is an issue the refresher will pick that up and mange it by itself.
 	if m.hasLeaseExpired(ctx) {
 		log.Infof("We got notified that there was an issue with lease %v generated on %v and indeed it's expired. Resetting it.", leaseID, m.lastRefreshedAt)
-		m.leaseID = 0
+		m.forceLeaseRefresh = true
 		return true
 	}
 

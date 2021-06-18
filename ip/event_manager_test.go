@@ -2,26 +2,29 @@ package ip
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
 	"github.com/Scalingo/link/config"
-	"github.com/Scalingo/link/healthcheck/healthcheckmock"
 	"github.com/Scalingo/link/locker/lockermock"
-	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/models/modelsmock"
 	"github.com/Scalingo/link/network/networkmock"
+	"github.com/Scalingo/link/watcher/watchermock"
 	"github.com/golang/mock/gomock"
+	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
-func TestManager_SingleEtcdRun(t *testing.T) {
+func TestManager_TryToGetIP(t *testing.T) {
 	examples := []struct {
 		Name           string
 		Locker         func(*lockermock.MockLocker)
 		ExpectedEvents []string
 		KeepAliveRetry int
+		CurrentState   string
 	}{
 		{
 			Name: "When refresh fails, fault event",
@@ -30,6 +33,7 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 			},
 			KeepAliveRetry: 0,
 			ExpectedEvents: []string{FaultEvent},
+			CurrentState:   STANDBY,
 		}, {
 			Name: "When refresh fails with retry, no fault",
 			Locker: func(mock *lockermock.MockLocker) {
@@ -37,6 +41,7 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 			},
 			KeepAliveRetry: 1,
 			ExpectedEvents: []string{},
+			CurrentState:   STANDBY,
 		}, {
 			Name: "When IsMaster fails just one time, no fault",
 			Locker: func(mock *lockermock.MockLocker) {
@@ -44,6 +49,7 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 				mock.EXPECT().IsMaster(gomock.Any()).Return(false, errors.New("NOP"))
 			},
 			ExpectedEvents: []string{},
+			CurrentState:   STANDBY,
 		}, {
 			Name: "When we are not master",
 			Locker: func(mock *lockermock.MockLocker) {
@@ -51,6 +57,7 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 				mock.EXPECT().IsMaster(gomock.Any()).Return(false, nil)
 			},
 			ExpectedEvents: []string{DemotedEvent},
+			CurrentState:   STANDBY,
 		}, {
 			Name: "When we are master",
 			Locker: func(mock *lockermock.MockLocker) {
@@ -58,6 +65,11 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 				mock.EXPECT().IsMaster(gomock.Any()).Return(true, nil)
 			},
 			ExpectedEvents: []string{ElectedEvent},
+			CurrentState:   STANDBY,
+		}, {
+			Name:           "When the current fsm state is FAILING it should not do anything",
+			ExpectedEvents: []string{},
+			CurrentState:   FAILING,
 		},
 	}
 
@@ -67,7 +79,9 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			locker := lockermock.NewMockLocker(ctrl)
-			example.Locker(locker)
+			if example.Locker != nil {
+				example.Locker(locker)
+			}
 
 			cfg, err := config.Build()
 			require.NoError(t, err)
@@ -75,15 +89,16 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 			cfg.KeepAliveRetry = example.KeepAliveRetry
 
 			manager := &manager{
-				locker: locker,
-				config: cfg,
+				locker:       locker,
+				config:       cfg,
+				stateMachine: fsm.NewFSM(example.CurrentState, fsm.Events{}, fsm.Callbacks{}),
 			}
 
 			eventChan := make(chan string, 10)
 			doneChan := make(chan bool)
 			manager.eventChan = eventChan
 			go func() {
-				manager.singleEtcdRun(ctx)
+				manager.tryToGetIP(ctx)
 				// Wait for the eventChan to be processed
 				time.Sleep(100 * time.Millisecond)
 				doneChan <- true
@@ -113,220 +128,97 @@ func TestManager_SingleEtcdRun(t *testing.T) {
 	}
 }
 
-func TestManager_HealthChecker(t *testing.T) {
+func TestManager_Stop(t *testing.T) {
 	examples := []struct {
-		Name           string
-		Checker        func(*healthcheckmock.MockChecker)
-		ExpectedEvents []string
+		Name                      string
+		Locker                    func(*lockermock.MockLocker)
+		HostCount                 int
+		ShouldWaitForReallocation bool
+		CurrentState              string
+		Events                    []string
 	}{
 		{
-			Name: "With not enough failing events",
-			Checker: func(mock *healthcheckmock.MockChecker) {
-				mock.EXPECT().IsHealthy(gomock.Any()).Return(false, errors.New("failing")).MaxTimes(2)
-				mock.EXPECT().IsHealthy(gomock.Any()).Return(true, nil).AnyTimes()
+			Name: "When there are no other hosts",
+			Locker: func(l *lockermock.MockLocker) {
+				l.EXPECT().IsMaster(gomock.Any()).Return(true, nil)
 			},
-			ExpectedEvents: []string{HealthCheckSuccessEvent},
+			HostCount:                 1,
+			ShouldWaitForReallocation: false,
+			CurrentState:              ACTIVATED,
+			Events:                    []string{DemotedEvent},
 		}, {
-			Name: "With enough failing events",
-			Checker: func(mock *healthcheckmock.MockChecker) {
-				mock.EXPECT().IsHealthy(gomock.Any()).Return(false, errors.New("failing")).MaxTimes(3)
-				mock.EXPECT().IsHealthy(gomock.Any()).Return(true, nil).AnyTimes()
+			Name: "When there are no other host and we are not failing",
+			Locker: func(l *lockermock.MockLocker) {
+				l.EXPECT().IsMaster(gomock.Any()).Return(true, nil)
 			},
-			ExpectedEvents: []string{HealthCheckFailEvent, HealthCheckSuccessEvent},
+			HostCount:                 1,
+			ShouldWaitForReallocation: false,
+			CurrentState:              FAILING,
+			Events:                    []string{},
 		}, {
-			Name: "With a success event and a stop",
-			Checker: func(mock *healthcheckmock.MockChecker) {
-				mock.EXPECT().IsHealthy(gomock.Any()).Return(true, nil).MaxTimes(2)
+			Name: "When there are other hosts trying to take the ip",
+			Locker: func(l *lockermock.MockLocker) {
+				l.EXPECT().IsMaster(gomock.Any()).Return(true, nil)
+				l.EXPECT().IsMaster(gomock.Any()).Return(false, nil)
 			},
-			ExpectedEvents: []string{HealthCheckSuccessEvent},
+			HostCount:                 2,
+			ShouldWaitForReallocation: true,
+			CurrentState:              STANDBY,
+			Events:                    []string{DemotedEvent},
 		},
 	}
 
 	for _, example := range examples {
 		t.Run(example.Name, func(t *testing.T) {
-			ctx := context.Background()
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
-			checker := healthcheckmock.NewMockChecker(ctrl)
-			example.Checker(checker)
-			lock := lockermock.NewMockLocker(ctrl)
-			lock.EXPECT().Stop(gomock.Any()).Return(nil)
+			lockerMock := lockermock.NewMockLocker(ctrl)
+			storageMock := modelsmock.NewMockStorage(ctrl)
+			watcherMock := watchermock.NewMockWatcher(ctrl)
+			networkMock := networkmock.NewMockNetworkInterface(ctrl)
+
+			hosts := make([]string, example.HostCount)
+			storageMock.EXPECT().GetIPHosts(gomock.Any(), gomock.Any()).Return(hosts, nil)
+			if example.Locker != nil {
+				example.Locker(lockerMock)
+			}
+			watcherMock.EXPECT().Stop(gomock.Any()).Return(nil)
+			lockerMock.EXPECT().Stop(gomock.Any()).Return(nil)
+			storageMock.EXPECT().UnlinkIPFromCurrentHost(gomock.Any(), gomock.Any()).Return(nil)
+			eventChan := make(chan string, 2)
+			events := make([]string, 0)
 
 			manager := &manager{
-				checker:      checker,
-				stateMachine: NewStateMachine(ctx, NewStateMachineOpts{}),
-				config: config.Config{
-					HealthcheckInterval:     10 * time.Millisecond,
-					FailCountBeforeFailover: 3,
-					KeepAliveInterval:       10 * time.Millisecond,
-				},
-				locker: lock,
+				stateMachine:     fsm.NewFSM(example.CurrentState, fsm.Events{}, fsm.Callbacks{}),
+				locker:           lockerMock,
+				storage:          storageMock,
+				watcher:          watcherMock,
+				networkInterface: networkMock,
+				eventChan:        eventChan,
 			}
 
-			eventChan := make(chan string, 1)
-			doneChan := make(chan bool)
-			manager.eventChan = eventChan
-			go func() {
-				manager.healthChecker(ctx)
-				doneChan <- true
-			}()
-			timer := time.NewTimer(500 * time.Millisecond)
-			var events []string
+			err := manager.Stop(context.Background())
+			require.NoError(t, err)
 
-			cont := true
-			i := 0
-			for cont {
+			timer := time.NewTimer(1 * time.Second)
+			stop := false
+			for !stop {
 				select {
 				case <-timer.C:
-					t.Fatal("Method did not return")
+					t.Fatal("eventChan was never closed")
 					break
-				case event := <-eventChan:
+				case event, ok := <-eventChan:
+					fmt.Println(ok, event)
+					if !ok {
+						stop = true
+						break
+					}
 					events = append(events, event)
-					i++
-				case <-doneChan:
-					cont = false
-				}
-				if i >= len(example.ExpectedEvents) {
-					cont = false
 				}
 			}
 
-			manager.Stop(ctx, func(context.Context) error { return nil })
-
-			manager.stopOrder(ctx)
-
-			for i := 0; i < len(example.ExpectedEvents); i++ {
-				assert.Equal(t, example.ExpectedEvents[i], events[i])
-			}
-		})
-	}
-}
-
-func TestWaitTwiceLeaseTimeOrReallocation(t *testing.T) {
-	c := config.Config{
-		KeepAliveInterval: 5 * time.Second,
-	}
-	t.Run("when someone else took the lock", func(t *testing.T) {
-		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
-		lockerMock := lockermock.NewMockLocker(ctrl)
-		lockerMock.EXPECT().IsMaster(gomock.Any()).Return(false, nil).Times(1)
-
-		m := &manager{
-			locker: lockerMock,
-			config: c,
-			stopper: func(ctx context.Context) error {
-				t.Log("Stopper should not be called")
-				t.Fail()
-				return nil
-			},
-		}
-
-		start := time.Now()
-		m.waitTwiceLeaseTimeOrReallocation(context.Background())
-		assert.WithinDuration(t, start, time.Now(), 600*time.Millisecond)
-	})
-
-	t.Run("if we're not stopping", func(t *testing.T) {
-		m := &manager{
-			stopper: nil,
-			config:  c,
-		}
-		start := time.Now()
-		m.waitTwiceLeaseTimeOrReallocation(context.Background())
-		assert.WithinDuration(t, start, time.Now(), 600*time.Millisecond)
-	})
-}
-
-func TestSingleEventRun(t *testing.T) {
-	examples := []struct {
-		Name            string
-		currentState    string
-		shouldStop      bool
-		shouldRefreshIP bool
-		shouldCancel    bool
-		shouldRemoveIP  bool
-		shouldContinue  bool
-	}{
-		{
-			Name:            "When we stop the manager",
-			currentState:    STANDBY,
-			shouldStop:      true,
-			shouldRefreshIP: false,
-			shouldCancel:    false,
-			shouldRemoveIP:  true,
-			shouldContinue:  false,
-		}, {
-			Name:            "When we cancel the stop order",
-			currentState:    STANDBY,
-			shouldStop:      true,
-			shouldRefreshIP: true,
-			shouldCancel:    true,
-			shouldRemoveIP:  false,
-			shouldContinue:  true,
-		}, {
-			Name:            "When we are not stopping the app",
-			currentState:    STANDBY,
-			shouldStop:      false,
-			shouldRefreshIP: true,
-			shouldContinue:  true,
-		},
-	}
-
-	for _, example := range examples {
-		t.Run(example.Name, func(t *testing.T) {
-
-			ctrl := gomock.NewController(t)
-			defer ctrl.Finish()
-			config := config.Config{
-				KeepAliveInterval: 100 * time.Millisecond,
-			}
-
-			networkInterface := networkmock.NewMockNetworkInterface(ctrl)
-			locker := lockermock.NewMockLocker(ctrl)
-
-			manager := manager{
-				networkInterface: networkInterface,
-				config:           config,
-				ip: models.IP{
-					IP: "127.10.10.10",
-				},
-				stateMachine: NewStateMachine(context.Background(), NewStateMachineOpts{}),
-				locker:       locker,
-				eventChan:    make(chan string, 100),
-			}
-
-			manager.stateMachine.SetState(example.currentState)
-
-			locker.EXPECT().IsMaster(gomock.Any()).Return(true, nil).AnyTimes()
-
-			stopCalled := false
-			if example.shouldStop {
-				locker.EXPECT().Stop(gomock.Any()).Return(nil).AnyTimes()
-				manager.stopper = func(ctx context.Context) error {
-					stopCalled = true
-					return nil
-				}
-			}
-
-			if example.shouldRemoveIP {
-				networkInterface.EXPECT().RemoveIP("127.10.10.10")
-			}
-
-			if example.shouldRefreshIP {
-				locker.EXPECT().Refresh(gomock.Any()).Return(nil)
-			}
-
-			if example.shouldCancel {
-				go func() {
-					time.Sleep(50 * time.Millisecond)
-					manager.CancelStopping(context.Background())
-				}()
-			}
-			res := manager.singleEventRun(context.Background())
-
-			assert.Equal(t, example.shouldContinue, res)
-			assert.Equal(t, example.shouldRemoveIP, stopCalled)
+			assert.True(t, manager.stopped)
+			assert.Equal(t, example.Events, events)
 		})
 	}
 }
