@@ -40,7 +40,7 @@ func NewEtcdStorage(config config.Config) etcdStorage {
 }
 
 func (e etcdStorage) GetIPs(ctx context.Context) ([]IP, error) {
-	client, closer, err := e.NewEtcdClient()
+	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to get etcd client")
 	}
@@ -78,7 +78,7 @@ func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
 		}
 	}
 
-	client, closer, err := e.NewEtcdClient()
+	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return ip, errors.Wrap(err, "fail to get etcd client")
 	}
@@ -114,7 +114,7 @@ func (e etcdStorage) UpdateIP(ctx context.Context, ip IP) error {
 		return fmt.Errorf("invalid IP ID: %s", ip.IP)
 	}
 
-	client, closer, err := e.NewEtcdClient()
+	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to open client")
 	}
@@ -136,7 +136,7 @@ func (e etcdStorage) UpdateIP(ctx context.Context, ip IP) error {
 }
 
 func (e etcdStorage) RemoveIP(ctx context.Context, id string) error {
-	client, closer, err := e.NewEtcdClient()
+	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
 	}
@@ -163,7 +163,7 @@ func (e etcdStorage) GetCurrentHost(ctx context.Context) (Host, error) {
 
 func (e etcdStorage) getHost(ctx context.Context, hostname string) (Host, error) {
 	var host Host
-	client, close, err := e.NewEtcdClient()
+	client, close, err := e.newEtcdClient()
 	if err != nil {
 		return host, errors.Wrap(err, "fail to get etcd client")
 	}
@@ -190,7 +190,7 @@ func (e etcdStorage) getHost(ctx context.Context, hostname string) (Host, error)
 }
 
 func (e etcdStorage) SaveHost(ctx context.Context, host Host) error {
-	client, closer, err := e.NewEtcdClient()
+	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
 	}
@@ -213,7 +213,7 @@ func (e etcdStorage) SaveHost(ctx context.Context, host Host) error {
 
 func (e etcdStorage) LinkIPWithCurrentHost(ctx context.Context, ip IP) error {
 	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, ip.StorableIP(), e.hostname)
-	client, closer, err := e.NewEtcdClient()
+	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
 	}
@@ -237,7 +237,7 @@ func (e etcdStorage) LinkIPWithCurrentHost(ctx context.Context, ip IP) error {
 
 func (e etcdStorage) UnlinkIPFromCurrentHost(ctx context.Context, ip IP) error {
 	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, ip.StorableIP(), e.hostname)
-	client, closer, err := e.NewEtcdClient()
+	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
 	}
@@ -255,7 +255,7 @@ func (e etcdStorage) UnlinkIPFromCurrentHost(ctx context.Context, ip IP) error {
 func (e etcdStorage) GetIPHosts(ctx context.Context, ip IP) ([]string, error) {
 	key := fmt.Sprintf("%s/ips/%s", EtcdLinkDirectory, ip.StorableIP())
 
-	client, closer, err := e.NewEtcdClient()
+	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to get etcd client")
 	}
@@ -276,7 +276,7 @@ func (e etcdStorage) GetIPHosts(ctx context.Context, ip IP) ([]string, error) {
 	return results, nil
 }
 
-func (e etcdStorage) NewEtcdClient() (clientv3.KV, io.Closer, error) {
+func (e etcdStorage) newEtcdClient() (clientv3.KV, io.Closer, error) {
 	c, err := etcd.ClientFromEnv()
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "fail to get etcd client from config")
