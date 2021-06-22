@@ -65,7 +65,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	}
 
 	// The goal of this transaction is to create the key with our leaseID only if this key does not exist
-	// We use a transaction to make sure that concurrent tries wont interfere with each others.
+	// We use a transaction to make sure that concurrent tries won't interfere with each others.
 
 	transactionCtx, cancel := context.WithTimeout(ctx, l.config.KeepAliveInterval)
 	defer cancel()

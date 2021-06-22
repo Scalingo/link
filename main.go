@@ -63,7 +63,7 @@ func main() {
 				"id": ip.ID,
 				"ip": ip.IP,
 			})
-			log.Info("Starting")
+			log.Info("Starting an IP scheduler")
 			_, err := scheduler.Start(logger.ToCtx(ctx, log), ip)
 			if err != nil {
 				panic(err)
