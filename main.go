@@ -13,6 +13,7 @@ import (
 	"github.com/Scalingo/go-utils/logger/plugins/rollbarplugin"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/locker"
+	"github.com/Scalingo/link/migrations"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/scheduler"
 	"github.com/Scalingo/link/web"
@@ -55,6 +56,17 @@ func main() {
 		log.WithError(err).Error("fail to list configured IPs")
 		panic(err)
 	}
+
+	go func(ctx context.Context) {
+		migrationV0toV1 := migrations.NewV0toV1Migration(leaseManager, storage)
+		if migrationV0toV1.NeedsMigration(ctx) {
+			err := migrationV0toV1.Migrate(ctx)
+			if err != nil {
+				log.WithError(err).Error("Fail to migrate data from v0 to v1")
+				return
+			}
+		}
+	}(ctx)
 
 	if len(ips) > 0 {
 		log.Info("Restarting IP schedulers...")
