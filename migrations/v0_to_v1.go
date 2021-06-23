@@ -14,32 +14,43 @@ import (
 )
 
 type V0toV1 struct {
-	// TODO Do we need the lease manager
+	hostname     string
 	leaseManager locker.EtcdLeaseManager
 	storage      models.Storage
 }
 
-func NewV0toV1Migration(leaseManager locker.EtcdLeaseManager, storage models.Storage) V0toV1 {
+func NewV0toV1Migration(hostname string, leaseManager locker.EtcdLeaseManager, storage models.Storage) V0toV1 {
 	return V0toV1{
+		hostname:     hostname,
 		leaseManager: leaseManager,
 		storage:      storage,
 	}
 }
 
-func (m V0toV1) NeedsMigration(ctx context.Context) bool {
+func (m V0toV1) NeedsMigration(ctx context.Context) (bool, error) {
 	log := logger.Get(ctx)
-	log.Info("Data migration from v0 to v1 is needed")
-	// TODO
-	return false
+
+	host, err := m.storage.GetCurrentHost(ctx)
+	if err != nil {
+		return false, errors.Wrap(err, "fail to get current host to check if it needs data migration from v0 to v1")
+	}
+
+	if host.DataVersion >= 1 {
+		log.Info("Current host does not need data migration from v0 to v1")
+		return false, nil
+	}
+
+	log.Info("Current host needs data migration from v0 to v1")
+	return true, nil
 }
 
 func (m V0toV1) Migrate(ctx context.Context) error {
 	log := logger.Get(ctx)
 	log.Info("Migrate data from v0 to v1")
 
-	host, err := m.storage.GetCurrentHost(ctx)
+	leaseManagerID, err := m.leaseManager.GetLease(ctx)
 	if err != nil {
-		return errors.Wrap(err, "fail to get the current host information to migrate data from v0 to v1")
+		return errors.Wrap(err, "fail to get lease manager ID")
 	}
 
 	etcdClient, closer, err := newEtcdClient()
@@ -48,8 +59,8 @@ func (m V0toV1) Migrate(ctx context.Context) error {
 	}
 	defer closer.Close()
 
-	v0Storage := newV0EtcdStorage(etcdClient, clientv3.LeaseID(host.LeaseID))
-	ips, err := v0Storage.getIPs(ctx, host.Hostname)
+	v0Storage := newV0EtcdStorage(etcdClient, leaseManagerID)
+	ips, err := v0Storage.getIPs(ctx, m.hostname)
 	if err != nil {
 		return errors.Wrap(err, "fail to get the list of v0 IPs")
 	}
@@ -71,10 +82,21 @@ func (m V0toV1) Migrate(ctx context.Context) error {
 		}
 
 		log.Info("Host is master of this IP, migrate the data")
-		err = v0Storage.putIP(ctx, ip.convertToV1(), host.Hostname)
+		err = v0Storage.putIP(ctx, ip.convertToV1(), m.hostname)
 		if err != nil {
 			return errors.Wrap(err, "fail to update the IP data during the migration from v0 to v1")
 		}
+	}
+
+	host, err := m.storage.GetCurrentHost(ctx)
+	if err != nil {
+		return errors.Wrap(err, "fail to get current host to update its data version")
+	}
+	host.DataVersion = locker.DataVersion
+
+	err = m.storage.SaveHost(ctx, host)
+	if err != nil {
+		return errors.Wrap(err, "fail to save host at the end of the v0 to v1 migration")
 	}
 
 	log.Info("End of the data migration from v0 to v1")

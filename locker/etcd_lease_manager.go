@@ -14,6 +14,8 @@ import (
 	"go.etcd.io/etcd/v3/etcdserver/api/v3rpc/rpctypes"
 )
 
+const DataVersion = 1
+
 // ErrCallbackNotFound is launched when a user tries to delete a callback that does not exist
 var ErrCallbackNotFound = errors.New("Lease callback not found")
 
@@ -106,7 +108,6 @@ func (m *etcdLeaseManager) MarkLeaseAsDirty(ctx context.Context, leaseID clientv
 
 func (m *etcdLeaseManager) SubscribeToLeaseChange(ctx context.Context, callback LeaseChangedCallback) (string, error) {
 	if callback == nil {
-
 		panic("nil callback")
 	}
 	uuid, err := uuid.NewV4()
@@ -199,7 +200,7 @@ func (m *etcdLeaseManager) refresh(ctx context.Context) error {
 
 	log := logger.Get(ctx).WithField("source", "etcd-lease-manager")
 
-	// If the lese has not been generated yet (or if it is dirty)
+	// If the lease has not been generated yet (or if it is dirty)
 	if m.leaseID == 0 || m.forceLeaseRefresh || m.hasLeaseExpired(ctx) {
 		if m.forceLeaseRefresh {
 			log.Info("New lease requested, regenerating lease")
@@ -282,8 +283,9 @@ func (m etcdLeaseManager) isLeaseDirty(ctx context.Context, leaseID clientv3.Lea
 func (m etcdLeaseManager) storeLeaseChange(ctx context.Context, _, leaseID clientv3.LeaseID) {
 	log := logger.Get(ctx)
 	err := m.storage.SaveHost(ctx, models.Host{
-		Hostname: m.config.Hostname,
-		LeaseID:  int64(leaseID),
+		Hostname:    m.config.Hostname,
+		LeaseID:     int64(leaseID),
+		DataVersion: DataVersion,
 	})
 	if err != nil {
 		log.WithError(err).Error("Fail to save new lease")
