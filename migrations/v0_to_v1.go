@@ -4,6 +4,7 @@ import (
 	"context"
 	"io"
 
+	scalingoerrors "github.com/Scalingo/go-utils/errors"
 	"github.com/Scalingo/go-utils/etcd"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/locker"
@@ -31,8 +32,12 @@ func (m V0toV1) NeedsMigration(ctx context.Context) (bool, error) {
 	log := logger.Get(ctx)
 
 	host, err := m.storage.GetCurrentHost(ctx)
-	if err != nil {
+	if err != nil && scalingoerrors.RootCause(err) != models.ErrHostNotFound {
 		return false, errors.Wrap(err, "fail to get current host to check if it needs data migration from v0 to v1")
+	}
+
+	if scalingoerrors.RootCause(err) == models.ErrHostNotFound {
+		return true, nil
 	}
 
 	if host.DataVersion >= 1 {
