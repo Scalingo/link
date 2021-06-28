@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	scalingoerrors "github.com/Scalingo/go-utils/errors"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/models"
@@ -143,7 +144,7 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 	// not have any guarantee that we are the one that will take those locks.
 	log.Info("Getting old leaseID")
 	host, err := m.storage.GetCurrentHost(ctx)
-	if err != nil && err != models.ErrHostNotFound {
+	if err != nil && scalingoerrors.RootCause(err) != models.ErrHostNotFound {
 		return errors.Wrap(err, "fail to find host config")
 	}
 	if host.LeaseID != 0 {
