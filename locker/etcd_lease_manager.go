@@ -70,14 +70,18 @@ func NewEtcdLeaseManager(ctx context.Context, config config.Config, storage mode
 }
 
 func (m *etcdLeaseManager) GetLease(ctx context.Context) (clientv3.LeaseID, error) {
+	log := logger.Get(ctx)
 	// If the lease has been generated, send it
 	m.leaseLock.RLock()
+	log.Debug("In lock to get already generated lease")
 	leaseID := m.leaseID
 	m.leaseLock.RUnlock()
 	if leaseID != 0 {
+		log.Debug("Lease has already been generated")
 		return leaseID, nil
 	}
 
+	log.Debug("Generating a new lease")
 	// If the lease has not been generated yet (or is dirty)
 	// Prepare the return channel
 	leaseChan := make(chan clientv3.LeaseID, 1)
@@ -98,6 +102,7 @@ func (m *etcdLeaseManager) GetLease(ctx context.Context) (clientv3.LeaseID, erro
 		// If the command timed out
 		return clientv3.NoLease, ErrGetLeaseTimeout
 	case leaseID = <-leaseChan:
+		log.Debug("Lease has been generated in time")
 	}
 	return leaseID, nil // We got the lease in time \o/
 }
@@ -111,12 +116,17 @@ func (m *etcdLeaseManager) SubscribeToLeaseChange(ctx context.Context, callback 
 	if callback == nil {
 		panic("nil callback")
 	}
+
+	log := logger.Get(ctx)
+	log.Debug("Subscribe to lease change")
 	uuid, err := uuid.NewV4()
 	if err != nil {
 		return "", errors.Wrap(err, "fail to generate UUID")
 	}
+
 	m.callbackLock.Lock()
 	defer m.callbackLock.Unlock()
+	log.Debug("SubscribeToLeaseChange: in lock block")
 	id := uuid.String()
 	m.callbacks[id] = callback
 	return id, nil
@@ -196,10 +206,13 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 
 // This method is called to refresh the current lease. If the currentLease is dirty or if it has not be generated: generate a new lease
 func (m *etcdLeaseManager) refresh(ctx context.Context) error {
+	log := logger.Get(ctx).WithField("source", "etcd-lease-manager")
+	log.Debug("Refresh the lease")
+
 	m.leaseLock.Lock()
 	defer m.leaseLock.Unlock()
 
-	log := logger.Get(ctx).WithField("source", "etcd-lease-manager")
+	log.Debug("refresh: In lock to refresh the lease")
 
 	// If the lease has not been generated yet (or if it is dirty)
 	if m.leaseID == 0 || m.forceLeaseRefresh || m.hasLeaseExpired(ctx) {
@@ -261,10 +274,12 @@ func (m etcdLeaseManager) hasLeaseExpired(ctx context.Context) bool {
 }
 
 func (m etcdLeaseManager) isLeaseDirty(ctx context.Context, leaseID clientv3.LeaseID) bool {
+	log := logger.Get(ctx)
+	log.Debug("isLeaseDirty")
 	m.leaseLock.RLock()
 	defer m.leaseLock.RUnlock()
+	log.Debug("isLeaseDirty: in lock block")
 
-	log := logger.Get(ctx)
 	if leaseID != m.leaseID {
 		log.Infof("We got notified that there was an issue with lease %v but current lease is %v", leaseID, m.leaseID)
 		// This lease is not the current one so there is nothing to do
