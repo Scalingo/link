@@ -176,6 +176,8 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 	// alive. If this loop stop (or fails for a long time), the other nodes will try to get the lock
 	// and we will loose our IPs.
 	go func() {
+		log := log.WithField("source", "etcd-lease-manager-refresh")
+		ctx := logger.ToCtx(ctx, log)
 		log.Info("Starting lease refresher")
 		ticker := time.NewTicker(m.config.KeepAliveInterval)
 		for {
@@ -187,7 +189,9 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 			case <-ticker.C:
 			case leaseID := <-m.leaseDirtyNotifier:
 				runRefresher = !m.isLeaseDirty(ctx, leaseID)
+				log.Debugf("A lease is dirty. Is the current one dirty? %v", runRefresher)
 			case <-m.leaseErrorNotifier:
+				log.Debug("Notified of an error in the refresh process, retry immediately")
 			case <-m.stopper:
 				log.Info("Stopping lease refresher")
 				ticker.Stop()
