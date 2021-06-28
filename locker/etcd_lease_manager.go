@@ -56,7 +56,7 @@ type etcdLeaseManager struct {
 func NewEtcdLeaseManager(ctx context.Context, config config.Config, storage models.Storage, etcd *clientv3.Client) EtcdLeaseManager {
 	return &etcdLeaseManager{
 		stopper:            make(chan bool, 1),
-		leaseDirtyNotifier: make(chan clientv3.LeaseID),
+		leaseDirtyNotifier: make(chan clientv3.LeaseID, 1),
 		leaseErrorNotifier: make(chan bool, 1),
 		leases:             etcd,
 		kv:                 etcd,
