@@ -165,6 +165,7 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 	} else {
 		log.Info("LeaseID not found, starting with LeaseID=0")
 		m.forceLeaseRefresh = true
+		m.leaseDirtyNotifier <- m.leaseID
 	}
 
 	_, err = m.SubscribeToLeaseChange(ctx, m.storeLeaseChange)
