@@ -26,7 +26,7 @@ const (
 
 var (
 	ErrIPAlreadyPresent = errors.New("IP already present")
-	ErrHostNotFound     = errors.New("Host not found")
+	ErrHostNotFound     = errors.New("host not found")
 )
 
 type etcdStorage struct {

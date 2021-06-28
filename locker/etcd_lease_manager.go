@@ -17,10 +17,10 @@ import (
 const DataVersion = 1
 
 // ErrCallbackNotFound is launched when a user tries to delete a callback that does not exist
-var ErrCallbackNotFound = errors.New("Lease callback not found")
+var ErrCallbackNotFound = errors.New("lease callback not found")
 
 // ErrGetLeaseTimeout is launched when a user calls GetLease and we fail to provide one in time
-var ErrGetLeaseTimeout = errors.New("Timeout while trying to get lease")
+var ErrGetLeaseTimeout = errors.New("timeout while trying to get lease")
 
 // LeaseChangedCallback is a callback called by the lease manager when the leaseID has changed so that all managers could try to regenerate their keys
 type LeaseChangedCallback func(ctx context.Context, oldLeaseID, newLeaseID clientv3.LeaseID)
