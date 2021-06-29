@@ -149,7 +149,6 @@ func (c HTTPClient) Failover(ctx context.Context, id string) error {
 
 type AddIPParams struct {
 	HealthcheckInterval int                  `json:"healthcheck_interval"`
-	KeepaliveInterval   int                  `json:"keepalive_interval"`
 	Checks              []models.Healthcheck `json:"checks"`
 }
 
@@ -158,7 +157,6 @@ func (c HTTPClient) AddIP(ctx context.Context, ip string, params AddIPParams) (I
 	err := json.NewEncoder(buffer).Encode(models.IP{
 		IP:                  ip,
 		HealthcheckInterval: params.HealthcheckInterval,
-		KeepaliveInterval:   params.KeepaliveInterval,
 		Checks:              params.Checks,
 	})
 	if err != nil {

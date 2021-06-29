@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/config"
@@ -68,11 +67,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	// The goal of this transaction is to create the key with our leaseID only if this key does not exist
 	// We use a transaction to make sure that concurrent tries wont interfere with each others.
 
-	transactionTimeout := time.Duration(l.ip.KeepaliveInterval) * time.Second
-	if transactionTimeout == 0 {
-		transactionTimeout = l.config.KeepAliveInterval
-	}
-	transactionCtx, cancel := context.WithTimeout(ctx, transactionTimeout)
+	transactionCtx, cancel := context.WithTimeout(ctx, l.config.KeepAliveInterval)
 	defer cancel()
 
 	_, err = l.kvEtcd.Txn(transactionCtx).

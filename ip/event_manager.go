@@ -87,10 +87,6 @@ func (m *manager) Stop(ctx context.Context) error {
 
 // ipCheckLoop tries to get the VIP at regular intervals. It is useful to get the IP if the current primary crashed.
 func (m *manager) ipCheckLoop(ctx context.Context) {
-	interval := time.Duration(m.IP().KeepaliveInterval) * time.Second
-	if interval == 0 {
-		interval = m.config.KeepAliveInterval
-	}
 	for {
 		if m.isStopped() {
 			return
@@ -98,7 +94,7 @@ func (m *manager) ipCheckLoop(ctx context.Context) {
 
 		m.tryToGetIP(ctx)
 
-		time.Sleep(interval)
+		time.Sleep(m.config.KeepAliveInterval)
 	}
 }
 
@@ -112,7 +108,7 @@ func (m *manager) tryToGetIP(ctx context.Context) {
 	// there was an issue while trying to communicate with the etcd cluster.
 	err := m.locker.Refresh(ctx)
 	if err != nil {
-		// We do not want to send a fault event on every connection error. We 
+		// We do not want to send a fault event on every connection error. We
 		// wait for multiple connection failures before sending an event to the
 		// state machine.
 		// This is done because the Fault event will make this instance master

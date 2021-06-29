@@ -103,11 +103,6 @@ func main() {
 			ArgsUsage: "IP [CHECK_TYPE CHECK_ENDPOINT]...",
 			Flags: []cli.Flag{
 				cli.IntFlag{
-					Name:  "keepalive-interval",
-					Value: 0,
-					Usage: "Duration between keepalive requests",
-				},
-				cli.IntFlag{
 					Name:  "healthcheck-interval",
 					Value: 0,
 					Usage: "Duration between healthchecks",
@@ -146,7 +141,6 @@ func main() {
 				params := api.AddIPParams{
 					Checks:              checks,
 					HealthcheckInterval: c.Int("healthcheck-interval"),
-					KeepaliveInterval:   c.Int("keepalive-interval"),
 				}
 				newIP, err := client.AddIP(context.Background(), ip, params)
 				if err != nil {
