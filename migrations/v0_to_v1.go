@@ -70,6 +70,7 @@ func (m V0toV1) Migrate(ctx context.Context) error {
 		return errors.Wrap(err, "fail to get the list of v0 IPs")
 	}
 
+	// TODO in case of error in this loop, do not return but log and continue
 	for _, ip := range ips {
 		log := log.WithFields(logrus.Fields{
 			"id":       ip.ID,
@@ -87,9 +88,16 @@ func (m V0toV1) Migrate(ctx context.Context) error {
 		}
 
 		log.Info("Host is master of this IP, migrate the data")
-		err = v0Storage.putIP(ctx, ip.convertToV1(), m.hostname)
+		ipV1 := ip.convertToV1()
+		err = v0Storage.putIP(ctx, ipV1, m.hostname)
 		if err != nil {
 			return errors.Wrap(err, "fail to update the IP data during the migration from v0 to v1")
+		}
+
+		// We link again the IP with the current host to trigger the topology change in the IP manager
+		err = m.storage.LinkIPWithCurrentHost(ctx, ipV1)
+		if err != nil {
+			return errors.Wrap(err, "fail to link IP with the current host during the migration from v0 to v1")
 		}
 	}
 
