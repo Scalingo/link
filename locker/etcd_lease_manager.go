@@ -73,7 +73,6 @@ func (m *etcdLeaseManager) GetLease(ctx context.Context) (clientv3.LeaseID, erro
 	log := logger.Get(ctx)
 	// If the lease has been generated, send it
 	m.leaseLock.RLock()
-	log.Debug("In lock to get already generated lease")
 	leaseID := m.leaseID
 	m.leaseLock.RUnlock()
 	if leaseID != 0 {
@@ -127,7 +126,6 @@ func (m *etcdLeaseManager) SubscribeToLeaseChange(ctx context.Context, callback 
 
 	m.callbackLock.Lock()
 	defer m.callbackLock.Unlock()
-	log.Debug("SubscribeToLeaseChange: in lock block")
 	id := uuid.String()
 	m.callbacks[id] = callback
 	return id, nil
@@ -213,12 +211,9 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 // This method is called to refresh the current lease. If the currentLease is dirty or if it has not be generated: generate a new lease
 func (m *etcdLeaseManager) refresh(ctx context.Context) error {
 	log := logger.Get(ctx).WithField("source", "etcd-lease-manager")
-	log.Debug("Refresh the lease")
 
 	m.leaseLock.Lock()
 	defer m.leaseLock.Unlock()
-
-	log.Debug("refresh: In lock to refresh the lease")
 
 	// If the lease has not been generated yet (or if it is dirty)
 	if m.leaseID == 0 || m.forceLeaseRefresh || m.hasLeaseExpired(ctx) {
@@ -244,7 +239,6 @@ func (m *etcdLeaseManager) refresh(ctx context.Context) error {
 		return nil
 	}
 
-	log.Debug("Starting keepalive")
 	// Here the lease is still valid, we just need to refresh it.
 	_, err := m.leases.KeepAliveOnce(ctx, m.leaseID)
 	if err != nil {
@@ -257,7 +251,6 @@ func (m *etcdLeaseManager) refresh(ctx context.Context) error {
 		return errors.Wrap(err, "keep alive failed but the lease might still be valid, continuing")
 	}
 	m.lastRefreshedAt = time.Now()
-	log.Debug("Keep alive succeeded")
 
 	return nil
 }
@@ -281,10 +274,8 @@ func (m etcdLeaseManager) hasLeaseExpired(ctx context.Context) bool {
 
 func (m etcdLeaseManager) isLeaseDirty(ctx context.Context, leaseID clientv3.LeaseID) bool {
 	log := logger.Get(ctx)
-	log.Debug("isLeaseDirty")
 	m.leaseLock.RLock()
 	defer m.leaseLock.RUnlock()
-	log.Debug("isLeaseDirty: in lock block")
 
 	if leaseID != m.leaseID {
 		log.Infof("We got notified that there was an issue with lease %v but current lease is %v", leaseID, m.leaseID)

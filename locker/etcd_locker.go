@@ -106,7 +106,6 @@ func (l *etcdLocker) Unlock(ctx context.Context) error {
 }
 
 func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
-	log := logger.Get(ctx)
 	// We do know that we are the master if:
 	// - The key exist
 	// - The lease associated to this key is our lease
@@ -126,7 +125,6 @@ func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
 		return false, errors.Wrap(err, "fail to get current lease ID from manager")
 	}
 
-	log.Debugf("%v =? %v", resp.Kvs[0].Lease, leaseID)
 	return resp.Kvs[0].Lease == int64(leaseID), nil
 }
 
