@@ -11,6 +11,10 @@ services:
     network_mode: 'host'
     env_file:
       - .env
+    environment:
+      HOSTNAME: link-1
+      INTERFACE: eth10
+      PORT: 1313
     command: reflex -r '\.go$$' -R '_test\.go$$' -s -- sh -c 'go build && ./link'
     depends_on:
       - etcd
@@ -23,14 +27,11 @@ services:
     cap_add:
       - NET_ADMIN
     network_mode: 'host'
+    env_file:
+      - .env
     environment:
-      LOGGER_LEVEL: debug
       HOSTNAME: link-2
-      ETCD_HOSTS: http://172.17.0.1:32379
       INTERFACE: eth11
-      USER: link
-      PASSWORD: password
-      PPROF_ENABLED: "true"
       PORT: 1314
     command: reflex --all -r 'link' -s -- sh -c './link'
     depends_on:
@@ -44,14 +45,11 @@ services:
     cap_add:
       - NET_ADMIN
     network_mode: 'host'
+    env_file:
+      - .env
     environment:
-      LOGGER_LEVEL: debug
       HOSTNAME: link-3
-      ETCD_HOSTS: http://172.17.0.1:32379
       INTERFACE: eth12
-      USER: link
-      PASSWORD: password
-      PPROF_ENABLED: "true"
       PORT: 1315
     command: reflex --all -r 'link' -s -- sh -c './link'
     depends_on:
@@ -73,4 +71,3 @@ services:
     command: etcd --name etcd-cluster --data-dir /data/etcd --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --advertise-client-urls http://172.17.0.1:32379
     ports:
       - 32379:2379
-
