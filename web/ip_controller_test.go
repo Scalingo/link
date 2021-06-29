@@ -70,7 +70,7 @@ func TestIPController_Create(t *testing.T) {
 					IP: "10.0.0.1/32",
 				}, nil)
 			},
-			ExpectedBody:       `{"id":"test","ip":"10.0.0.1/32","keepalive_interval":0,"healthcheck_interval":0}` + "\n",
+			ExpectedBody:       `{"id":"test","ip":"10.0.0.1/32","healthcheck_interval":0}` + "\n",
 			ExpectedStatusCode: http.StatusCreated,
 		},
 	}
