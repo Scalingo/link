@@ -5,6 +5,7 @@ go 1.15
 require (
 	github.com/Scalingo/go-handlers v1.4.0
 	github.com/Scalingo/go-philae/v4 v4.4.2
+	github.com/Scalingo/go-utils/errors v1.0.0
 	github.com/Scalingo/go-utils/etcd v1.0.1
 	github.com/Scalingo/go-utils/logger v1.0.0
 	github.com/Scalingo/go-utils/retry v1.0.0
