@@ -13,6 +13,7 @@ import (
 	"github.com/Scalingo/go-utils/logger/plugins/rollbarplugin"
 	"github.com/Scalingo/link/config"
 	"github.com/Scalingo/link/locker"
+	"github.com/Scalingo/link/migrations"
 	"github.com/Scalingo/link/models"
 	"github.com/Scalingo/link/scheduler"
 	"github.com/Scalingo/link/web"
@@ -30,29 +31,48 @@ func main() {
 
 	config, err := config.Build()
 	if err != nil {
-		log.WithError(err).Error("fail to init config")
+		log.WithError(err).Error("Fail to init config")
 		panic(err)
 	}
 
 	etcd, err := etcd.ClientFromEnv()
 	if err != nil {
-		log.WithError(err).Error("fail to get etcd client")
+		log.WithError(err).Error("Fail to get etcd client")
 		panic(err)
 	}
 
 	storage := models.NewEtcdStorage(config)
 	leaseManager := locker.NewEtcdLeaseManager(ctx, config, storage, etcd)
+
+	// We need to check if it is needed to migrate data from v0 to v1 before the lease manager is started so that we are sure that the host data version is still the one from the previous LinK execution.
+	migrationV0toV1 := migrations.NewV0toV1Migration(config.Hostname, leaseManager, storage)
+	needsMigrationV0toV1, err := migrationV0toV1.NeedsMigration(ctx)
+	if err != nil {
+		panic(err)
+	}
+
 	err = leaseManager.Start(ctx)
 	if err != nil {
-		log.WithError(err).Error("fail to start lease manager")
+		log.WithError(err).Error("Fail to start lease manager")
 		panic(err)
+	}
+
+	// v0 to v1 migration needs to be executed after the lease manager is started as we generate the host lease ID in this method.
+	if needsMigrationV0toV1 {
+		go func(ctx context.Context) {
+			err := migrationV0toV1.Migrate(ctx)
+			if err != nil {
+				log.WithError(err).Error("Fail to migrate data from v0 to v1")
+				return
+			}
+		}(ctx)
 	}
 
 	scheduler := scheduler.NewIPScheduler(config, etcd, storage, leaseManager)
 
 	ips, err := storage.GetIPs(ctx)
 	if err != nil {
-		log.WithError(err).Error("fail to list configured IPs")
+		log.WithError(err).Error("Fail to list configured IPs")
 		panic(err)
 	}
 
@@ -63,7 +83,7 @@ func main() {
 				"id": ip.ID,
 				"ip": ip.IP,
 			})
-			log.Info("Starting")
+			log.Info("Starting an IP scheduler")
 			_, err := scheduler.Start(logger.ToCtx(ctx, log), ip)
 			if err != nil {
 				panic(err)

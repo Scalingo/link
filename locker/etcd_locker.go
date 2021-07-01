@@ -65,7 +65,7 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 	}
 
 	// The goal of this transaction is to create the key with our leaseID only if this key does not exist
-	// We use a transaction to make sure that concurrent tries wont interfere with each others.
+	// We use a transaction to make sure that concurrent tries won't interfere with each others.
 
 	transactionCtx, cancel := context.WithTimeout(ctx, l.config.KeepAliveInterval)
 	defer cancel()
@@ -150,9 +150,8 @@ func (l *etcdLocker) leaseChanged(ctx context.Context, oldLeaseID, newLeaseID cl
 		// Replace it with the newLease
 		Then(clientv3.OpPut(l.key, l.config.Hostname, clientv3.WithLease(newLeaseID))).
 		Commit()
-
 	if err != nil {
-		log.WithError(err).Errorf("fail to change lease of key %s", l.key)
+		log.WithError(err).Errorf("Fail to change lease of key %s", l.key)
 	}
 }
 
