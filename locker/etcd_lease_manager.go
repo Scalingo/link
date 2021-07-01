@@ -94,8 +94,7 @@ func (m *etcdLeaseManager) GetLease(ctx context.Context) (clientv3.LeaseID, erro
 	}
 	defer m.UnsubscribeToLeaseChange(ctx, id) // Do not forget to clean it
 
-	// Prepare a timer (to manage tiemout) this timer should not be above the KeepAliveInterval.
-	// The timer is just a safeguard to prevent a goroutine to wait indefinitely.
+	// The timer is a safeguard to prevent a race condition between the initial lease generation and the GetLease calls. By waiting max twice the KeepAliveInterval, we are safe.
 	timer := time.NewTimer(2 * m.config.KeepAliveInterval)
 	select {
 	case <-timer.C:
