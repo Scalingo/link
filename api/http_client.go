@@ -187,6 +187,10 @@ func (c HTTPClient) AddIP(ctx context.Context, ip string, params AddIPParams) (I
 	return res, nil
 }
 
+type UpdateIPParams struct {
+	Healthchecks []models.Healthcheck `json:"healthchecks"`
+}
+
 func (c HTTPClient) RemoveIP(ctx context.Context, id string) error {
 	req, err := c.getRequest(http.MethodDelete, fmt.Sprintf("/ips/%s", id), nil)
 	if err != nil {
