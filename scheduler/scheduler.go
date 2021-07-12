@@ -11,7 +11,6 @@ import (
 	"github.com/Scalingo/link/locker"
 	"github.com/Scalingo/link/models"
 	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/v3/clientv3"
 )
 
@@ -32,6 +31,7 @@ type Scheduler interface {
 	Status(string) string
 	ConfiguredIPs(ctx context.Context) []api.IP
 	GetIP(ctx context.Context, id string) *api.IP
+	UpdateIP(context.Context, models.IP) error
 }
 
 // IPScheduler is LinK implementation of the Scheduler Interface
@@ -78,10 +78,7 @@ func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) (models.IP, e
 			return newIP, ErrIPAlreadyAssigned
 		}
 	}
-	log = log.WithFields(logrus.Fields{
-		"ip": newIP.IP,
-		"id": newIP.ID,
-	})
+	log = log.WithFields(newIP.ToLogrusFields())
 	ctx = logger.ToCtx(ctx, log)
 	ipAdded := (err == nil)
 
@@ -176,4 +173,25 @@ func (s *IPScheduler) GetIP(ctx context.Context, id string) *api.IP {
 		IP:     manager.IP(),
 		Status: manager.Status(),
 	}
+}
+
+// UpdateIP updates the IP in the scheduler storage, and the healthchecks in the IP manager.
+func (s *IPScheduler) UpdateIP(ctx context.Context, ip models.IP) error {
+	log := logger.Get(ctx)
+	s.mapMutex.RLock()
+	manager, ok := s.ipManagers[ip.ID]
+	s.mapMutex.RUnlock()
+	if !ok {
+		log.Info("IP manager not found, skipping the IP update")
+		return nil
+	}
+
+	err := s.storage.UpdateIP(ctx, ip)
+	if err != nil {
+		return errors.Wrap(err, "fail to update the IP from storage")
+	}
+
+	manager.SetHealthchecks(ctx, s.config, ip.Checks)
+
+	return nil
 }
