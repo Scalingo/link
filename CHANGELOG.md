@@ -9,6 +9,7 @@
 * Remove `/try-get-lock` route and `try-get-lock` command in favor of `failover`
 * Destroying an IP is now synchronous
 * Remove `KeepaliveInterval` from the IP model
+* Add a way to update IP healthchecks
 
 ## [2020-11-20] 1.9.3
 
