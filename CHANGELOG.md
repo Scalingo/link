@@ -11,6 +11,7 @@
 * Remove `KeepaliveInterval` from the IP model
 * Add a way to update IP healthchecks
 * Bad request body key is `error` instead of `msg`
+* Not found body is `{"resource": "IP", "error" : "not found"}`
 
 ## [2020-11-20] 1.9.3
 

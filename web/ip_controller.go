@@ -51,7 +51,7 @@ func (c ipController) Get(w http.ResponseWriter, r *http.Request, params map[str
 	ip := c.scheduler.GetIP(ctx, params["id"])
 	if ip == nil {
 		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte(`{"error": "IP not found"}`))
+		w.Write([]byte(`{"resource": "IP", "error": "not found"}`))
 		return nil
 	}
 
@@ -129,7 +129,7 @@ func (c ipController) Patch(w http.ResponseWriter, r *http.Request, params map[s
 	ip := c.scheduler.GetIP(ctx, params["id"])
 	if ip == nil {
 		w.WriteHeader(http.StatusNotFound)
-		_, _ = w.Write([]byte(`{"error": "IP not found"}`))
+		w.Write([]byte(`{"resource": "IP", "error": "not found"}`))
 		return nil
 	}
 	log = log.WithFields(ip.ToLogrusFields())
@@ -172,7 +172,7 @@ func (c ipController) Destroy(w http.ResponseWriter, r *http.Request, params map
 	if err != nil {
 		if err == scheduler.ErrIPNotFound {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"msg": "IP not found"}`))
+			w.Write([]byte(`{"resource": "IP", "error": "not found"}`))
 			return nil
 		}
 		return errors.Wrap(err, "fail to stop IP manager")
@@ -191,7 +191,7 @@ func (c ipController) Failover(w http.ResponseWriter, r *http.Request, params ma
 	if err != nil {
 		if err == scheduler.ErrIPNotFound {
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte(`{"msg": "IP not found"}`))
+			w.Write([]byte(`{"resource": "IP", "error": "not found"}`))
 			return nil
 		}
 		cause := errors.Cause(err)

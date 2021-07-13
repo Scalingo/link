@@ -130,7 +130,7 @@ func TestIPController_Patch(t *testing.T) {
 				m.EXPECT().GetIP(gomock.Any(), linkIPId).Return(nil)
 			},
 			expectedStatusCode: http.StatusNotFound,
-			expectedBody:       `{"error": "IP not found"}`,
+			expectedBody:       `{"resource": "IP", "error": "not found"}`,
 		},
 		"With an invalid body": {
 			body: "INVALID",
