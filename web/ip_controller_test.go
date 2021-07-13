@@ -32,22 +32,22 @@ func TestIPController_Create(t *testing.T) {
 			Name:               "With an invalid body",
 			Input:              "INVALID",
 			ExpectedStatusCode: http.StatusBadRequest,
-			ExpectedBody:       `{"msg": "invalid json"}`,
+			ExpectedBody:       `{"error": "invalid json"}`,
 		}, {
 			Name:               "With an invalid CIDR",
 			Input:              `{"ip": "INVALID!!!"}`,
 			ExpectedStatusCode: http.StatusBadRequest,
-			ExpectedBody:       `{"msg": "invalid IP"}`,
+			ExpectedBody:       `{"error": "invalid IP"}`,
 		}, {
 			Name:               "With a port of 0 for the health check",
 			Input:              `{"ip": "10.0.0.1/32", "checks": [{"port": 0}]}`,
 			ExpectedStatusCode: http.StatusBadRequest,
-			ExpectedBody:       `{"msg": "health check port cannot be negative"}`,
+			ExpectedBody:       `{"error": "health check port cannot be negative"}`,
 		}, {
 			Name:               "With a port of 65536 for the health check",
 			Input:              `{"ip": "10.0.0.1/32", "checks": [{"port": 65536}]}`,
 			ExpectedStatusCode: http.StatusBadRequest,
-			ExpectedBody:       `{"msg": "health check port cannot be greater than 65535"}`,
+			ExpectedBody:       `{"error": "health check port cannot be greater than 65535"}`,
 		}, {
 			Name:  "With an IP that already has been assigned",
 			Input: `{"ip": "10.0.0.1/32"}`,
@@ -55,7 +55,7 @@ func TestIPController_Create(t *testing.T) {
 				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.IP{}, scheduler.ErrIPAlreadyAssigned)
 			},
 			ExpectedStatusCode: http.StatusBadRequest,
-			ExpectedBody:       `{"msg": "IP already assigned"}`,
+			ExpectedBody:       `{"error": "IP already assigned"}`,
 		}, {
 			Name:  "When the scheduler fails",
 			Input: `{"ip": "10.0.0.1/32"}`,
@@ -146,7 +146,7 @@ func TestIPController_Patch(t *testing.T) {
 				m.EXPECT().GetIP(gomock.Any(), linkIPId).Return(&api.IP{})
 			},
 			expectedStatusCode: http.StatusBadRequest,
-			expectedBody:       `{"msg": "health check port cannot be negative"}`,
+			expectedBody:       `{"error": "health check port cannot be negative"}`,
 		},
 		"With a port of 65536 for the health check": {
 			body: `{"healthchecks": [{"port": 65536}]}`,
@@ -154,7 +154,7 @@ func TestIPController_Patch(t *testing.T) {
 				m.EXPECT().GetIP(gomock.Any(), linkIPId).Return(&api.IP{})
 			},
 			expectedStatusCode: http.StatusBadRequest,
-			expectedBody:       `{"msg": "health check port cannot be greater than 65535"}`,
+			expectedBody:       `{"error": "health check port cannot be greater than 65535"}`,
 		},
 		"if it fails to update the IP": {
 			body: `{"healthchecks": [{"port": 12345}]}`,

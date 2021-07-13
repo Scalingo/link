@@ -10,6 +10,7 @@
 * Destroying an IP is now synchronous
 * Remove `KeepaliveInterval` from the IP model
 * Add a way to update IP healthchecks
+* Bad request body key is `error` instead of `msg`
 
 ## [2020-11-20] 1.9.3
 

@@ -76,7 +76,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, _ map[strin
 	err := json.NewDecoder(r.Body).Decode(&ip)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"msg": "invalid json"}`))
+		w.Write([]byte(`{"error": "invalid json"}`))
 		return nil
 	}
 	ip.ID = ""
@@ -87,14 +87,14 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, _ map[strin
 	_, err = netlink.ParseAddr(ip.IP)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(`{"msg": "invalid IP"}`))
+		w.Write([]byte(`{"error": "invalid IP"}`))
 		return nil
 	}
 
 	err = checkIPHealthchecks(ctx, ip.Checks)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte(fmt.Sprintf(`{"msg": "%s"}`, err.Error())))
+		w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err.Error())))
 		return nil
 	}
 
@@ -103,7 +103,7 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, _ map[strin
 	if err != nil {
 		if err == scheduler.ErrIPAlreadyAssigned {
 			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte(`{"msg": "IP already assigned"}`))
+			w.Write([]byte(`{"error": "IP already assigned"}`))
 			return nil
 		}
 		return errors.Wrap(err, "fail to start IP manager")
@@ -147,7 +147,7 @@ func (c ipController) Patch(w http.ResponseWriter, r *http.Request, params map[s
 	err = checkIPHealthchecks(ctx, patchParams.Healthchecks)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(fmt.Sprintf(`{"msg": "%s"}`, err.Error())))
+		_, _ = w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err.Error())))
 		return nil
 	}
 
