@@ -10,6 +10,7 @@ import (
 	"github.com/Scalingo/link/api"
 	"github.com/Scalingo/link/models"
 	"github.com/logrusorgru/aurora"
+	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )
 
@@ -124,11 +125,11 @@ func main() {
 					endpoint := c.Args().Get(curArg + 1)
 					host, port, err := net.SplitHostPort(endpoint)
 					if err != nil {
-						return fmt.Errorf("Invalid endpoint: %s", endpoint)
+						return fmt.Errorf("invalid endpoint: %s", endpoint)
 					}
 					portI, err := strconv.Atoi(port)
 					if err != nil {
-						return fmt.Errorf("Invalid endpoint: %s", endpoint)
+						return fmt.Errorf("invalid endpoint: %s", endpoint)
 					}
 					checks = append(checks, models.Healthcheck{
 						Type: models.HealthcheckType(c.Args().Get(curArg)),
@@ -148,6 +149,52 @@ func main() {
 				}
 
 				fmt.Println(aurora.Green(fmt.Sprintf("IP %s (%s) successfully added", newIP.IP.IP, newIP.ID)))
+				return nil
+			},
+		}, {
+			Name:      "update",
+			ArgsUsage: "ID [CHECK_TYPE CHECK_ENDPOINT]...",
+			Action: func(c *cli.Context) error {
+				if len(c.Args())%2 == 0 {
+					// 1 For the IP
+					// And 2 per Healthchecks
+					// So NArgs % 2 must be == 1
+					cli.ShowCommandHelp(c, c.Command.Name)
+					return nil
+				}
+
+				var healthchecks []models.Healthcheck
+				curArg := 1
+				for curArg < c.NArg() {
+					healthcheckType := c.Args().Get(curArg)
+					endpoint := c.Args().Get(curArg + 1)
+					host, port, err := net.SplitHostPort(endpoint)
+					if err != nil {
+						return fmt.Errorf("invalid healthcheck endpoint: %s", endpoint)
+					}
+					portI, err := strconv.Atoi(port)
+					if err != nil {
+						return fmt.Errorf("invalid healthcheck port: %s", port)
+					}
+					healthchecks = append(healthchecks, models.Healthcheck{
+						Type: models.HealthcheckType(healthcheckType),
+						Host: host,
+						Port: portI,
+					})
+					curArg += 2
+				}
+
+				linkIPId := c.Args().First()
+
+				client := getClientFromCtx(c)
+				ip, err := client.UpdateIP(context.Background(),
+					linkIPId, api.UpdateIPParams{Healthchecks: healthchecks},
+				)
+				if err != nil {
+					return errors.Wrapf(err, "fail to update the IP '%s'", linkIPId)
+				}
+
+				fmt.Println(aurora.Green(fmt.Sprintf("IP %s (%s) successfully updated", ip.IP.IP, ip.ID)))
 				return nil
 			},
 		}, {
