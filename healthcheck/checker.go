@@ -17,13 +17,13 @@ type checker struct {
 	prober *prober.Prober
 }
 
-func FromChecks(config config.Config, checks []models.Healthcheck) checker {
+func FromChecks(cfg config.Config, checks []models.Healthcheck) checker {
 	prober := prober.NewProber()
 	for _, check := range checks {
 		switch check.Type {
 		case models.TCPHealthCheck:
 			prober.AddProbe(tcpprobe.NewTCPProbe("tcp", check.Addr(), tcpprobe.TCPOptions{
-				Timeout: config.HealthcheckTimeout,
+				Timeout: cfg.HealthcheckTimeout,
 			}))
 		}
 	}
