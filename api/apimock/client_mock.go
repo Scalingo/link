@@ -12,30 +12,30 @@ import (
 	gomock "github.com/golang/mock/gomock"
 )
 
-// MockClient is a mock of Client interface
+// MockClient is a mock of Client interface.
 type MockClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientMockRecorder
 }
 
-// MockClientMockRecorder is the mock recorder for MockClient
+// MockClientMockRecorder is the mock recorder for MockClient.
 type MockClientMockRecorder struct {
 	mock *MockClient
 }
 
-// NewMockClient creates a new mock instance
+// NewMockClient creates a new mock instance.
 func NewMockClient(ctrl *gomock.Controller) *MockClient {
 	mock := &MockClient{ctrl: ctrl}
 	mock.recorder = &MockClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockClient) EXPECT() *MockClientMockRecorder {
 	return m.recorder
 }
 
-// AddIP mocks base method
+// AddIP mocks base method.
 func (m *MockClient) AddIP(arg0 context.Context, arg1 string, arg2 api.AddIPParams) (api.IP, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AddIP", arg0, arg1, arg2)
@@ -44,13 +44,13 @@ func (m *MockClient) AddIP(arg0 context.Context, arg1 string, arg2 api.AddIPPara
 	return ret0, ret1
 }
 
-// AddIP indicates an expected call of AddIP
+// AddIP indicates an expected call of AddIP.
 func (mr *MockClientMockRecorder) AddIP(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIP", reflect.TypeOf((*MockClient)(nil).AddIP), arg0, arg1, arg2)
 }
 
-// Failover mocks base method
+// Failover mocks base method.
 func (m *MockClient) Failover(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Failover", arg0, arg1)
@@ -58,13 +58,13 @@ func (m *MockClient) Failover(arg0 context.Context, arg1 string) error {
 	return ret0
 }
 
-// Failover indicates an expected call of Failover
+// Failover indicates an expected call of Failover.
 func (mr *MockClientMockRecorder) Failover(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Failover", reflect.TypeOf((*MockClient)(nil).Failover), arg0, arg1)
 }
 
-// GetIP mocks base method
+// GetIP mocks base method.
 func (m *MockClient) GetIP(arg0 context.Context, arg1 string) (api.IP, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetIP", arg0, arg1)
@@ -73,13 +73,13 @@ func (m *MockClient) GetIP(arg0 context.Context, arg1 string) (api.IP, error) {
 	return ret0, ret1
 }
 
-// GetIP indicates an expected call of GetIP
+// GetIP indicates an expected call of GetIP.
 func (mr *MockClientMockRecorder) GetIP(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIP", reflect.TypeOf((*MockClient)(nil).GetIP), arg0, arg1)
 }
 
-// ListIPs mocks base method
+// ListIPs mocks base method.
 func (m *MockClient) ListIPs(arg0 context.Context) ([]api.IP, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListIPs", arg0)
@@ -88,13 +88,13 @@ func (m *MockClient) ListIPs(arg0 context.Context) ([]api.IP, error) {
 	return ret0, ret1
 }
 
-// ListIPs indicates an expected call of ListIPs
+// ListIPs indicates an expected call of ListIPs.
 func (mr *MockClientMockRecorder) ListIPs(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListIPs", reflect.TypeOf((*MockClient)(nil).ListIPs), arg0)
 }
 
-// RemoveIP mocks base method
+// RemoveIP mocks base method.
 func (m *MockClient) RemoveIP(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RemoveIP", arg0, arg1)
@@ -102,13 +102,28 @@ func (m *MockClient) RemoveIP(arg0 context.Context, arg1 string) error {
 	return ret0
 }
 
-// RemoveIP indicates an expected call of RemoveIP
+// RemoveIP indicates an expected call of RemoveIP.
 func (mr *MockClientMockRecorder) RemoveIP(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveIP", reflect.TypeOf((*MockClient)(nil).RemoveIP), arg0, arg1)
 }
 
-// Version mocks base method
+// UpdateIP mocks base method.
+func (m *MockClient) UpdateIP(arg0 context.Context, arg1 string, arg2 api.UpdateIPParams) (api.IP, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateIP", arg0, arg1, arg2)
+	ret0, _ := ret[0].(api.IP)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpdateIP indicates an expected call of UpdateIP.
+func (mr *MockClientMockRecorder) UpdateIP(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIP", reflect.TypeOf((*MockClient)(nil).UpdateIP), arg0, arg1, arg2)
+}
+
+// Version mocks base method.
 func (m *MockClient) Version(arg0 context.Context) (string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Version", arg0)
@@ -117,7 +132,7 @@ func (m *MockClient) Version(arg0 context.Context) (string, error) {
 	return ret0, ret1
 }
 
-// Version indicates an expected call of Version
+// Version indicates an expected call of Version.
 func (mr *MockClientMockRecorder) Version(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Version", reflect.TypeOf((*MockClient)(nil).Version), arg0)
