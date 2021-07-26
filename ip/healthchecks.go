@@ -14,7 +14,9 @@ func (m *manager) healthChecker(ctx context.Context) {
 	}
 
 	for {
+		m.checkerMutex.RLock()
 		healthy, err := m.checker.IsHealthy(ctx)
+		m.checkerMutex.RUnlock()
 
 		// The eventManager closes the channel `eventChan` when we receive the Stop order. We do not want to send anything on a closed channel.
 		// Since the checker can take up to 5s to run the checks, we need to check the manager stopped status between the health check and sending the results.

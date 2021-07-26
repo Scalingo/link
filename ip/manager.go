@@ -36,6 +36,7 @@ type manager struct {
 	stopMutex               sync.RWMutex
 	locker                  locker.Locker
 	checker                 healthcheck.Checker
+	checkerMutex            sync.RWMutex
 	config                  config.Config
 	storage                 models.Storage
 	watcher                 watcher.Watcher
@@ -133,5 +134,7 @@ func (m *manager) SetHealthchecks(ctx context.Context, cfg config.Config, health
 	log.WithField("healtchchecks", healthchecks).Debug("Set new healthchecks")
 
 	m.ip.Checks = healthchecks
+	m.checkerMutex.Lock()
 	m.checker = healthcheck.FromChecks(cfg, healthchecks)
+	m.checkerMutex.Unlock()
 }
