@@ -152,7 +152,7 @@ func main() {
 				return nil
 			},
 		}, {
-			Name:      "update",
+			Name:      "update-healthchecks",
 			ArgsUsage: "ID [CHECK_TYPE CHECK_ENDPOINT]...",
 			Action: func(c *cli.Context) error {
 				if len(c.Args())%2 == 0 {
@@ -191,10 +191,10 @@ func main() {
 					linkIPId, api.UpdateIPParams{Healthchecks: healthchecks},
 				)
 				if err != nil {
-					return errors.Wrapf(err, "fail to update the IP '%s'", linkIPId)
+					return errors.Wrapf(err, "fail to update the IP healthchecks '%s'", linkIPId)
 				}
 
-				fmt.Println(aurora.Green(fmt.Sprintf("IP %s (%s) successfully updated", ip.IP.IP, ip.ID)))
+				fmt.Println(aurora.Green(fmt.Sprintf("Healthchecks of the IP %s (%s) successfully updated", ip.IP.IP, ip.ID)))
 				return nil
 			},
 		}, {
