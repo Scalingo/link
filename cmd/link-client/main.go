@@ -110,7 +110,7 @@ func main() {
 				},
 			},
 			Action: func(c *cli.Context) error {
-				if len(c.Args())%2 == 0 {
+				if c.NArg()%2 == 0 {
 					// 1 For the IP
 					// And 2 per Healthchecks
 					// So NArgs % 2 must be == 1
@@ -155,7 +155,7 @@ func main() {
 			Name:      "update-healthchecks",
 			ArgsUsage: "ID [CHECK_TYPE CHECK_ENDPOINT]...",
 			Action: func(c *cli.Context) error {
-				if len(c.Args())%2 == 0 {
+				if c.NArg()%2 == 0 {
 					// 1 For the IP
 					// And 2 per Healthchecks
 					// So NArgs % 2 must be == 1
