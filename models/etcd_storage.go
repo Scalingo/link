@@ -8,9 +8,11 @@ import (
 	"time"
 
 	"github.com/Scalingo/go-utils/etcd"
+	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/config"
 	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
+	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/v3/clientv3"
 )
 
@@ -110,6 +112,7 @@ func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
 }
 
 func (e etcdStorage) UpdateIP(ctx context.Context, ip IP) error {
+	log := logger.Get(ctx)
 	if ip.ID == "" {
 		return fmt.Errorf("invalid IP ID: %s", ip.IP)
 	}
@@ -126,11 +129,17 @@ func (e etcdStorage) UpdateIP(ctx context.Context, ip IP) error {
 		return errors.Wrap(err, "fail to marshal IP")
 	}
 
+	etcdKey := e.keyFor(ip)
+	log.WithFields(logrus.Fields{
+		"etcd_key": etcdKey,
+		"value":    string(value),
+	}).Debug("Update the IP in etcd storage")
+
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	_, err = client.Put(etcdCtx, e.keyFor(ip), string(value))
+	_, err = client.Put(etcdCtx, etcdKey, string(value))
 	if err != nil {
-		return errors.Wrap(err, "fail to save IP")
+		return errors.Wrap(err, "fail to update the IP in etcd storage")
 	}
 	return nil
 }

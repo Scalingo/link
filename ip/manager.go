@@ -26,6 +26,7 @@ type Manager interface {
 	Failover(context.Context) error
 	Status() string
 	IP() models.IP
+	SetHealthchecks(context.Context, config.Config, []models.Healthcheck)
 }
 
 type manager struct {
@@ -35,6 +36,7 @@ type manager struct {
 	stopMutex               sync.RWMutex
 	locker                  locker.Locker
 	checker                 healthcheck.Checker
+	checkerMutex            sync.RWMutex
 	config                  config.Config
 	storage                 models.Storage
 	watcher                 watcher.Watcher
@@ -45,8 +47,8 @@ type manager struct {
 	stopped                 bool
 }
 
-func NewManager(ctx context.Context, config config.Config, ip models.IP, client *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) (*manager, error) {
-	i, err := network.NewNetworkInterfaceFromName(config.Interface)
+func NewManager(ctx context.Context, cfg config.Config, ip models.IP, client *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) (*manager, error) {
+	i, err := network.NewNetworkInterfaceFromName(cfg.Interface)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to instantiate network interface")
 	}
@@ -59,9 +61,9 @@ func NewManager(ctx context.Context, config config.Config, ip models.IP, client 
 	m := &manager{
 		networkInterface:        i,
 		ip:                      ip,
-		locker:                  locker.NewEtcdLocker(config, client, leaseManager, ip),
-		checker:                 healthcheck.FromChecks(config, ip.Checks),
-		config:                  config,
+		locker:                  locker.NewEtcdLocker(cfg, client, leaseManager, ip),
+		checker:                 healthcheck.FromChecks(cfg, ip.Checks),
+		config:                  cfg,
 		storage:                 storage,
 		eventChan:               make(chan string),
 		healthcheckFailingCount: 0,
@@ -125,4 +127,14 @@ func (m *manager) sendEvent(status string) {
 		return
 	}
 	m.eventChan <- status
+}
+
+func (m *manager) SetHealthchecks(ctx context.Context, cfg config.Config, healthchecks []models.Healthcheck) {
+	log := logger.Get(ctx)
+	log.WithField("healtchchecks", healthchecks).Debug("Set new healthchecks")
+
+	m.ip.Checks = healthchecks
+	m.checkerMutex.Lock()
+	m.checker = healthcheck.FromChecks(cfg, healthchecks)
+	m.checkerMutex.Unlock()
 }

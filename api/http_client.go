@@ -187,6 +187,40 @@ func (c HTTPClient) AddIP(ctx context.Context, ip string, params AddIPParams) (I
 	return res, nil
 }
 
+type UpdateIPParams struct {
+	Healthchecks []models.Healthcheck `json:"healthchecks"`
+}
+
+func (c HTTPClient) UpdateIP(ctx context.Context, id string, params UpdateIPParams) (IP, error) {
+	buffer := &bytes.Buffer{}
+	err := json.NewEncoder(buffer).Encode(params)
+	if err != nil {
+		return IP{}, err
+	}
+
+	req, err := c.getRequest(http.MethodPatch, fmt.Sprintf("/ips/%s", id), buffer)
+	if err != nil {
+		return IP{}, err
+	}
+
+	resp, err := c.getClient().Do(req)
+	if err != nil {
+		return IP{}, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return IP{}, getErrorFromBody(resp.StatusCode, resp.Body)
+	}
+
+	var ip IP
+	err = json.NewDecoder(resp.Body).Decode(&ip)
+	if err != nil {
+		return IP{}, err
+	}
+
+	return ip, nil
+}
+
 func (c HTTPClient) RemoveIP(ctx context.Context, id string) error {
 	req, err := c.getRequest(http.MethodDelete, fmt.Sprintf("/ips/%s", id), nil)
 	if err != nil {
