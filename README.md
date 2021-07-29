@@ -1,4 +1,4 @@
-# LinK
+# LinK v1.9.3
 [![Build Status](https://travis-ci.org/Scalingo/link.svg?branch=master)](https://travis-ci.org/Scalingo/link)
 
 > Link is not Keepalived
@@ -135,3 +135,20 @@ ip link set eth12 up
 ```
 
 The script `start.sh` can be executed as root to automatically do that.
+
+## Release a New Version
+
+Bump new version number in:
+
+- `CHANGELOG.md`
+- `README.md`
+
+Commit, tag and create a new release:
+
+```sh
+git add CHANGELOG.md README.md
+git commit -m "Bump v1.9.3"
+git tag v1.9.3
+git push origin master v1.9.3
+hub release create v1.9.3
+```
