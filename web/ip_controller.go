@@ -10,10 +10,10 @@ import (
 	"github.com/vishvananda/netlink"
 
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/api"
-	"github.com/Scalingo/link/ip"
-	"github.com/Scalingo/link/models"
-	"github.com/Scalingo/link/scheduler"
+	"github.com/Scalingo/link/v2/api"
+	"github.com/Scalingo/link/v2/ip"
+	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v2/scheduler"
 )
 
 type ipController struct {

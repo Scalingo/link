@@ -7,8 +7,8 @@ import (
 
 	scalingoerrors "github.com/Scalingo/go-utils/errors"
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/config"
-	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/models"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"go.etcd.io/etcd/v3/clientv3"

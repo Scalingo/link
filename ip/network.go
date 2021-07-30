@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/config"
-	"github.com/Scalingo/link/locker"
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/locker"
 	"github.com/looplab/fsm"
 )
 

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/locker"
+	"github.com/Scalingo/link/v2/locker"
 	"github.com/pkg/errors"
 )
 

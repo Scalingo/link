@@ -5,10 +5,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Scalingo/link/config"
-	"github.com/Scalingo/link/locker/lockermock"
-	"github.com/Scalingo/link/models"
-	"github.com/Scalingo/link/network/networkmock"
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/locker/lockermock"
+	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v2/network/networkmock"
 	"github.com/golang/mock/gomock"
 	"github.com/looplab/fsm"
 )

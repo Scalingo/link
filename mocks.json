@@ -1,49 +1,61 @@
 {
-  "base_package": "github.com/Scalingo/link",
-  "mocks": [
-    {
-       "interface" : "Storage",
-       "src_package" : "models"
-    }, {
-       "interface" : "ARP",
-       "src_package" : "network"
-    }, {
-       "interface" : "NetworkInterface",
-       "src_package" : "network"
-    }, {
-       "interface" : "Scheduler",
-       "src_package" : "scheduler"
-    }, {
-       "interface" : "Client",
-       "src_package" : "api"
-    }, {
-       "interface" : "Checker",
-       "src_package" : "healthcheck"
-    }, {
-       "interface" : "Locker",
-       "src_package" : "locker"
-    }, {
-       "interface": "Watcher",
-       "src_package": "watcher"
-    }, {
-       "interface": "EtcdLeaseManager",
-       "mock_file": "locker/etcd_lease_manager_mock.go",
-       "src_package": "locker"
-    }, {
-       "external" : true,
-	     "src_package": "go.etcd.io/etcd/v3/clientv3",
-       "interface" : "KV",
-       "mock_file" : "etcdmock/kv_mock.go"
-    }, {
-       "external" : true,
-	     "src_package": "go.etcd.io/etcd/v3/clientv3",
-       "interface" : "Lease",
-       "mock_file" : "etcdmock/lease_mock.go"
-    }, {
-       "external" : true,
-	     "src_package": "go.etcd.io/etcd/v3/clientv3",
-       "interface" : "Txn",
-       "mock_file" : "etcdmock/txn_mock.go"
-    }
-  ]
+   "base_directory": "github.com/Scalingo/link",
+   "base_package": "github.com/Scalingo/link/v2",
+   "mocks": [
+      {
+         "interface": "Storage",
+         "src_package": "models"
+      },
+      {
+         "interface": "ARP",
+         "src_package": "network"
+      },
+      {
+         "interface": "NetworkInterface",
+         "src_package": "network"
+      },
+      {
+         "interface": "Scheduler",
+         "src_package": "scheduler"
+      },
+      {
+         "interface": "Client",
+         "src_package": "api"
+      },
+      {
+         "interface": "Checker",
+         "src_package": "healthcheck"
+      },
+      {
+         "interface": "Locker",
+         "src_package": "locker"
+      },
+      {
+         "interface": "Watcher",
+         "src_package": "watcher"
+      },
+      {
+         "interface": "EtcdLeaseManager",
+         "mock_file": "locker/etcd_lease_manager_mock.go",
+         "src_package": "locker"
+      },
+      {
+         "external": true,
+         "src_package": "go.etcd.io/etcd/v3/clientv3",
+         "interface": "KV",
+         "mock_file": "etcdmock/kv_mock.go"
+      },
+      {
+         "external": true,
+         "src_package": "go.etcd.io/etcd/v3/clientv3",
+         "interface": "Lease",
+         "mock_file": "etcdmock/lease_mock.go"
+      },
+      {
+         "external": true,
+         "src_package": "go.etcd.io/etcd/v3/clientv3",
+         "interface": "Txn",
+         "mock_file": "etcdmock/txn_mock.go"
+      }
+   ]
 }

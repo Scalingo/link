@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/v2/models"
 	"github.com/pkg/errors"
 	"go.etcd.io/etcd/v3/clientv3"
 )

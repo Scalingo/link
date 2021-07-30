@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Scalingo/link/ip"
+	"github.com/Scalingo/link/v2/ip"
 	"github.com/looplab/fsm"
 )
 

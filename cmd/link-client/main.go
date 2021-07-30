@@ -7,8 +7,8 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/Scalingo/link/api"
-	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/v2/api"
+	"github.com/Scalingo/link/v2/models"
 	"github.com/logrusorgru/aurora"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"

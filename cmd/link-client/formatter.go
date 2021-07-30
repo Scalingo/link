@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Scalingo/link/api"
+	"github.com/Scalingo/link/v2/api"
 	"github.com/logrusorgru/aurora"
 	"github.com/olekukonko/tablewriter"
 )

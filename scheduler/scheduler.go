@@ -5,11 +5,11 @@ import (
 	"sync"
 
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/api"
-	"github.com/Scalingo/link/config"
-	"github.com/Scalingo/link/ip"
-	"github.com/Scalingo/link/locker"
-	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/v2/api"
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/ip"
+	"github.com/Scalingo/link/v2/locker"
+	"github.com/Scalingo/link/v2/models"
 	"github.com/pkg/errors"
 	"go.etcd.io/etcd/v3/clientv3"
 )

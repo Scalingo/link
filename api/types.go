@@ -1,6 +1,6 @@
 package api
 
-import "github.com/Scalingo/link/models"
+import "github.com/Scalingo/link/v2/models"
 
 const (
 	Activated = "ACTIVATED"

@@ -2,6 +2,8 @@
 
 ## To be released
 
+## [2021-07-30] 2.0.0
+
 * chore(Dependabot): Update various dependencies
 * Bump github.com/sirupsen/logrus from 1.8.0 to 1.8.1
 * Bump github.com/golang/mock from 1.5.0 to 1.6.0

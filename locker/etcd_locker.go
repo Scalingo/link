@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/config"
-	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/models"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/v3/clientv3"

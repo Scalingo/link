@@ -1,4 +1,4 @@
-module github.com/Scalingo/link
+module github.com/Scalingo/link/v2
 
 go 1.15
 
@@ -9,8 +9,6 @@ require (
 	github.com/Scalingo/go-utils/etcd v1.0.1
 	github.com/Scalingo/go-utils/logger v1.0.0
 	github.com/Scalingo/go-utils/retry v1.0.0
-	github.com/coreos/go-systemd/v22 v22.1.0 // indirect
-	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/gofrs/uuid v3.4.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.0
@@ -18,7 +16,6 @@ require (
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e
 	github.com/looplab/fsm v0.0.0-20180515091235-f980bdb68a89
-	github.com/mattn/go-runewidth v0.0.3 // indirect
 	github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v0.0.0-20180103174451-36e9d2ebbde5
@@ -27,7 +24,4 @@ require (
 	github.com/urfave/cli v1.22.5
 	github.com/vishvananda/netlink v1.1.0
 	go.etcd.io/etcd/v3 v3.3.0-rc.0.0.20200826232710-c20cc05fc548
-	golang.org/x/crypto v0.0.0-20201117144127-c1f2f97bffc9 // indirect
-	golang.org/x/lint v0.0.0-20191125180803-fdd1cda4f05f // indirect
-	google.golang.org/genproto v0.0.0-20201117123952-62d171c70ae1 // indirect
 )

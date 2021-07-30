@@ -7,8 +7,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Scalingo/link/config"
-	"github.com/Scalingo/link/etcdmock"
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/etcdmock"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"

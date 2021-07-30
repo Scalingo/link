@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/Scalingo/link/models"
+	"github.com/Scalingo/link/v2/models"
 )
 
 type HTTPClient struct {

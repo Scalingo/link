@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Scalingo/link/config"
-	"github.com/Scalingo/link/healthcheck/healthcheckmock"
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/healthcheck/healthcheckmock"
 	"github.com/golang/mock/gomock"
 	"github.com/looplab/fsm"
 	"github.com/pkg/errors"

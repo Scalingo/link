@@ -13,10 +13,10 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Scalingo/link/api"
-	"github.com/Scalingo/link/models"
-	"github.com/Scalingo/link/scheduler"
-	"github.com/Scalingo/link/scheduler/schedulermock"
+	"github.com/Scalingo/link/v2/api"
+	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v2/scheduler"
+	"github.com/Scalingo/link/v2/scheduler/schedulermock"
 )
 
 func TestIPController_Create(t *testing.T) {
