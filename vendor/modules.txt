@@ -61,7 +61,7 @@ github.com/kelseyhightower/envconfig
 # github.com/logrusorgru/aurora/v3 v3.0.0
 ## explicit
 github.com/logrusorgru/aurora/v3
-# github.com/looplab/fsm v0.0.0-20180515091235-f980bdb68a89
+# github.com/looplab/fsm v0.3.0
 ## explicit
 github.com/looplab/fsm
 # github.com/mattn/go-runewidth v0.0.9
