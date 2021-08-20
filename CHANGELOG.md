@@ -10,8 +10,9 @@
 * chore(deps): update github.com/looplab/fsm v0.0.0-20180515091235-f980bdb68a89 => v0.3.0
 * chore(deps): bump go.etcd.io to Go Module version
 * chore(deps): update github.com/Scalingo/go-utils/etcd v1.0.1 => v1.1.0
+* chore: replace Travis CI with GitHub Actions to release new versions
 
-## [2021-07-30] 2.0.0
+## [2021-07-30] v2.0.0
 
 * chore(Dependabot): Update various dependencies
 * Bump github.com/sirupsen/logrus from 1.8.0 to 1.8.1
@@ -24,40 +25,40 @@
 * Bad request body key is `error` instead of `msg`
 * Not found body is `{"resource": "IP", "error" : "not found"}`
 
-## [2020-11-20] 1.9.3
+## [2020-11-20] v1.9.3
 
 * Update deps: use github.com/Scalingo/go-philae/v4@v4.4.2
 
-## [2020-11-19] 1.9.2
+## [2020-11-19] v1.9.2
 
 * Update deps: use go.etcd.io/etcd/v3 instead of github.com/coreos/etcd
 
-## [2020-11-19] 1.9.1
+## [2020-11-19] v1.9.1
 
 * Update deps: github.com/Scalingo/go-utils, use submodules instead of global
 
-## [2020-05-06] 1.9.0
+## [2020-05-06] v1.9.0
 
 * Use a single ETCD lease per server instead of one per IP to reduce load on the etcd cluster
 * Validate the health check port value to be in the range [1:65535]
 
-## [2020-03-06] 1.8.4
+## [2020-03-06] v1.8.4
 
 * Fix condition leading to extra lease renewal for short keepalive durations
 
-## [2020-03-06] 1.8.3
+## [2020-03-06] v1.8.3
 
 * Make LeaseTime according to the IP KeepaliveInterval if set
 
-## [2020-03-06] 1.8.2
+## [2020-03-06] v1.8.2
 
 * Update mocks for testing
 
-## [2020-03-06] 1.8.1
+## [2020-03-06] v1.8.1
 
 * Update api.Client interface
 
-## [2020-03-06] 1.8.0
+## [2020-03-06] v1.8.0
 
 * Feature: Allow the configuration of KeepaliveInterval and HealthcheckInterval by IP
 

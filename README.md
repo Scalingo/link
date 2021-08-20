@@ -149,5 +149,4 @@ git add CHANGELOG.md README.md
 git commit -m "Bump v2.0.0"
 git tag v2.0.0
 git push origin master v2.0.0
-hub release create v2.0.0
 ```
