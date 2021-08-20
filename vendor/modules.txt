@@ -52,7 +52,7 @@ github.com/google/uuid
 # github.com/gorilla/mux v1.8.0
 ## explicit
 github.com/gorilla/mux
-# github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56
+# github.com/j-keck/arping v1.0.2
 ## explicit
 github.com/j-keck/arping
 # github.com/kelseyhightower/envconfig v1.4.0
