@@ -1,5 +1,4 @@
 # LinK v2.0.0
-[![Build Status](https://travis-ci.org/Scalingo/link.svg?branch=master)](https://travis-ci.org/Scalingo/link)
 
 > Link is not Keepalived
 
