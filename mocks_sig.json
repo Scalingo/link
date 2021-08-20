@@ -1,14 +1,14 @@
 {
-  "github.com/Scalingo/link/api.Client": "f3 4f e1 43 bc 9e e7 60 dc 8b 42 f7 a8 82 92 7e 05 b6 d2 27",
+  "github.com/Scalingo/link/api.Client": "43 2c 65 f4 39 1d 94 6e 27 5d e0 d6 16 f1 42 4b 58 31 f3 0a",
   "github.com/Scalingo/link/healthcheck.Checker": "68 49 fe 4d a3 bb 44 44 63 fd 68 46 63 a1 ac c4 f9 5b 51 3e",
   "github.com/Scalingo/link/locker.EtcdLeaseManager": "ac 51 8b 50 0f d3 c1 d5 76 33 64 4c 3b 57 13 a9 08 f0 58 91",
   "github.com/Scalingo/link/locker.Locker": "a5 24 96 0f 1b f5 df b8 d8 dd 15 83 a1 d2 b2 d3 53 fa 25 0d",
-  "github.com/Scalingo/link/models.Storage": "22 94 a2 21 97 22 de a1 b2 2c 05 2d 12 14 02 13 79 d7 c7 43",
+  "github.com/Scalingo/link/models.Storage": "03 2a 32 33 82 6b 68 dd 02 eb 94 ea 73 b0 a6 d2 e5 68 d6 6e",
   "github.com/Scalingo/link/network.ARP": "20 bb b8 da 57 d8 84 21 24 36 cc 40 34 be f6 c3 e6 e9 f9 78",
   "github.com/Scalingo/link/network.NetworkInterface": "02 61 47 58 85 b3 ce f2 ee 69 f8 58 4b ca cd eb 5b ed f9 3c",
   "github.com/Scalingo/link/scheduler.Scheduler": "2f 03 7b a9 8a 8c 66 79 58 89 e9 e3 5a ba 27 1e 21 b3 20 18",
   "github.com/Scalingo/link/watcher.Watcher": "22 fd 8e 1a 88 fd 2f 56 0b 5b 14 19 e4 49 cb d7 12 3a 6a 95",
-  "go.etcd.io/etcd/v3/clientv3.KV": "b5 dc 10 4e dc 95 f2 cf 0a 6c e7 c5 ac 0a 47 5f 60 44 31 40",
-  "go.etcd.io/etcd/v3/clientv3.Lease": "5c 67 f9 dc c6 90 cb 76 c4 1c 88 ce 51 dc 44 49 af f0 32 56",
-  "go.etcd.io/etcd/v3/clientv3.Txn": "2b d8 86 0c 62 87 e9 d4 e5 71 78 81 ef 89 ec 5a e8 30 43 e1"
+  "go.etcd.io/etcd/client/v3.KV": "b5 dc 10 4e dc 95 f2 cf 0a 6c e7 c5 ac 0a 47 5f 60 44 31 40",
+  "go.etcd.io/etcd/client/v3.Lease": "b7 2a f2 e7 67 c0 af ae 3e 99 7a d8 f0 b6 0f 6c 94 a1 7d 37",
+  "go.etcd.io/etcd/client/v3.Txn": "2b d8 86 0c 62 87 e9 d4 e5 71 78 81 ef 89 ec 5a e8 30 43 e1"
 }

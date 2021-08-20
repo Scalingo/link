@@ -11,7 +11,7 @@ import (
 	"github.com/Scalingo/link/v2/locker"
 	"github.com/Scalingo/link/v2/models"
 	"github.com/pkg/errors"
-	"go.etcd.io/etcd/v3/clientv3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var (

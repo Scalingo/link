@@ -41,19 +41,19 @@
       },
       {
          "external": true,
-         "src_package": "go.etcd.io/etcd/v3/clientv3",
+         "src_package": "go.etcd.io/etcd/client/v3",
          "interface": "KV",
          "mock_file": "etcdmock/kv_mock.go"
       },
       {
          "external": true,
-         "src_package": "go.etcd.io/etcd/v3/clientv3",
+         "src_package": "go.etcd.io/etcd/client/v3",
          "interface": "Lease",
          "mock_file": "etcdmock/lease_mock.go"
       },
       {
          "external": true,
-         "src_package": "go.etcd.io/etcd/v3/clientv3",
+         "src_package": "go.etcd.io/etcd/client/v3",
          "interface": "Txn",
          "mock_file": "etcdmock/txn_mock.go"
       }
