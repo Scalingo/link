@@ -9,7 +9,7 @@ import (
 
 	"github.com/Scalingo/link/v2/api"
 	"github.com/Scalingo/link/v2/models"
-	"github.com/logrusorgru/aurora"
+	aurora "github.com/logrusorgru/aurora/v3"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
 )

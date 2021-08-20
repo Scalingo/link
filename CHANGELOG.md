@@ -2,6 +2,15 @@
 
 ## To be released
 
+* chore(deps): bump github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc => v0.0.5
+* chore(deps): replace github.com/satori/go.uuid with github.com/gofrs/uuid
+* chore(deps): update github.com/gofrs/uuid v3.4.0+incompatible => v4.0.0+incompatible
+* chore(deps): update github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56 => v1.0.2
+* chore(deps): update github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e => v3.0.0
+* chore(deps): update github.com/looplab/fsm v0.0.0-20180515091235-f980bdb68a89 => v0.3.0
+* chore(deps): bump go.etcd.io to Go Module version
+* chore(deps): update github.com/Scalingo/go-utils/etcd v1.0.1 => v1.1.0
+
 ## [2021-07-30] 2.0.0
 
 * chore(Dependabot): Update various dependencies
