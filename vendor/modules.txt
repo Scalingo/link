@@ -78,9 +78,6 @@ github.com/pmezard/go-difflib/difflib
 github.com/rollbar/rollbar-go
 # github.com/russross/blackfriday/v2 v2.0.1
 github.com/russross/blackfriday/v2
-# github.com/satori/go.uuid v0.0.0-20180103174451-36e9d2ebbde5
-## explicit
-github.com/satori/go.uuid
 # github.com/shurcooL/sanitized_anchor_name v1.0.0
 github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.8.1

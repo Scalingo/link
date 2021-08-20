@@ -10,8 +10,8 @@ import (
 	"github.com/Scalingo/go-utils/etcd"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v2/config"
+	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
 	"github.com/sirupsen/logrus"
 	"go.etcd.io/etcd/v3/clientv3"
 )
