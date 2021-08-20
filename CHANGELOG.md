@@ -6,6 +6,7 @@
 * chore(deps): replace github.com/satori/go.uuid with github.com/gofrs/uuid
 * chore(deps): update github.com/gofrs/uuid v3.4.0+incompatible => v4.0.0+incompatible
 * chore(deps): update github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56 => v1.0.2
+* chore(deps): update github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e => v3.0.0
 
 ## [2021-07-30] 2.0.0
 

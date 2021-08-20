@@ -58,9 +58,9 @@ github.com/j-keck/arping
 # github.com/kelseyhightower/envconfig v1.4.0
 ## explicit
 github.com/kelseyhightower/envconfig
-# github.com/logrusorgru/aurora v0.0.0-20181002194514-a7b3b318ed4e
+# github.com/logrusorgru/aurora/v3 v3.0.0
 ## explicit
-github.com/logrusorgru/aurora
+github.com/logrusorgru/aurora/v3
 # github.com/looplab/fsm v0.0.0-20180515091235-f980bdb68a89
 ## explicit
 github.com/looplab/fsm

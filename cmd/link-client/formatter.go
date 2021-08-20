@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/Scalingo/link/v2/api"
-	"github.com/logrusorgru/aurora"
+	aurora "github.com/logrusorgru/aurora/v3"
 	"github.com/olekukonko/tablewriter"
 )
 
