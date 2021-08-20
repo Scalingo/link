@@ -42,7 +42,7 @@ jobs:
       run: |
         for gox_archi in $GOX_ARCHITECTURES; do
           echo "Archive release targetted to $gox_archi"
-          # TODO Gox compiles link-client and an executable named "v2" instead of "link"..
+          # Gox compiles link-client and an executable named "v2" instead of "link"..
           mv dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}/v2 dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}/link
           tar --directory=dist -czvf "dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}.tar.gz" "link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}"
         done
