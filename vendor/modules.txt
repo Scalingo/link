@@ -31,7 +31,7 @@ github.com/coreos/go-systemd/v22/journal
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
-# github.com/gofrs/uuid v3.4.0+incompatible
+# github.com/gofrs/uuid v4.0.0+incompatible
 ## explicit
 github.com/gofrs/uuid
 # github.com/gogo/protobuf v1.3.1

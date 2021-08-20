@@ -9,7 +9,7 @@ require (
 	github.com/Scalingo/go-utils/etcd v1.0.1
 	github.com/Scalingo/go-utils/logger v1.0.0
 	github.com/Scalingo/go-utils/retry v1.0.0
-	github.com/gofrs/uuid v3.4.0+incompatible
+	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.0
 	github.com/j-keck/arping v0.0.0-20160618110441-2cf9dc699c56
