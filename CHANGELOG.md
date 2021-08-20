@@ -2,6 +2,8 @@
 
 ## To be released
 
+* Bump github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc => v0.0.5
+
 ## [2021-07-30] 2.0.0
 
 * chore(Dependabot): Update various dependencies
