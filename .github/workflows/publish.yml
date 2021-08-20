@@ -47,14 +47,9 @@ jobs:
           tar --directory=dist -czvf "dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}.tar.gz" "link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}"
         done
 
-    - name: Generate this release changelog
-      run: cat CHANGELOG.md | sed -n '/${{ steps.tag_name.outputs.TAG_NAME }}/,/\#\#/{p;/\\#\\#/q}' | sed '$d' > CHANGELOG-2.md
-    - run: cat CHANGELOG.md | sed -n '/${{ steps.tag_name.outputs.TAG_NAME }}/,/\#\#/{p;/\\#\\#/q}' | sed '$d'
-
     - name: Release the new version
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        body_path: CHANGELOG-2.md
         body: Please refer to the [CHANGELOG.md](https://github.com/Scalingo/link/blob/${{ steps.tag_name.outputs.TAG_NAME }}/CHANGELOG.md) file.
         files: dist/*.tar.gz
