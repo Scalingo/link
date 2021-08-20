@@ -1,5 +1,7 @@
 # LinK v2.0.0
 
+![publish workflow](https://github.com/Scalingo/link/actions/workflows/publish.yml/badge.svg)
+
 > Link is not Keepalived
 
 LinK is a networking agent that will let multiple hosts share a virtual IP. It
