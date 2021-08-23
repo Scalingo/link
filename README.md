@@ -1,5 +1,6 @@
 # LinK v2.0.0
-[![Build Status](https://travis-ci.org/Scalingo/link.svg?branch=master)](https://travis-ci.org/Scalingo/link)
+
+![publish workflow](https://github.com/Scalingo/link/actions/workflows/publish.yml/badge.svg)
 
 > Link is not Keepalived
 
@@ -150,5 +151,4 @@ git add CHANGELOG.md README.md
 git commit -m "Bump v2.0.0"
 git tag v2.0.0
 git push origin master v2.0.0
-hub release create v2.0.0
 ```

@@ -1,0 +1,55 @@
+name: Publish
+
+on:
+  push:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    env:
+      GO_VERSION: 1.15
+      GOX_ARCHITECTURES: amd64 386
+    steps:
+    # Currently there is no possibility to get a tag name. Hence we filter the GITHUB_REF variable which contains something like "refs/tags/v2.0.0" if the tag is "v2.0.0". The value can be used with "steps.tag_name.outputs.TAG_NAME"
+    - name: Get tag name
+      if: startsWith(github.ref, 'refs/tags/')
+      id: tag_name
+      run: |
+        echo "::set-output name=TAG_NAME::${GITHUB_REF#refs/tags/}"
+        echo "$TAG_NAME"
+
+    - name: Checkout the code
+      uses: actions/checkout@v2
+
+    - name: Setup Go environment
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ env.GO_VERSION }}
+    - run: go version
+
+    - name: Execute the tests
+      run: go test -race -p=1 ./...
+
+    - name: Build the binaries
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        go get github.com/mitchellh/gox
+        go mod vendor
+        gox -os="linux" -arch="${{ env.GOX_ARCHITECTURES }}" -output="dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-{{.OS}}-{{.Arch}}/{{.Dir}}" -ldflags="-X main.Version=${{ steps.tag_name.outputs.TAG_NAME }}" . ./cmd/...
+
+    - name: Archive the built binaries
+      if: startsWith(github.ref, 'refs/tags/')
+      run: |
+        for gox_archi in $GOX_ARCHITECTURES; do
+          echo "Archive release targetted to $gox_archi"
+          # Gox compiles link-client and an executable named "v2" instead of "link"..
+          mv dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}/v2 dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}/link
+          tar --directory=dist -czvf "dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}.tar.gz" "link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}"
+        done
+
+    - name: Release the new version
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        body: Please refer to the [CHANGELOG.md](https://github.com/Scalingo/link/blob/${{ steps.tag_name.outputs.TAG_NAME }}/CHANGELOG.md) file.
+        files: dist/*.tar.gz
