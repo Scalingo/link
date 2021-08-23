@@ -2,6 +2,8 @@
 
 ## To be released
 
+## [2021-08-23] v2.0.1
+
 * chore(deps): bump github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc => v0.0.5
 * chore(deps): replace github.com/satori/go.uuid with github.com/gofrs/uuid
 * chore(deps): update github.com/gofrs/uuid v3.4.0+incompatible => v4.0.0+incompatible
