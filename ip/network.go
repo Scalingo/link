@@ -13,31 +13,42 @@ import (
 func (m *manager) setActivated(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: ACTIVATED")
-	err := m.networkInterface.EnsureIP(m.ip.IP)
-	if err != nil {
-		log.WithError(err).Error("Fail to activate IP")
+	ip := m.IP()
+
+	if !ip.NoNetwork {
+		err := m.networkInterface.EnsureIP(ip.IP)
+		if err != nil {
+			log.WithError(err).Error("Fail to activate IP")
+		}
 	}
 }
 
 func (m *manager) setStandBy(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: STANDBY")
-	err := m.networkInterface.RemoveIP(m.ip.IP)
-	if err != nil {
-		log.WithError(err).Error("Fail to de-activate IP")
+	ip := m.IP()
+
+	if !ip.NoNetwork {
+		err := m.networkInterface.RemoveIP(ip.IP)
+		if err != nil {
+			log.WithError(err).Error("Fail to de-activate IP")
+		}
 	}
 }
 
 func (m *manager) setFailing(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: FAILING")
+	ip := m.IP()
 
-	err := m.networkInterface.RemoveIP(m.ip.IP)
-	if err != nil {
-		log.WithError(err).Error("Fail to de-activate IP")
+	if !ip.NoNetwork {
+		err := m.networkInterface.RemoveIP(ip.IP)
+		if err != nil {
+			log.WithError(err).Error("Fail to de-activate IP")
+		}
 	}
 
-	err = m.locker.Unlock(ctx)
+	err := m.locker.Unlock(ctx)
 	if err != nil && err != locker.ErrNotMaster {
 		// If we are not master, we can safely ignore this error
 		log.WithError(err).Error("Fail to unlock the key")
@@ -54,10 +65,11 @@ func (m *manager) startArpEnsure(ctx context.Context) {
 			return
 		}
 		currentState := m.Status()
+		ip := m.IP()
 
-		if currentState == ACTIVATED && garpCount < m.config.ARPGratuitousCount {
+		if currentState == ACTIVATED && garpCount < m.config.ARPGratuitousCount && !ip.NoNetwork {
 			log.Debug("Send gratuitous ARP request")
-			err := m.networkInterface.EnsureIP(m.ip.IP)
+			err := m.networkInterface.EnsureIP(ip.IP)
 			if err != nil {
 				log.WithError(err).Error("Fail to ensure IP")
 			} else {

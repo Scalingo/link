@@ -151,6 +151,10 @@ func (c ipController) Patch(w http.ResponseWriter, r *http.Request, params map[s
 		return nil
 	}
 
+	if patchParams.NoNetwork != nil {
+		ip.NoNetwork = *patchParams.NoNetwork
+	}
+
 	ip.Checks = patchParams.Healthchecks
 	err = c.scheduler.UpdateIP(ctx, ip.IP)
 	if err != nil {

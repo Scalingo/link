@@ -65,14 +65,15 @@ func TestIPController_Create(t *testing.T) {
 			ExpectedError: "SchedFail !",
 		}, {
 			Name:  "When everything works fine",
-			Input: `{"ip": "10.0.0.1/32"}`,
+			Input: `{"ip": "10.0.0.1/32", "no_network": true}`,
 			SchedulerMock: func(mock *schedulermock.MockScheduler) {
 				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.IP{
-					ID: "test",
-					IP: "10.0.0.1/32",
+					ID:        "test",
+					IP:        "10.0.0.1/32",
+					NoNetwork: true,
 				}, nil)
 			},
-			ExpectedBody:       `{"id":"test","ip":"10.0.0.1/32","healthcheck_interval":0}` + "\n",
+			ExpectedBody:       `{"id":"test","ip":"10.0.0.1/32","healthcheck_interval":0,"no_network":true}` + "\n",
 			ExpectedStatusCode: http.StatusCreated,
 		},
 	}
@@ -186,7 +187,21 @@ func TestIPController_Patch(t *testing.T) {
 					},
 				})
 			},
-			expectedBody:       fmt.Sprintf(`{"id":"%s","ip":"","checks":[{"type":"","host":"","port":12345}],"healthcheck_interval":0}`+"\n", linkIPId),
+			expectedBody:       fmt.Sprintf(`{"id":"%s","ip":"","checks":[{"type":"","host":"","port":12345}],"healthcheck_interval":0,"no_network":false}`+"\n", linkIPId),
+			expectedStatusCode: http.StatusOK,
+		},
+		"When a user tries to update the NoNetwork flag": {
+			body: `{"no_network": true}`,
+			expectScheduler: func(m *schedulermock.MockScheduler) {
+				m.EXPECT().GetIP(gomock.Any(), linkIPId).Return(&api.IP{
+					IP: models.IP{ID: linkIPId, NoNetwork: false},
+				})
+				m.EXPECT().UpdateIP(gomock.Any(), models.IP{
+					ID:        linkIPId,
+					NoNetwork: true,
+				})
+			},
+			expectedBody:       fmt.Sprintf(`{"id":"%s","ip":"","healthcheck_interval":0,"no_network":true}`+"\n", linkIPId),
 			expectedStatusCode: http.StatusOK,
 		},
 	}

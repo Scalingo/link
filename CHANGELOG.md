@@ -2,6 +2,9 @@
 
 ## To be released
 
+* Add the no-network option to disable any operation on the NIC (do not add the IP and do not perform Gratuitous ARP)
+* Add the update command on link client that let user change options on an IP
+
 ## [2021-08-23] v2.0.1
 
 * chore(deps): bump github.com/olekukonko/tablewriter v0.0.0-20180912035003-be2c049b30cc => v0.0.5

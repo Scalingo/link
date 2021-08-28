@@ -27,12 +27,14 @@ type Manager interface {
 	Status() string
 	IP() models.IP
 	SetHealthchecks(context.Context, config.Config, []models.Healthcheck)
+	UpdateIP(ctx context.Context, ip models.IP)
 }
 
 type manager struct {
 	networkInterface        network.NetworkInterface
 	stateMachine            *fsm.FSM
 	ip                      models.IP
+	ipMutex                 sync.RWMutex
 	stopMutex               sync.RWMutex
 	locker                  locker.Locker
 	checker                 healthcheck.Checker
@@ -118,6 +120,9 @@ func (m *manager) Status() string {
 
 // IP returns the ip model linked to this manager
 func (m *manager) IP() models.IP {
+	m.ipMutex.RLock()
+	defer m.ipMutex.RUnlock()
+
 	return m.ip
 }
 
@@ -137,4 +142,32 @@ func (m *manager) SetHealthchecks(ctx context.Context, cfg config.Config, health
 	m.checkerMutex.Lock()
 	m.checker = healthcheck.FromChecks(cfg, healthchecks)
 	m.checkerMutex.Unlock()
+}
+
+func (m *manager) UpdateIP(ctx context.Context, ip models.IP) {
+	log := logger.Get(ctx)
+
+	oldIp := m.IP()
+
+	m.ipMutex.Lock()
+	m.ip = ip
+	m.ipMutex.Unlock()
+
+	// The user just enabled the NoNetwork option
+	if !oldIp.NoNetwork && ip.NoNetwork {
+		log.Info("NoNetwork option enabled: Removing IP from network interface")
+		err := m.networkInterface.RemoveIP(ip.IP)
+		if err != nil {
+			log.WithError(err).Error("Fail to remove IP from network interface")
+		}
+	}
+
+	// The user just disabled the NoNetwork option and we are master
+	if oldIp.NoNetwork && !ip.NoNetwork && m.Status() == ACTIVATED {
+		log.Info("NoNetwork option disabled and we are MASTER: Adding the IP to our network interface")
+		err := m.networkInterface.EnsureIP(ip.IP)
+		if err != nil {
+			log.WithError(err).Error("fail to add IP to our network interface")
+		}
+	}
 }

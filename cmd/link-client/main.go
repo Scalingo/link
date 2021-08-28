@@ -108,6 +108,10 @@ func main() {
 					Value: 0,
 					Usage: "Duration between healthchecks",
 				},
+				cli.BoolFlag{
+					Name:  "no-network",
+					Usage: "Disable any operation on the network interface",
+				},
 			},
 			Action: func(c *cli.Context) error {
 				if c.NArg()%2 == 0 {
@@ -142,13 +146,62 @@ func main() {
 				params := api.AddIPParams{
 					Checks:              checks,
 					HealthcheckInterval: c.Int("healthcheck-interval"),
+					NoNetwork:           c.Bool("no-network"),
 				}
+
 				newIP, err := client.AddIP(context.Background(), ip, params)
 				if err != nil {
 					return err
 				}
 
 				fmt.Println(aurora.Green(fmt.Sprintf("IP %s (%s) successfully added", newIP.IP.IP, newIP.ID)))
+				return nil
+			},
+		}, {
+			Name:      "update",
+			ArgsUsage: "ID",
+			Flags: []cli.Flag{
+				cli.BoolFlag{
+					Name:  "no-network",
+					Usage: "Disable any operation on the network interface",
+				},
+				cli.BoolFlag{
+					Name:  "network",
+					Usage: "Enable all operations on the network interface",
+				},
+			},
+			Action: func(c *cli.Context) error {
+				if c.NArg() != 1 {
+					cli.ShowCommandHelp(c, c.Command.Name)
+					return nil
+				}
+
+				if c.Bool("no-network") && c.Bool("network") {
+					fmt.Println("Both the network and no-network flag can't be passed at the same time")
+					return nil
+				}
+
+				updateParams := api.UpdateIPParams{}
+				var noNetwork bool
+				if c.Bool("no-network") {
+					noNetwork = true
+					updateParams.NoNetwork = &noNetwork
+				}
+
+				if c.Bool("network") {
+					noNetwork = false
+					updateParams.NoNetwork = &noNetwork
+				}
+
+				linkIPId := c.Args().First()
+
+				client := getClientFromCtx(c)
+				ip, err := client.UpdateIP(context.Background(), linkIPId, updateParams)
+				if err != nil {
+					return errors.Wrapf(err, "fail to update the IP '%s'", linkIPId)
+				}
+
+				fmt.Println(aurora.Green(fmt.Sprintf("IP %s (%s) successfully updated", ip.IP.IP, ip.ID)))
 				return nil
 			},
 		}, {

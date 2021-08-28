@@ -150,6 +150,7 @@ func (c HTTPClient) Failover(ctx context.Context, id string) error {
 type AddIPParams struct {
 	HealthcheckInterval int                  `json:"healthcheck_interval"`
 	Checks              []models.Healthcheck `json:"checks"`
+	NoNetwork           bool                 `json:"no_network"`
 }
 
 func (c HTTPClient) AddIP(ctx context.Context, ip string, params AddIPParams) (IP, error) {
@@ -158,6 +159,7 @@ func (c HTTPClient) AddIP(ctx context.Context, ip string, params AddIPParams) (I
 		IP:                  ip,
 		HealthcheckInterval: params.HealthcheckInterval,
 		Checks:              params.Checks,
+		NoNetwork:           params.NoNetwork,
 	})
 	if err != nil {
 		return IP{}, err
@@ -189,6 +191,7 @@ func (c HTTPClient) AddIP(ctx context.Context, ip string, params AddIPParams) (I
 
 type UpdateIPParams struct {
 	Healthchecks []models.Healthcheck `json:"healthchecks"`
+	NoNetwork    *bool                `json:"no_network"`
 }
 
 func (c HTTPClient) UpdateIP(ctx context.Context, id string, params UpdateIPParams) (IP, error) {
