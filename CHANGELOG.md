@@ -2,8 +2,8 @@
 
 ## To be released
 
-* Add the no-network option to disable any operation on the NIC (do not add the IP and do not perform Gratuitous ARP)
-* Add the update command on link client that let user change options on an IP
+* feat(ip): add the `no_network` option to disable any operation on the NIC (do not add the IP and do not perform Gratuitous ARP)
+* feat(ip): add the `UpdateIP` command on LinK client to let user change options on an IP
 
 ## [2021-08-23] v2.0.1
 
