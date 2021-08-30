@@ -193,5 +193,7 @@ func (s *IPScheduler) UpdateIP(ctx context.Context, ip models.IP) error {
 
 	manager.SetHealthchecks(ctx, s.config, ip.Checks)
 
+	manager.UpdateIP(ctx, ip)
+
 	return nil
 }

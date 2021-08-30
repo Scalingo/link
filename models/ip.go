@@ -14,13 +14,15 @@ type IP struct {
 	Status              string        `json:"status,omitempty"`     // Status of this VIP
 	Checks              []Healthcheck `json:"checks,omitempty"`     // Healthcheck configured with this VIP
 	HealthcheckInterval int           `json:"healthcheck_interval"` // HealthcheckIntevals for this VIP
+	NoNetwork           bool          `json:"no_network"`           // Do not perform any actions on the NIC (do not add the IP and do not perform gratuitous ARP requests)
 }
 
 // ToLogrusFields returns a Logrus representation of an IP
 func (i IP) ToLogrusFields() logrus.Fields {
 	return logrus.Fields{
-		"ip":    i.IP,
-		"ip_id": i.ID,
+		"ip":         i.IP,
+		"ip_id":      i.ID,
+		"no_network": i.NoNetwork,
 	}
 }
 

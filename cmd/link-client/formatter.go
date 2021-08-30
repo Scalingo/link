@@ -15,7 +15,7 @@ import (
 func formatIPs(ips []api.IP) {
 
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "IP", "Status", "CHECKS"})
+	table.SetHeader([]string{"ID", "IP", "Status", "Checks", "Options"})
 
 	for _, ip := range ips {
 		status := formatStatus(ip)
@@ -29,11 +29,22 @@ func formatIPs(ips []api.IP) {
 
 			checks = strings.Join(c, ",")
 		}
+
+		optionsArr := make([]string, 0)
+		if ip.NoNetwork {
+			optionsArr = append(optionsArr, "no-network")
+		}
+		options := "-"
+		if len(optionsArr) != 0 {
+			options = strings.Join(optionsArr, ", ")
+		}
+
 		table.Append([]string{
 			ip.ID,
 			ip.IP.IP,
 			status,
 			checks,
+			options,
 		})
 	}
 	table.Render()
@@ -42,6 +53,7 @@ func formatIPs(ips []api.IP) {
 func formatIP(ip api.IP) {
 	fmt.Printf("ID:\t%s\n", ip.ID)
 	fmt.Printf("Status:\t%s\n", formatStatus(ip))
+	fmt.Printf("No Network:\t%v\n", ip.NoNetwork)
 	if len(ip.Checks) == 0 {
 		fmt.Printf("Checks:\tNone\n")
 	} else {
