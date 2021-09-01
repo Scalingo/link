@@ -1,7 +1,7 @@
 # github.com/Scalingo/go-handlers v1.4.0
 ## explicit
 github.com/Scalingo/go-handlers
-# github.com/Scalingo/go-philae/v4 v4.4.2
+# github.com/Scalingo/go-philae/v4 v4.4.3
 ## explicit
 github.com/Scalingo/go-philae/v4/prober
 github.com/Scalingo/go-philae/v4/sampleprobe
@@ -27,7 +27,7 @@ github.com/Soulou/errgo-rollbar
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd/v22 v22.3.2
 github.com/coreos/go-systemd/v22/journal
-# github.com/cpuguy83/go-md2man/v2 v2.0.0-20190314233015-f79a8a8ca69d
+# github.com/cpuguy83/go-md2man/v2 v2.0.0
 github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
