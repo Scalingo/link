@@ -8,7 +8,7 @@ import (
 
 	"gopkg.in/errgo.v1"
 
-	"github.com/Soulou/errgo-rollbar"
+	errgorollbar "github.com/Scalingo/errgo-rollbar"
 	"github.com/rollbar/rollbar-go"
 	"github.com/sirupsen/logrus"
 )
