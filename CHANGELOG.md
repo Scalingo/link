@@ -2,6 +2,8 @@
 
 ## To be released
 
+## [2021-10-21] v2.0.2
+
 * chore(deps): bump github.com/Scalingo/go-philae/v4 from 4.4.2 to 4.4.3
 * chore(deps): bump github.com/Scalingo/go-utils/logger from 1.0.0 to v1.1.0
 
