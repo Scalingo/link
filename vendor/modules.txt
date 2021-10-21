@@ -1,3 +1,5 @@
+# github.com/Scalingo/errgo-rollbar v0.2.0
+github.com/Scalingo/errgo-rollbar
 # github.com/Scalingo/go-handlers v1.4.0
 ## explicit
 github.com/Scalingo/go-handlers
@@ -12,17 +14,15 @@ github.com/Scalingo/go-utils/errors
 # github.com/Scalingo/go-utils/etcd v1.1.0
 ## explicit
 github.com/Scalingo/go-utils/etcd
-# github.com/Scalingo/go-utils/logger v1.0.0
+# github.com/Scalingo/go-utils/logger v1.1.0
 ## explicit
 github.com/Scalingo/go-utils/logger
 github.com/Scalingo/go-utils/logger/plugins/rollbarplugin
 # github.com/Scalingo/go-utils/retry v1.0.0
 ## explicit
 github.com/Scalingo/go-utils/retry
-# github.com/Scalingo/logrus-rollbar v1.3.2
+# github.com/Scalingo/logrus-rollbar v1.4.0
 github.com/Scalingo/logrus-rollbar
-# github.com/Soulou/errgo-rollbar v0.1.1
-github.com/Soulou/errgo-rollbar
 # github.com/coreos/go-semver v0.3.0
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd/v22 v22.3.2
@@ -72,7 +72,7 @@ github.com/olekukonko/tablewriter
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
 github.com/pmezard/go-difflib/difflib
-# github.com/rollbar/rollbar-go v1.2.0
+# github.com/rollbar/rollbar-go v1.4.1
 github.com/rollbar/rollbar-go
 # github.com/russross/blackfriday/v2 v2.0.1
 github.com/russross/blackfriday/v2
@@ -136,7 +136,8 @@ golang.org/x/net/http2/hpack
 golang.org/x/net/idna
 golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
-# golang.org/x/sys v0.0.0-20210603081109-ebe580a85c40
+# golang.org/x/sys v0.0.0-20211020174200-9d6173849985
+## explicit
 golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows

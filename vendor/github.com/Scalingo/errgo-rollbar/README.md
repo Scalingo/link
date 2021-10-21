@@ -1,4 +1,4 @@
-## Rollbar - Errgo binding
+## Rollbar - Errgo binding v0.2.0
 
 Rollbar Go client: `https://github.com/stvp/rollbar`
 Errgo: `https://github.com/go-errgo/errgo`
@@ -31,3 +31,20 @@ func main() {
 
 Then your are able to see on your rollbal dashboard that the correct
 stack trace has been sent.
+
+## Release a New Version
+
+Bump new version number in:
+
+- `CHANGELOG.md`
+- `README.md`
+
+Commit, tag and create a new release:
+
+```sh
+git add CHANGELOG.md README.md
+git commit -m "Bump v0.2.0"
+git tag v0.2.0
+git push origin master
+git push --tags
+```

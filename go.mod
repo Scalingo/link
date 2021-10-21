@@ -7,7 +7,7 @@ require (
 	github.com/Scalingo/go-philae/v4 v4.4.3
 	github.com/Scalingo/go-utils/errors v1.0.0
 	github.com/Scalingo/go-utils/etcd v1.1.0
-	github.com/Scalingo/go-utils/logger v1.0.0
+	github.com/Scalingo/go-utils/logger v1.1.0
 	github.com/Scalingo/go-utils/retry v1.0.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/mock v1.6.0
@@ -24,4 +24,5 @@ require (
 	github.com/vishvananda/netlink v1.1.0
 	go.etcd.io/etcd/api/v3 v3.5.0
 	go.etcd.io/etcd/client/v3 v3.5.0
+	golang.org/x/sys v0.0.0-20211020174200-9d6173849985 // indirect
 )

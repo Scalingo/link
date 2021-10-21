@@ -1,4 +1,4 @@
-# rollbar hook for [Logrus](https://github.com/sirupsen/logrus)
+# Rollbar Hook for [Logrus](https://github.com/sirupsen/logrus) v1.4.0
 
 ## Setup
 
@@ -39,4 +39,22 @@ func main() {
 
 	http.ListenAndServe(":31313", nil)
 }
+```
+
+
+## Release a New Version
+
+Bump new version number in:
+
+- `CHANGELOG.md`
+- `README.md`
+
+Commit, tag and create a new release:
+
+```sh
+git add CHANGELOG.md README.md
+git commit -m "Bump v1.4.0"
+git tag v1.4.0
+git push origin master
+git push --tags
 ```

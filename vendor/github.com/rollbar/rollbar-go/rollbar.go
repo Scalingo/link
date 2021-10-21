@@ -90,6 +90,16 @@ var DefaultStackTracer StackTracerFunc = func(err error) ([]runtime.Frame, bool)
 	return nil, false
 }
 
+// SetTelemetry sets the telemetry
+func SetTelemetry(options ...OptionFunc) {
+	std.SetTelemetry(options...)
+}
+
+// CaptureTelemetryEvent sets the user-specified telemetry event
+func CaptureTelemetryEvent(eventType, eventlevel string, eventData map[string]interface{}) {
+	std.CaptureTelemetryEvent(eventType, eventlevel, eventData)
+}
+
 // SetEnabled sets whether or not the managed Client instance is enabled.
 // If this is true then this library works as normal.
 // If this is false then no calls will be made to the network.
@@ -116,6 +126,11 @@ func SetEnvironment(environment string) {
 // The default value is https://api.rollbar.com/api/1/item/
 func SetEndpoint(endpoint string) {
 	std.SetEndpoint(endpoint)
+}
+
+// SetItemsPerMinute sets the max number of items to send in a given minute
+func SetItemsPerMinute(itemsPerMinute int) {
+	std.SetItemsPerMinute(itemsPerMinute)
 }
 
 // SetPlatform sets the platform on the managed Client instance.
@@ -260,6 +275,11 @@ func SetRetryAttempts(retryAttempts int) {
 // By default this is true.
 func SetPrintPayloadOnError(printPayloadOnError bool) {
 	std.SetPrintPayloadOnError(printPayloadOnError)
+}
+
+// SetHTTPClient sets custom http client. http.DefaultClient is used by default
+func SetHTTPClient(httpClient *http.Client) {
+	std.SetHTTPClient(httpClient)
 }
 
 // -- Getters
