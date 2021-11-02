@@ -4,8 +4,6 @@ services:
     build: .
     volumes:
       - ./:/go/src/github.com/Scalingo/link
-    ports:
-      - 1313:1313
     cap_add:
       - NET_ADMIN
     network_mode: 'host'
@@ -22,8 +20,6 @@ services:
     build: .
     volumes:
       - ./:/go/src/github.com/Scalingo/link
-    ports:
-      - 1314:1314
     cap_add:
       - NET_ADMIN
     network_mode: 'host'
@@ -40,8 +36,6 @@ services:
     build: .
     volumes:
       - ./:/go/src/github.com/Scalingo/link
-    ports:
-      - 1315:1315
     cap_add:
       - NET_ADMIN
     network_mode: 'host'
