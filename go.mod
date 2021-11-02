@@ -8,7 +8,7 @@ require (
 	github.com/Scalingo/go-utils/errors v1.0.0
 	github.com/Scalingo/go-utils/etcd v1.1.0
 	github.com/Scalingo/go-utils/logger v1.1.0
-	github.com/Scalingo/go-utils/retry v1.0.0
+	github.com/Scalingo/go-utils/retry v1.1.0
 	github.com/gofrs/uuid v4.1.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.0

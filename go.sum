@@ -19,8 +19,8 @@ github.com/Scalingo/go-utils/etcd v1.1.0/go.mod h1:Hpcq7iuhDQg6dfapCeXs/4z7VW7Ib
 github.com/Scalingo/go-utils/logger v1.0.0/go.mod h1:yVs3dRJyj2NvcOfgzcDVc1P8wkwUQP3PgCBDNS8vmB8=
 github.com/Scalingo/go-utils/logger v1.1.0 h1:wloM9dNhPntCr8W7FicBE4SHx6JHrC/3r/bcbJaSlpo=
 github.com/Scalingo/go-utils/logger v1.1.0/go.mod h1:ZJLfkPJ4kfTAliBBAka0IH06+SS+LmRetKuw00WAe+s=
-github.com/Scalingo/go-utils/retry v1.0.0 h1:aGT9Voe4rVEzn0bZ68x+nyBvk2sJWrzLP37+tTVdCuc=
-github.com/Scalingo/go-utils/retry v1.0.0/go.mod h1:Al8G5MSILdOURowTkhPiwTTYhpjXMuBgWJrenjLV1Ac=
+github.com/Scalingo/go-utils/retry v1.1.0 h1:dKi7qAOCWpq5W4dNr+xr50EiEthe+hfCwDDk2y9vXng=
+github.com/Scalingo/go-utils/retry v1.1.0/go.mod h1:fz63mPhkPlpQ+ieqgCe0kd1hQKe+ToQ8gUtRQ5o01ZE=
 github.com/Scalingo/logrus-rollbar v1.3.2/go.mod h1:Mo38Fue00mdY/UM5gOMTXAWfiOIJK29/sxL3zxb/68I=
 github.com/Scalingo/logrus-rollbar v1.4.0 h1:mrmK+dcrMXSsAK9Tf34Qzt8k/7T+Ox8HPyOCeL4EUKI=
 github.com/Scalingo/logrus-rollbar v1.4.0/go.mod h1:NDlGhdrfltVSLjElDxRjpqSDzu91zK5jJH4KHNcgf7g=
@@ -235,7 +235,6 @@ github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXf
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
 github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
-github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/stretchr/testify v1.7.0 h1:nwc3DEeHmmLAfoZucVR881uASk0Mfjw8xYJ99tb5CcY=
 github.com/stretchr/testify v1.7.0/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
 github.com/urfave/cli v1.22.2/go.mod h1:Gos4lmkARVdJ6EkW0WaNv/tZAAMe9V7XWyB60NtXRu0=
