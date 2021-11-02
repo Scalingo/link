@@ -2,6 +2,8 @@
 
 ## To be released
 
+* chore(deps): bump go.etcd.io/etcd/api/v3 from 3.5.0 to 3.5.1
+
 ## [2021-10-21] v2.0.2
 
 * chore(deps): bump github.com/Scalingo/go-philae/v4 from 4.4.2 to 4.4.3
