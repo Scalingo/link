@@ -8,7 +8,7 @@ github.com/Scalingo/go-handlers
 github.com/Scalingo/go-philae/v4/prober
 github.com/Scalingo/go-philae/v4/sampleprobe
 github.com/Scalingo/go-philae/v4/tcpprobe
-# github.com/Scalingo/go-utils/errors v1.0.0
+# github.com/Scalingo/go-utils/errors v1.1.0
 ## explicit
 github.com/Scalingo/go-utils/errors
 # github.com/Scalingo/go-utils/etcd v1.1.0

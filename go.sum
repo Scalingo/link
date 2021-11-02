@@ -12,8 +12,9 @@ github.com/Scalingo/go-handlers v1.4.1 h1:uaz16s2D+WUKoxi36ssOTf2m3D4HK6rYLT0Yay
 github.com/Scalingo/go-handlers v1.4.1/go.mod h1:gy7qB7c1ZZ8rcynQ9wL6+x/Wb9lr34jjAY1NqxyH+Ok=
 github.com/Scalingo/go-philae/v4 v4.4.3 h1:A0NLRz59Y9CxLE3Lzbvtrxi2wkVhFtS8/E+deKasYZk=
 github.com/Scalingo/go-philae/v4 v4.4.3/go.mod h1:SGw81bbNjJQ9+Ty+rtIojllPq7j22xpzuBRCgNF/aYo=
-github.com/Scalingo/go-utils/errors v1.0.0 h1:9+1zBmT+d0kpAReChheUDX0AmT0/OtrDtHdwRymRufA=
 github.com/Scalingo/go-utils/errors v1.0.0/go.mod h1:X1v0A4DBs4exBWGjYsGLo6nsC49vqf2hEVtigTRv7iY=
+github.com/Scalingo/go-utils/errors v1.1.0 h1:azPy6iHKJ/BkCSDsPAcUcQSQl+HNaz4CZqTw2rqbsg4=
+github.com/Scalingo/go-utils/errors v1.1.0/go.mod h1:bJP50Ic+y5KafDFBSFRkELufB+F9j9f4S2N/1LG3Z6I=
 github.com/Scalingo/go-utils/etcd v1.1.0 h1:0+QQEKcz/FEd3mu358sWqb7bmzgca69w0WTFFPT/vCM=
 github.com/Scalingo/go-utils/etcd v1.1.0/go.mod h1:Hpcq7iuhDQg6dfapCeXs/4z7VW7IbF6Ve7bljlflzbQ=
 github.com/Scalingo/go-utils/logger v1.0.0/go.mod h1:yVs3dRJyj2NvcOfgzcDVc1P8wkwUQP3PgCBDNS8vmB8=
