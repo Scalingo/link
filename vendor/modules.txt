@@ -18,7 +18,7 @@ github.com/Scalingo/go-utils/etcd
 ## explicit
 github.com/Scalingo/go-utils/logger
 github.com/Scalingo/go-utils/logger/plugins/rollbarplugin
-# github.com/Scalingo/go-utils/retry v1.0.0
+# github.com/Scalingo/go-utils/retry v1.1.0
 ## explicit
 github.com/Scalingo/go-utils/retry
 # github.com/Scalingo/logrus-rollbar v1.4.0
