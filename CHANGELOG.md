@@ -3,6 +3,7 @@
 ## To be released
 
 * chore(deps): bump go.etcd.io/etcd/api/v3 from 3.5.0 to 3.5.1
+* chore(deps): bump github.com/Scalingo/go-handlers from 1.4.0 to 1.4.1
 
 ## [2021-10-21] v2.0.2
 
