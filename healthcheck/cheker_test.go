@@ -5,12 +5,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+
 	"github.com/Scalingo/go-philae/v4/prober"
 	"github.com/Scalingo/go-philae/v4/sampleprobe"
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/models"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestFromChecks(t *testing.T) {

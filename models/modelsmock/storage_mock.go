@@ -8,8 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	models "github.com/Scalingo/link/v2/models"
 	gomock "github.com/golang/mock/gomock"
+
+	models "github.com/Scalingo/link/v2/models"
 )
 
 // MockStorage is a mock of Storage interface.

@@ -6,16 +6,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/locker/lockermock"
-	"github.com/Scalingo/link/v2/models/modelsmock"
-	"github.com/Scalingo/link/v2/network/networkmock"
-	"github.com/Scalingo/link/v2/watcher/watchermock"
 	"github.com/golang/mock/gomock"
 	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/locker/lockermock"
+	"github.com/Scalingo/link/v2/models/modelsmock"
+	"github.com/Scalingo/link/v2/network/networkmock"
+	"github.com/Scalingo/link/v2/watcher/watchermock"
 )
 
 func TestManager_TryToGetIP(t *testing.T) {

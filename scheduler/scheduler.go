@@ -4,14 +4,15 @@ import (
 	"context"
 	"sync"
 
+	"github.com/pkg/errors"
+	clientv3 "go.etcd.io/etcd/client/v3"
+
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v2/api"
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/ip"
 	"github.com/Scalingo/link/v2/locker"
 	"github.com/Scalingo/link/v2/models"
-	"github.com/pkg/errors"
-	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 var (

@@ -6,6 +6,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/looplab/fsm"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+	clientv3 "go.etcd.io/etcd/client/v3"
+
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/go-utils/retry"
 	"github.com/Scalingo/link/v2/config"
@@ -14,10 +19,6 @@ import (
 	"github.com/Scalingo/link/v2/models"
 	"github.com/Scalingo/link/v2/network"
 	"github.com/Scalingo/link/v2/watcher"
-	"github.com/looplab/fsm"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 type Manager interface {

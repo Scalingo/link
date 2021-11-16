@@ -8,8 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	api "github.com/Scalingo/link/v2/api"
 	gomock "github.com/golang/mock/gomock"
+
+	api "github.com/Scalingo/link/v2/api"
 )
 
 // MockClient is a mock of Client interface.

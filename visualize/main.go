@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Scalingo/link/v2/ip"
 	"github.com/looplab/fsm"
+
+	"github.com/Scalingo/link/v2/ip"
 )
 
 func main() {

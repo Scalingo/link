@@ -5,12 +5,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/healthcheck/healthcheckmock"
 	"github.com/golang/mock/gomock"
 	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/healthcheck/healthcheckmock"
 )
 
 func TestManager_HealthChecker(t *testing.T) {

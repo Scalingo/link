@@ -7,9 +7,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Scalingo/link/v2/api"
 	aurora "github.com/logrusorgru/aurora/v3"
 	"github.com/olekukonko/tablewriter"
+
+	"github.com/Scalingo/link/v2/api"
 )
 
 func formatIPs(ips []api.IP) {

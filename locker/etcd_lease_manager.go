@@ -5,14 +5,15 @@ import (
 	"sync"
 	"time"
 
-	scalingoerrors "github.com/Scalingo/go-utils/errors"
-	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/models"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	clientv3 "go.etcd.io/etcd/client/v3"
+
+	scalingoerrors "github.com/Scalingo/go-utils/errors"
+	"github.com/Scalingo/go-utils/logger"
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/models"
 )
 
 const DataVersion = 1
