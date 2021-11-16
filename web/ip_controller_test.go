@@ -3,7 +3,7 @@ package web
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -104,7 +104,7 @@ func TestIPController_Create(t *testing.T) {
 			}
 
 			if len(example.ExpectedBody) > 0 {
-				body, err := ioutil.ReadAll(resp.Body)
+				body, err := io.ReadAll(resp.Body)
 				require.NoError(t, err)
 				assert.Equal(t, example.ExpectedBody, string(body))
 			}
@@ -216,7 +216,7 @@ func TestIPController_Patch(t *testing.T) {
 			}
 
 			if len(test.expectedBody) > 0 {
-				body, err := ioutil.ReadAll(res.Body)
+				body, err := io.ReadAll(res.Body)
 				require.NoError(t, err)
 				assert.Equal(t, test.expectedBody, string(body))
 			}
