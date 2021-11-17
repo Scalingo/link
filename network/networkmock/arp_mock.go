@@ -7,8 +7,9 @@ package networkmock
 import (
 	reflect "reflect"
 
-	network "github.com/Scalingo/link/v2/network"
 	gomock "github.com/golang/mock/gomock"
+
+	network "github.com/Scalingo/link/v2/network"
 )
 
 // MockARP is a mock of ARP interface.

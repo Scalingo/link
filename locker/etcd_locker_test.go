@@ -6,14 +6,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/etcdmock"
 	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.etcd.io/etcd/api/v3/mvccpb"
 	clientv3 "go.etcd.io/etcd/client/v3"
+
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/etcdmock"
 )
 
 func TestRefresh(t *testing.T) {

@@ -7,6 +7,9 @@ import (
 	"net/http/pprof"
 	"os"
 
+	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+
 	"github.com/Scalingo/go-handlers"
 	"github.com/Scalingo/go-utils/etcd"
 	"github.com/Scalingo/go-utils/logger"
@@ -17,8 +20,6 @@ import (
 	"github.com/Scalingo/link/v2/models"
 	"github.com/Scalingo/link/v2/scheduler"
 	"github.com/Scalingo/link/v2/web"
-	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 )
 
 // Version is the current LinK version. During release build it will be overwritten by the compiler

@@ -5,12 +5,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/golang/mock/gomock"
+	"github.com/looplab/fsm"
+
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/locker/lockermock"
 	"github.com/Scalingo/link/v2/models"
 	"github.com/Scalingo/link/v2/network/networkmock"
-	"github.com/golang/mock/gomock"
-	"github.com/looplab/fsm"
 )
 
 func TestSetActivated(t *testing.T) {

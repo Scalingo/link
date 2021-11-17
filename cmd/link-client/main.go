@@ -7,11 +7,12 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/Scalingo/link/v2/api"
-	"github.com/Scalingo/link/v2/models"
 	aurora "github.com/logrusorgru/aurora/v3"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli"
+
+	"github.com/Scalingo/link/v2/api"
+	"github.com/Scalingo/link/v2/models"
 )
 
 var Version = "dev"

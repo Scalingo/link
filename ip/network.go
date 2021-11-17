@@ -4,10 +4,11 @@ import (
 	"context"
 	"time"
 
+	"github.com/looplab/fsm"
+
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/locker"
-	"github.com/looplab/fsm"
 )
 
 func (m *manager) setActivated(ctx context.Context, _ *fsm.Event) {

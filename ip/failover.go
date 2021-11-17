@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/go-utils/retry"
-	"github.com/pkg/errors"
 )
 
 var (

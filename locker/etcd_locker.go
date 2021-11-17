@@ -5,12 +5,13 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/models"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
+
+	"github.com/Scalingo/go-utils/logger"
+	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/models"
 )
 
 var (

@@ -4,9 +4,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v2/locker"
-	"github.com/pkg/errors"
 )
 
 /* Stop process:

@@ -8,9 +8,10 @@ import (
 	context "context"
 	reflect "reflect"
 
+	gomock "github.com/golang/mock/gomock"
+
 	api "github.com/Scalingo/link/v2/api"
 	models "github.com/Scalingo/link/v2/models"
-	gomock "github.com/golang/mock/gomock"
 )
 
 // MockScheduler is a mock of Scheduler interface.

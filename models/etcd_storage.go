@@ -7,13 +7,14 @@ import (
 	"io"
 	"time"
 
-	"github.com/Scalingo/go-utils/etcd"
-	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/config"
 	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	clientv3 "go.etcd.io/etcd/client/v3"
+
+	"github.com/Scalingo/go-utils/etcd"
+	"github.com/Scalingo/go-utils/logger"
+	"github.com/Scalingo/link/v2/config"
 )
 
 const (
