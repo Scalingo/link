@@ -8,11 +8,10 @@ github.com/Microsoft/go-winio v0.5.0/go.mod h1:JPGBdM1cNvN/6ISo+n8V5iA4v8pBzdOpz
 github.com/Microsoft/hcsshim v0.8.14/go.mod h1:NtVKoYxQuTLx6gEq0L96c9Ju4JbRJ4nY2ow3VK6a9Lg=
 github.com/Scalingo/errgo-rollbar v0.2.0 h1:Jm/7K2ymVhPGGFL8BgFGOjpPRlCk+vYRCDtT1PaUfWI=
 github.com/Scalingo/errgo-rollbar v0.2.0/go.mod h1:InPX+PbaicLpePiWdmay2bJ4gtF4anm2L8T6rITx41A=
-github.com/Scalingo/go-handlers v1.4.1 h1:uaz16s2D+WUKoxi36ssOTf2m3D4HK6rYLT0YayM+sH8=
-github.com/Scalingo/go-handlers v1.4.1/go.mod h1:gy7qB7c1ZZ8rcynQ9wL6+x/Wb9lr34jjAY1NqxyH+Ok=
+github.com/Scalingo/go-handlers v1.4.2 h1:SRrx8qm9jQoGpbPNRWjjfO/6cVDFuVsaOtzkRu1xWYY=
+github.com/Scalingo/go-handlers v1.4.2/go.mod h1:pe2LKzpbNJPxOozE2nsbHAkSE4NbRMUWuP3FgOlMdAA=
 github.com/Scalingo/go-philae/v4 v4.4.3 h1:A0NLRz59Y9CxLE3Lzbvtrxi2wkVhFtS8/E+deKasYZk=
 github.com/Scalingo/go-philae/v4 v4.4.3/go.mod h1:SGw81bbNjJQ9+Ty+rtIojllPq7j22xpzuBRCgNF/aYo=
-github.com/Scalingo/go-utils/errors v1.0.0/go.mod h1:X1v0A4DBs4exBWGjYsGLo6nsC49vqf2hEVtigTRv7iY=
 github.com/Scalingo/go-utils/errors v1.1.0 h1:azPy6iHKJ/BkCSDsPAcUcQSQl+HNaz4CZqTw2rqbsg4=
 github.com/Scalingo/go-utils/errors v1.1.0/go.mod h1:bJP50Ic+y5KafDFBSFRkELufB+F9j9f4S2N/1LG3Z6I=
 github.com/Scalingo/go-utils/etcd v1.1.0 h1:0+QQEKcz/FEd3mu358sWqb7bmzgca69w0WTFFPT/vCM=
@@ -88,7 +87,6 @@ github.com/go-logfmt/logfmt v0.5.0/go.mod h1:wCYkCAKZfumFQihp8CzCvQ3paCTfi41vtzG
 github.com/go-stack/stack v1.8.0/go.mod h1:v0f6uXyyMGvRgIKkXu+yp6POWl0qKG85gN/melR3HDY=
 github.com/godbus/dbus/v5 v5.0.3/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
-github.com/gofrs/uuid v4.1.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/gofrs/uuid v4.2.0+incompatible h1:yyYWMnhkhrKwwr8gAOcOCYxOOscHgDS9yZgBrnJfGa0=
 github.com/gofrs/uuid v4.2.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/gogo/protobuf v1.1.1/go.mod h1:r8qH/GZQm5c6nD/R0oafs1akxWv10x8SbQlK7atdtwQ=
