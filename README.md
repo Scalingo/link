@@ -143,11 +143,12 @@ Bump new version number in:
 
 - `CHANGELOG.md`
 - `README.md`
+- `.sclng/metadata.toml`
 
 Commit, tag and create a new release:
 
 ```sh
-git add CHANGELOG.md README.md
+git add CHANGELOG.md README.md .sclng/metadata.toml
 git commit -m "Bump v2.0.1"
 git tag v2.0.1
 git push origin master v2.0.1

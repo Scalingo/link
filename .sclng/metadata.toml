@@ -1,0 +1,8 @@
+dependencies = []
+description = "LinK is a networking agent that will let multiple hosts share a virtual IP."
+destination_server = ["app-hosting-node", "database-hosting-node", "internal"]
+flags = ["cli", "deployed-by-chef", "tools"]
+languages = ["dockerfile", "go", "markdown"]
+owner = "john@scalingo.com"
+team = "IST"
+version = "2.0.1"
