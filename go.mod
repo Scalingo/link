@@ -3,7 +3,7 @@ module github.com/Scalingo/link/v2
 go 1.16
 
 require (
-	github.com/Scalingo/go-handlers v1.4.2
+	github.com/Scalingo/go-handlers v1.4.3
 	github.com/Scalingo/go-philae/v4 v4.4.3
 	github.com/Scalingo/go-utils/errors v1.1.0
 	github.com/Scalingo/go-utils/etcd v1.1.0
