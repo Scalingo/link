@@ -4,7 +4,7 @@
 
 * chore(deps): bump github.com/gofrs/uuid from 4.1.0+incompatible to 4.2.0+incompatible
 * chore(deps): bump go.etcd.io/etcd/api/v3 from 3.5.0 to 3.5.2
-* chore(deps): bump github.com/Scalingo/go-handlers from 1.4.0 to 1.4.2
+* chore(deps): bump github.com/Scalingo/go-handlers from 1.4.0 to 1.4.3
 * chore(deps): bump github.com/Scalingo/go-utils/errors from 1.0.0 to 1.1.0
 * chore(deps): bump github.com/stretchr/testify from 1.7.0 to 1.7.1
 
