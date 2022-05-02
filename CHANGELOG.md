@@ -7,6 +7,7 @@
 * chore(deps): bump github.com/Scalingo/go-handlers from 1.4.0 to 1.4.3
 * chore(deps): bump github.com/Scalingo/go-utils/errors from 1.0.0 to 1.1.0
 * chore(deps): bump github.com/stretchr/testify from 1.7.0 to 1.7.1
+* chore(deps): bump github.com/urfave/cli from 1.22.5 to 1.22.8
 
 ## [2021-10-21] v2.0.2
 
