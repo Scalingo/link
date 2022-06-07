@@ -1,6 +1,6 @@
-FROM golang:1.16
+FROM golang:1.17
 
-RUN go get github.com/cespare/reflex
+RUN go install github.com/cespare/reflex@latest
 ADD . /go/src/github.com/Scalingo/link
 WORKDIR /go/src/github.com/Scalingo/link
 EXPOSE 1313

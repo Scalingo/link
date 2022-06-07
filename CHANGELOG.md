@@ -2,6 +2,7 @@
 
 ## To be released
 
+* chore(go): use go 1.17
 * chore(deps): bump github.com/gofrs/uuid from 4.1.0+incompatible to 4.2.0+incompatible
 * chore(deps): bump go.etcd.io/etcd/api/v3 from 3.5.0 to 3.5.4
 * chore(deps): bump go.etcd.io/etcd/client/v3 from 3.5.0 to 3.5.4

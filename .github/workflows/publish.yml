@@ -7,7 +7,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     env:
-      GO_VERSION: 1.16
+      GO_VERSION: 1.17
       GOX_ARCHITECTURES: amd64 386
     steps:
     # Currently there is no possibility to get a tag name. Hence we filter the GITHUB_REF variable which contains something like "refs/tags/v2.0.0" if the tag is "v2.0.0". The value can be used with "steps.tag_name.outputs.TAG_NAME"
