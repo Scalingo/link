@@ -5,4 +5,4 @@ flags = ["cli", "deployed-by-chef", "tools"]
 languages = ["dockerfile", "go", "markdown"]
 owner = "john@scalingo.com"
 team = "IST"
-version = "2.0.1"
+version = "2.0.3"

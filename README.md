@@ -1,4 +1,4 @@
-# LinK v2.0.1
+# LinK v2.0.3
 
 ![publish workflow](https://github.com/Scalingo/link/actions/workflows/publish.yml/badge.svg)
 
@@ -149,7 +149,7 @@ Commit, tag and create a new release:
 
 ```sh
 git add CHANGELOG.md README.md .sclng/metadata.toml
-git commit -m "Bump v2.0.1"
-git tag v2.0.1
-git push origin master v2.0.1
+git commit -m "Bump v2.0.3"
+git tag v2.0.3
+git push origin master v2.0.3
 ```
