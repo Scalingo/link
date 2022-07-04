@@ -98,8 +98,8 @@ github.com/Scalingo/go-philae/v4 v4.4.5/go.mod h1:mLdLXETVQ4cEfbC0seg9r7hflMdl/w
 github.com/Scalingo/go-utils/errors v1.1.0/go.mod h1:bJP50Ic+y5KafDFBSFRkELufB+F9j9f4S2N/1LG3Z6I=
 github.com/Scalingo/go-utils/errors v1.1.1 h1:G7zypaDBj0O6QFvX0xL5dMDXbiBgq+3KKuodldtOpg0=
 github.com/Scalingo/go-utils/errors v1.1.1/go.mod h1:gsnGOMma5x3CSgPb8i5eMuHcKi3RvTJ9dWPNRev161c=
-github.com/Scalingo/go-utils/etcd v1.1.0 h1:0+QQEKcz/FEd3mu358sWqb7bmzgca69w0WTFFPT/vCM=
-github.com/Scalingo/go-utils/etcd v1.1.0/go.mod h1:Hpcq7iuhDQg6dfapCeXs/4z7VW7IbF6Ve7bljlflzbQ=
+github.com/Scalingo/go-utils/etcd v1.1.1 h1:nEOR8fJfdNbOhu0CILE6jLu5Mmb4r2VlO1UyW/vmQA8=
+github.com/Scalingo/go-utils/etcd v1.1.1/go.mod h1:bOBNccHVoURRQVdCsppy3RalQJeomx/V4ISKLxJNzeA=
 github.com/Scalingo/go-utils/logger v1.1.0 h1:wloM9dNhPntCr8W7FicBE4SHx6JHrC/3r/bcbJaSlpo=
 github.com/Scalingo/go-utils/logger v1.1.0/go.mod h1:ZJLfkPJ4kfTAliBBAka0IH06+SS+LmRetKuw00WAe+s=
 github.com/Scalingo/go-utils/retry v1.1.1 h1:zc5HbXbBzf0fo7zMvhEMvx75qaL2FH7SxDhCoBfS7jE=
@@ -1150,6 +1150,7 @@ golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20210831042530-f4d43177bf5e/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20210903071746-97244b99971b/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20210906170528-6f6e22806c34/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20211020174200-9d6173849985/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20211116061358-0a5406a5449c/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e h1:fLOSk5Q00efkSvAm+4xcoXD+RRmLmmulPn5I3Y9F2EM=

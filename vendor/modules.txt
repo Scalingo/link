@@ -12,8 +12,8 @@ github.com/Scalingo/go-philae/v4/tcpprobe
 # github.com/Scalingo/go-utils/errors v1.1.1
 ## explicit; go 1.17
 github.com/Scalingo/go-utils/errors
-# github.com/Scalingo/go-utils/etcd v1.1.0
-## explicit; go 1.16
+# github.com/Scalingo/go-utils/etcd v1.1.1
+## explicit; go 1.17
 github.com/Scalingo/go-utils/etcd
 # github.com/Scalingo/go-utils/logger v1.1.0
 ## explicit; go 1.16
