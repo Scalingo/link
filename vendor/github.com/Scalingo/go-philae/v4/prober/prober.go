@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
 	"gopkg.in/errgo.v1"
 )
 
@@ -19,7 +20,7 @@ type Probe interface {
 // checks when asked to
 type Prober struct {
 	timeout time.Duration
-	probes  []Probe
+	probes  map[string]Probe
 }
 
 // ProberOption is a function modifying some parameters of the Prober
@@ -57,6 +58,10 @@ func (e *ProberError) Error() string {
 	return b.String()
 }
 
+// ErrProbeNotFound is emitted when a check is performed on a probe that was not
+// added to the prober
+var ErrProbeNotFound = errors.New("probe not found")
+
 // Result is the data structure used to retain the data fetched from a single run of each probes
 type Result struct {
 	Healthy bool           `json:"healthy"`
@@ -77,6 +82,7 @@ type ProbeResult struct {
 func NewProber(opts ...ProberOption) *Prober {
 	p := &Prober{
 		timeout: 10 * time.Second,
+		probes:  map[string]Probe{},
 	}
 	for _, opt := range opts {
 		opt(p)
@@ -85,7 +91,7 @@ func NewProber(opts ...ProberOption) *Prober {
 }
 
 func (p *Prober) AddProbe(probe Probe) {
-	p.probes = append(p.probes, probe)
+	p.probes[probe.Name()] = probe
 }
 
 // Check will run the check of each probes added and return the result in a Result struct
@@ -99,7 +105,7 @@ func (p *Prober) Check(ctx context.Context) *Result {
 	defer cancel()
 
 	for _, probe := range p.probes {
-		go p.CheckOneProbe(ctx, probe, resultChan)
+		go p.checkOneProbe(ctx, probe, resultChan)
 	}
 
 	for i := 0; i < len(p.probes); i++ {
@@ -123,7 +129,25 @@ func (p *Prober) Check(ctx context.Context) *Result {
 	}
 }
 
-func (p *Prober) CheckOneProbe(ctx context.Context, probe Probe, res chan *ProbeResult) {
+func (p *Prober) CheckOneProbe(ctx context.Context, probeName string) *ProbeResult {
+	probe, ok := p.probes[probeName]
+	if !ok {
+		return &ProbeResult{
+			Error: ErrProbeNotFound,
+		}
+	}
+
+	resultChan := make(chan *ProbeResult, 1)
+	ctx, cancel := context.WithTimeout(ctx, p.timeout)
+	defer cancel()
+
+	go p.checkOneProbe(ctx, probe, resultChan)
+	probeResult := <-resultChan
+
+	return probeResult
+}
+
+func (p *Prober) checkOneProbe(ctx context.Context, probe Probe, res chan *ProbeResult) {
 	probeRes := make(chan error)
 	var err error
 
