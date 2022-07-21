@@ -100,8 +100,9 @@ github.com/Scalingo/go-utils/errors v1.1.1 h1:G7zypaDBj0O6QFvX0xL5dMDXbiBgq+3KKu
 github.com/Scalingo/go-utils/errors v1.1.1/go.mod h1:gsnGOMma5x3CSgPb8i5eMuHcKi3RvTJ9dWPNRev161c=
 github.com/Scalingo/go-utils/etcd v1.1.1 h1:nEOR8fJfdNbOhu0CILE6jLu5Mmb4r2VlO1UyW/vmQA8=
 github.com/Scalingo/go-utils/etcd v1.1.1/go.mod h1:bOBNccHVoURRQVdCsppy3RalQJeomx/V4ISKLxJNzeA=
-github.com/Scalingo/go-utils/logger v1.1.0 h1:wloM9dNhPntCr8W7FicBE4SHx6JHrC/3r/bcbJaSlpo=
 github.com/Scalingo/go-utils/logger v1.1.0/go.mod h1:ZJLfkPJ4kfTAliBBAka0IH06+SS+LmRetKuw00WAe+s=
+github.com/Scalingo/go-utils/logger v1.1.1 h1:66woXXA3vT1Gdd6MMnj/zh224eksuQurov07Pc4CsyY=
+github.com/Scalingo/go-utils/logger v1.1.1/go.mod h1:gLw0G2fByDG4vgIQ1wqWFilo89izI6e6OBwwVeQX83E=
 github.com/Scalingo/go-utils/retry v1.1.1 h1:zc5HbXbBzf0fo7zMvhEMvx75qaL2FH7SxDhCoBfS7jE=
 github.com/Scalingo/go-utils/retry v1.1.1/go.mod h1:za1k9sUU7fSQEFTv3c4Y8kG/8ybsq6C77sOo3ANEeN4=
 github.com/Scalingo/logrus-rollbar v1.4.0 h1:mrmK+dcrMXSsAK9Tf34Qzt8k/7T+Ox8HPyOCeL4EUKI=
@@ -758,8 +759,9 @@ github.com/rogpeppe/fastuuid v0.0.0-20150106093220-6724a57986af/go.mod h1:XWv6So
 github.com/rogpeppe/fastuuid v1.2.0/go.mod h1:jVj6XXZzXRy/MSR5jhDC/2q6DgLz+nrA6LYCDYWNEvQ=
 github.com/rogpeppe/go-internal v1.3.0/go.mod h1:M8bDsm7K2OlrFYOpmOWEs/qY81heoFRclV5y23lUDJ4=
 github.com/rollbar/rollbar-go v1.4.0/go.mod h1:kLQ9gP3WCRGrvJmF0ueO3wK9xWocej8GRX98D8sa39w=
-github.com/rollbar/rollbar-go v1.4.1 h1:9hc5EBeDDudrTJxoIKaEbsYt8ON/OLRWf6Ftxe/p590=
 github.com/rollbar/rollbar-go v1.4.1/go.mod h1:kLQ9gP3WCRGrvJmF0ueO3wK9xWocej8GRX98D8sa39w=
+github.com/rollbar/rollbar-go v1.4.2 h1:UzxjFgg9CFE0Vb3grGPpZHCnbKzNd8RYFtFHEKovauU=
+github.com/rollbar/rollbar-go v1.4.2/go.mod h1:kLQ9gP3WCRGrvJmF0ueO3wK9xWocej8GRX98D8sa39w=
 github.com/russross/blackfriday/v2 v2.0.1 h1:lPqVAte+HuHNfhJ/0LC98ESWRz8afy9tM/0RK8m9o+Q=
 github.com/russross/blackfriday/v2 v2.0.1/go.mod h1:+Rmxgy9KzJVeS9/2gXHxylqXiyQDYRxCVz55jmeOWTM=
 github.com/ryanuber/columnize v0.0.0-20160712163229-9b3edd62028f/go.mod h1:sm1tb6uqfes/u+d4ooFouqFdy9/2g9QGwK3SQygK0Ts=
