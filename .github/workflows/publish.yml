@@ -33,8 +33,7 @@ jobs:
     - name: Build the binaries
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        go get github.com/mitchellh/gox
-        go mod vendor
+        go install github.com/mitchellh/gox@latest
         gox -os="linux" -arch="${{ env.GOX_ARCHITECTURES }}" -output="dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-{{.OS}}-{{.Arch}}/{{.Dir}}" -ldflags="-X main.Version=${{ steps.tag_name.outputs.TAG_NAME }}" . ./cmd/...
 
     - name: Archive the built binaries
