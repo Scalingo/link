@@ -7,7 +7,7 @@ require (
 	github.com/Scalingo/go-philae/v4 v4.4.5
 	github.com/Scalingo/go-utils/errors v1.1.1
 	github.com/Scalingo/go-utils/etcd v1.1.1
-	github.com/Scalingo/go-utils/logger v1.1.0
+	github.com/Scalingo/go-utils/logger v1.1.1
 	github.com/Scalingo/go-utils/retry v1.1.1
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang/mock v1.6.0
@@ -37,7 +37,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/mattn/go-runewidth v0.0.9 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rollbar/rollbar-go v1.4.1 // indirect
+	github.com/rollbar/rollbar-go v1.4.2 // indirect
 	github.com/russross/blackfriday/v2 v2.0.1 // indirect
 	github.com/shurcooL/sanitized_anchor_name v1.0.0 // indirect
 	github.com/urfave/negroni v1.0.0 // indirect
