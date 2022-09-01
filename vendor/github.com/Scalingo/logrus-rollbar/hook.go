@@ -8,9 +8,10 @@ import (
 
 	"gopkg.in/errgo.v1"
 
-	errgorollbar "github.com/Scalingo/errgo-rollbar"
 	"github.com/rollbar/rollbar-go"
 	"github.com/sirupsen/logrus"
+
+	errgorollbar "github.com/Scalingo/errgo-rollbar"
 )
 
 var (

@@ -86,7 +86,7 @@ func (c *Client) SetEnabled(enabled bool) {
 	c.configuration.enabled = enabled
 }
 
-// SetToken sets the token used by this client.
+// SetToken sets the token used by this Client.
 // The value is a Rollbar access token with scope "post_server_item".
 // It is required to set this value before any of the other functions herein will be able to work
 // properly. This also configures the underlying Transport.
@@ -135,11 +135,24 @@ func (c *Client) SetCustom(custom map[string]interface{}) {
 // SetPerson information for identifying a user associated with
 // any subsequent errors or messages. Only id is required to be
 // non-empty.
-func (c *Client) SetPerson(id, username, email string) {
+
+type personOption func(*Person)
+
+func WithPersonExtra(extra map[string]string) personOption {
+	return func(p *Person) {
+		p.Extra = extra
+	}
+}
+func (c *Client) SetPerson(id, username, email string, opts ...personOption) {
 	person := Person{
 		Id:       id,
 		Username: username,
 		Email:    email,
+	}
+	for _, opt := range opts {
+		// Call the option giving the instantiated
+		// *Person as the argument
+		opt(&person)
 	}
 
 	c.configuration.person = person
@@ -192,7 +205,7 @@ func (c *Client) SetTransform(transform func(map[string]interface{})) {
 	c.configuration.transform = transform
 }
 
-// SetUnwrapper sets the UnwrapperFunc used by the client. The unwrapper function
+// SetUnwrapper sets the UnwrapperFunc used by the Client. The unwrapper function
 // is used to extract wrapped errors from enhanced error types. This feature can be used to add
 // support for custom error types that do not yet implement the Unwrap method specified in Go 1.13.
 // See the documentation of UnwrapperFunc for more details.
@@ -203,7 +216,7 @@ func (c *Client) SetUnwrapper(unwrapper UnwrapperFunc) {
 	c.configuration.unwrapper = unwrapper
 }
 
-// SetStackTracer sets the StackTracerFunc used by the client. The stack tracer
+// SetStackTracer sets the StackTracerFunc used by the Client. The stack tracer
 // function is used to extract the stack trace from enhanced error types. This feature can be used
 // to add support for custom error types that do not implement the Stacker interface.
 // See the documentation of StackTracerFunc for more details.
@@ -254,7 +267,7 @@ func (c *Client) SetPrintPayloadOnError(printPayloadOnError bool) {
 	c.Transport.SetPrintPayloadOnError(printPayloadOnError)
 }
 
-// SetHTTPClient sets custom http client. http.DefaultClient is used by default
+// SetHTTPClient sets custom http Client. http.DefaultClient is used by default
 func (c *Client) SetHTTPClient(httpClient *http.Client) {
 	c.Transport.SetHTTPClient(httpClient)
 }
@@ -282,7 +295,7 @@ func (c *Client) Endpoint() string {
 
 // Platform is the currently set platform reported for all Rollbar items. The default is
 // the running operating system (darwin, freebsd, linux, etc.) but it can
-// also be application specific (client, heroku, etc.).
+// also be application specific (Client, heroku, etc.).
 func (c *Client) Platform() string {
 	return c.configuration.platform
 }
@@ -634,6 +647,7 @@ type Person struct {
 	Id       string
 	Username string
 	Email    string
+	Extra    map[string]string
 }
 
 type pkey int

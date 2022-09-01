@@ -39,7 +39,7 @@ var (
 // An UnwrapperFunc is used to extract wrapped errors when building an error chain. It should return
 // the wrapped error if available, or nil otherwise.
 //
-// The client will use DefaultUnwrapper by default, and a user can override the default behavior
+// The Client will use DefaultUnwrapper by default, and a user can override the default behavior
 // by calling SetUnwrapper. See SetUnwrapper for more details.
 type UnwrapperFunc func(error) error
 
@@ -48,7 +48,7 @@ type UnwrapperFunc func(error) error
 // whether the function was able to extract a stack trace (even if the extracted stack trace was
 // empty or nil).
 //
-// The client will use DefaultStackTracer by default, and a user can override the default
+// The Client will use DefaultStackTracer by default, and a user can override the default
 // behavior by calling SetStackTracer. See SetStackTracer for more details.
 type StackTracerFunc func(error) ([]runtime.Frame, bool)
 
@@ -136,7 +136,7 @@ func SetItemsPerMinute(itemsPerMinute int) {
 // SetPlatform sets the platform on the managed Client instance.
 // The platform is reported for all Rollbar items. The default is
 // the running operating system (darwin, freebsd, linux, etc.) but it can
-// also be application specific (client, heroku, etc.).
+// also be application specific (Client, heroku, etc.).
 func SetPlatform(platform string) {
 	std.SetPlatform(platform)
 }
@@ -231,8 +231,8 @@ func SetCheckIgnore(checkIgnore func(string) bool) {
 // SetPerson information for identifying a user associated with
 // any subsequent errors or messages. Only id is required to be
 // non-empty.
-func SetPerson(id, username, email string) {
-	std.SetPerson(id, username, email)
+func SetPerson(id, username, email string, opts ...personOption) {
+	std.SetPerson(id, username, email, opts...)
 }
 
 // ClearPerson clears any previously set person information. See `SetPerson` for more information.
@@ -277,7 +277,7 @@ func SetPrintPayloadOnError(printPayloadOnError bool) {
 	std.SetPrintPayloadOnError(printPayloadOnError)
 }
 
-// SetHTTPClient sets custom http client. http.DefaultClient is used by default
+// SetHTTPClient sets custom http Client. http.DefaultClient is used by default
 func SetHTTPClient(httpClient *http.Client) {
 	std.SetHTTPClient(httpClient)
 }
@@ -301,7 +301,7 @@ func Endpoint() string {
 
 // Platform is the platform reported for all Rollbar items. The default is
 // the running operating system (darwin, freebsd, linux, etc.) but it can
-// also be application specific (client, heroku, etc.).
+// also be application specific (Client, heroku, etc.).
 func Platform() string {
 	return std.Platform()
 }
@@ -537,7 +537,6 @@ func ErrorWithStackSkipWithExtrasAndContext(ctx context.Context, level string, e
 	std.ErrorWithStackSkipWithExtrasAndContext(ctx, level, err, skip, extras)
 }
 
-// RequestErrorWithStackSkip asynchronously sends an error to Rollbar with the
 // RequestErrorWithStackSkip asynchronously sends an error to Rollbar with the
 // given severity level and a given number of stack trace frames skipped, in
 // addition to extra request-specific information.
