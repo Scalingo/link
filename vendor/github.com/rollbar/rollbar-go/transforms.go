@@ -50,11 +50,19 @@ func buildBody(ctx context.Context, configuration configuration, diagnostic diag
 		person = &configuration.person
 	}
 	if person.Id != "" {
-		data["person"] = map[string]string{
+		personData := map[string]string{
 			"id":       person.Id,
 			"username": person.Username,
 			"email":    person.Email,
 		}
+		for key, value := range person.Extra {
+			// If the field on the extra map is already specified then skip it.
+			// This will prevent the extra map from overwriting fields like ID, Username or Email.
+			if _, ok := personData[key]; !ok {
+				personData[key] = value
+			}
+		}
+		data["person"] = personData
 	}
 
 	return map[string]interface{}{
@@ -146,7 +154,9 @@ func remoteIP(req *http.Request) string {
 		ips := strings.Split(forwardedIPs, ", ")
 		return ips[0]
 	}
-	return req.RemoteAddr
+	remoteAddr := req.RemoteAddr
+	spltRemoteAddr := strings.Split(remoteAddr, ":")
+	return spltRemoteAddr[0]
 }
 
 // filterFlatten filters sensitive information like passwords from being sent to Rollbar, and
