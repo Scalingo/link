@@ -2,7 +2,7 @@
 
 ## To be released
 
-* chore(deps): bump github.com/Scalingo/go-utils/logger from 1.1.0 to 1.1.1
+* chore(deps): bump github.com/Scalingo/go-utils/logger from 1.1.0 to 1.2.0
 * chore(deps): bump github.com/Scalingo/go-philae/v4 from 4.4.5 to 4.4.6
 * chore(deps): bump github.com/sirupsen/logrus from 1.8.1 to 1.9.0
 
