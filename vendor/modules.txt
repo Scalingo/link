@@ -98,7 +98,7 @@ github.com/sirupsen/logrus
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-# github.com/urfave/cli v1.22.9
+# github.com/urfave/cli v1.22.10
 ## explicit; go 1.11
 github.com/urfave/cli
 # github.com/urfave/negroni v1.0.0
