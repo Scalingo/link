@@ -12,7 +12,7 @@ require (
 	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.0
-	github.com/j-keck/arping v1.0.2
+	github.com/j-keck/arping v1.0.3
 	github.com/kelseyhightower/envconfig v1.4.0
 	github.com/logrusorgru/aurora/v3 v3.0.0
 	github.com/looplab/fsm v0.3.0
