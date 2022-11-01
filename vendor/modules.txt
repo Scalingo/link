@@ -1,7 +1,7 @@
 # github.com/Scalingo/errgo-rollbar v0.2.0
 ## explicit; go 1.16
 github.com/Scalingo/errgo-rollbar
-# github.com/Scalingo/go-handlers v1.4.5
+# github.com/Scalingo/go-handlers v1.5.0
 ## explicit; go 1.17
 github.com/Scalingo/go-handlers
 # github.com/Scalingo/go-philae/v4 v4.4.7
@@ -9,6 +9,9 @@ github.com/Scalingo/go-handlers
 github.com/Scalingo/go-philae/v4/prober
 github.com/Scalingo/go-philae/v4/sampleprobe
 github.com/Scalingo/go-philae/v4/tcpprobe
+# github.com/Scalingo/go-utils/crypto v1.0.0
+## explicit; go 1.17
+github.com/Scalingo/go-utils/crypto
 # github.com/Scalingo/go-utils/errors v1.1.1
 ## explicit; go 1.17
 github.com/Scalingo/go-utils/errors
@@ -22,6 +25,9 @@ github.com/Scalingo/go-utils/logger/plugins/rollbarplugin
 # github.com/Scalingo/go-utils/retry v1.1.1
 ## explicit; go 1.17
 github.com/Scalingo/go-utils/retry
+# github.com/Scalingo/go-utils/security v1.0.0
+## explicit; go 1.19
+github.com/Scalingo/go-utils/security
 # github.com/Scalingo/logrus-rollbar v1.4.1
 ## explicit; go 1.17
 github.com/Scalingo/logrus-rollbar
@@ -94,7 +100,7 @@ github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.9.0
 ## explicit; go 1.13
 github.com/sirupsen/logrus
-# github.com/stretchr/testify v1.8.0
+# github.com/stretchr/testify v1.8.1
 ## explicit; go 1.13
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
