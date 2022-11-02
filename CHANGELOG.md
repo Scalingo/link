@@ -2,15 +2,16 @@
 
 ## To be released
 
-* chore(deps): bump github.com/Scalingo/go-handlers from 1.4.4 to 1.4.5
+* chore(deps): bump github.com/Scalingo/go-handlers from 1.4.4 to 1.5.0
 * chore(deps): bump github.com/Scalingo/go-utils/logger from 1.1.0 to 1.2.0
 * chore(deps): bump github.com/Scalingo/go-philae/v4 from 4.4.5 to 4.4.7
-* chore(deps): bump github.com/gofrs/uuid from 4.2.0+incompatible to 4.3.0+incompatible
+* chore(deps): bump github.com/gofrs/uuid from 4.2.0+incompatible to 4.3.1+incompatible
 * chore(deps): bump github.com/j-keck/arping from 1.0.2 to 1.0.3
 * chore(deps): bump github.com/urfave/cli from 1.22.9 to 1.22.10
 * chore(deps): bump github.com/sirupsen/logrus from 1.8.1 to 1.9.0
 * chore(deps): bump go.etcd.io/etcd/client/v3 from 3.5.4 to 3.5.5
 * chore(deps): bump go.etcd.io/etcd/api/v3 from 3.5.4 to 3.5.5
+* chore(deps): bump github.com/stretchr/testify from 1.7.1 to 1.8.1
 
 ## [2022-06-09] v2.0.3
 
