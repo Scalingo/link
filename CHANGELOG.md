@@ -9,8 +9,8 @@
 * chore(deps): bump github.com/j-keck/arping from 1.0.2 to 1.0.3
 * chore(deps): bump github.com/urfave/cli from 1.22.9 to 1.22.10
 * chore(deps): bump github.com/sirupsen/logrus from 1.8.1 to 1.9.0
-* chore(deps): bump go.etcd.io/etcd/client/v3 from 3.5.4 to 3.5.5
-* chore(deps): bump go.etcd.io/etcd/api/v3 from 3.5.4 to 3.5.5
+* chore(deps): bump go.etcd.io/etcd/client/v3 from 3.5.4 to 3.5.6
+* chore(deps): bump go.etcd.io/etcd/api/v3 from 3.5.4 to 3.5.6
 * chore(deps): bump github.com/stretchr/testify from 1.7.1 to 1.8.1
 
 ## [2022-06-09] v2.0.3
