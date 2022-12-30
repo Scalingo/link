@@ -2,7 +2,7 @@
 
 ## To be released
 
-* chore(deps): bump github.com/Scalingo/go-handlers from 1.4.4 to 1.5.0
+* chore(deps): bump github.com/Scalingo/go-handlers from 1.4.4 to 1.6.0
 * chore(deps): bump github.com/Scalingo/go-utils/logger from 1.1.0 to 1.2.0
 * chore(deps): bump github.com/Scalingo/go-philae/v4 from 4.4.5 to 4.4.7
 * chore(deps): bump github.com/gofrs/uuid from 4.2.0+incompatible to 4.3.1+incompatible
