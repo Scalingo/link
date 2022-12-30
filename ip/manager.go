@@ -100,7 +100,7 @@ func (m *manager) Start(ctx context.Context) {
 	go m.watcher.Start(ctx)  // Start a watcher that will notify us if other hosts are joining or leaving this IP
 
 	for event := range m.eventChan {
-		err := m.stateMachine.Event(event)
+		err := m.stateMachine.Event(ctx, event)
 		if err != nil {
 			// Ignore NoTransitionError since those just means that we did not change state (which can be normal)
 			if _, ok := err.(fsm.NoTransitionError); !ok {
