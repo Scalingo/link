@@ -31,19 +31,19 @@ func NewStateMachine(ctx context.Context, opts NewStateMachineOpts) *fsm.FSM {
 	callbacks := fsm.Callbacks{}
 
 	if opts.ActivatedCallback != nil {
-		callbacks["enter_"+ACTIVATED] = func(e *fsm.Event) {
+		callbacks["enter_"+ACTIVATED] = func(ctx context.Context, e *fsm.Event) {
 			opts.ActivatedCallback(ctx, e)
 		}
 	}
 
 	if opts.StandbyCallback != nil {
-		callbacks["enter_"+STANDBY] = func(e *fsm.Event) {
+		callbacks["enter_"+STANDBY] = func(ctx context.Context, e *fsm.Event) {
 			opts.StandbyCallback(ctx, e)
 		}
 	}
 
 	if opts.FailingCallback != nil {
-		callbacks["enter_"+FAILING] = func(e *fsm.Event) {
+		callbacks["enter_"+FAILING] = func(ctx context.Context, e *fsm.Event) {
 			opts.FailingCallback(ctx, e)
 		}
 	}
