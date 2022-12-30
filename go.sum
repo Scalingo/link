@@ -92,14 +92,16 @@ github.com/PuerkitoBio/urlesc v0.0.0-20160726150825-5bd2802263f2/go.mod h1:uGdko
 github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578/go.mod h1:uGdkoq3SwY9Y+13GIhn11/XLaGBb4BfwItxLd5jeuXE=
 github.com/Scalingo/errgo-rollbar v0.2.0 h1:Jm/7K2ymVhPGGFL8BgFGOjpPRlCk+vYRCDtT1PaUfWI=
 github.com/Scalingo/errgo-rollbar v0.2.0/go.mod h1:InPX+PbaicLpePiWdmay2bJ4gtF4anm2L8T6rITx41A=
-github.com/Scalingo/go-handlers v1.5.0 h1:/+maEOlgK0lMk/XXwTpnR4Li/SSim+27ioy7eqz1z40=
-github.com/Scalingo/go-handlers v1.5.0/go.mod h1:2l84EjZdV5Vg6yNWr7RJrtnQphW2fUULRh0cwqz6r6c=
+github.com/Scalingo/go-handlers v1.6.0 h1:3VnJBiqYJuwv0W5V2sNHQBi1a/abHQrz/TCBJxaiW/0=
+github.com/Scalingo/go-handlers v1.6.0/go.mod h1:E3G9Y+p+b2TOa4F49enfTDsA+1Uno6q8rJPz4i3m7bU=
 github.com/Scalingo/go-philae/v4 v4.4.7 h1:UBcHkWHMdMJJxKia2YAqSNBZ8cda0hqCdkK+6Kq81pM=
 github.com/Scalingo/go-philae/v4 v4.4.7/go.mod h1:GFAw9PTKhMsG8cQ/Yadyopl7yMCp0CCSo7480NxLV44=
 github.com/Scalingo/go-utils/crypto v1.0.0 h1:aczJ3fXjdgL4Y0qIGJR4xAqNXorID5pjx3eH4k40dt8=
 github.com/Scalingo/go-utils/crypto v1.0.0/go.mod h1:v7rhBLfCqVGWs7fn5M5Vr3anxIxufI3Lwu/5ThV8P6M=
 github.com/Scalingo/go-utils/errors v1.1.1 h1:G7zypaDBj0O6QFvX0xL5dMDXbiBgq+3KKuodldtOpg0=
 github.com/Scalingo/go-utils/errors v1.1.1/go.mod h1:gsnGOMma5x3CSgPb8i5eMuHcKi3RvTJ9dWPNRev161c=
+github.com/Scalingo/go-utils/errors/v2 v2.2.0 h1:n93hge0DzfZ3KbI/jdnxKDTRDD+PXsGwNPKyHRzQYEE=
+github.com/Scalingo/go-utils/errors/v2 v2.2.0/go.mod h1:pkLy6Qz9UNm6FpXtFJGZRC0W5lqbqHpPchrQV80gw5E=
 github.com/Scalingo/go-utils/etcd v1.1.1 h1:nEOR8fJfdNbOhu0CILE6jLu5Mmb4r2VlO1UyW/vmQA8=
 github.com/Scalingo/go-utils/etcd v1.1.1/go.mod h1:bOBNccHVoURRQVdCsppy3RalQJeomx/V4ISKLxJNzeA=
 github.com/Scalingo/go-utils/logger v1.2.0 h1:E3jtaoRxpIsFcZu/jsvWew8ttUAwKUYQufdPqGYp7EU=
@@ -408,7 +410,6 @@ github.com/godbus/dbus v0.0.0-20190422162347-ade71ed3457e/go.mod h1:bBOAhwG1umN6
 github.com/godbus/dbus/v5 v5.0.3/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/godbus/dbus/v5 v5.0.4/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
 github.com/godbus/dbus/v5 v5.0.6/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
-github.com/gofrs/uuid v4.3.0+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/gofrs/uuid v4.3.1+incompatible h1:0/KbAdpx3UXAx1kEOWHJeOkpbgRFGHVgv+CFIY7dBJI=
 github.com/gofrs/uuid v4.3.1+incompatible/go.mod h1:b2aQJv3Z4Fp6yNu3cdSllBxTCLRxnplIgP/c0N/04lM=
 github.com/gogo/googleapis v1.2.0/go.mod h1:Njal3psf3qN6dwBtQfUmBZh2ybovJ0tlu3o/AC7HYjU=
