@@ -50,5 +50,5 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v1
       with:
-        body: Please refer to the [CHANGELOG.md](https://github.com/Scalingo/link/blob/${{ steps.tag_name.outputs.TAG_NAME }}/CHANGELOG.md) file.
+        generate_release_notes: true
         files: dist/*.tar.gz
