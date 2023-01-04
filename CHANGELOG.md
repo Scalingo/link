@@ -2,6 +2,7 @@
 
 ## To be released
 
+* chore(deps): bump github.com/looplab/fsm from 0.3.0 to 1.0.0
 * chore(deps): bump github.com/Scalingo/go-handlers from 1.6.0 to 1.7.0
 
 ## [2022-12-30] v2.0.4
