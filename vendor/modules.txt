@@ -34,8 +34,8 @@ github.com/Scalingo/go-utils/security
 # github.com/Scalingo/logrus-rollbar v1.4.1
 ## explicit; go 1.17
 github.com/Scalingo/logrus-rollbar
-# github.com/coreos/go-semver v0.3.0
-## explicit
+# github.com/coreos/go-semver v0.3.1
+## explicit; go 1.8
 github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd/v22 v22.5.0
 ## explicit; go 1.12
