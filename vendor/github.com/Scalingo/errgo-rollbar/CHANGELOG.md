@@ -2,6 +2,11 @@
 
 ## To be Released
 
+## v0.2.1
+
+* chore(go): use go 1.17
+* bump github.com/rollbar/rollbar-go from 1.4.0 to 1.4.2
+
 ## v0.2.0
 
 * Migrate to Go Modules
