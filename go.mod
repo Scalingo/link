@@ -32,7 +32,7 @@ require (
 	github.com/Scalingo/go-utils/errors/v2 v2.2.0 // indirect
 	github.com/Scalingo/go-utils/security v1.0.0 // indirect
 	github.com/Scalingo/logrus-rollbar v1.4.1 // indirect
-	github.com/coreos/go-semver v0.3.0 // indirect
+	github.com/coreos/go-semver v0.3.1 // indirect
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
