@@ -97,12 +97,9 @@ github.com/rivo/uniseg
 # github.com/rollbar/rollbar-go v1.4.4
 ## explicit; go 1.13
 github.com/rollbar/rollbar-go
-# github.com/russross/blackfriday/v2 v2.0.1
+# github.com/russross/blackfriday/v2 v2.1.0
 ## explicit
 github.com/russross/blackfriday/v2
-# github.com/shurcooL/sanitized_anchor_name v1.0.0
-## explicit
-github.com/shurcooL/sanitized_anchor_name
 # github.com/sirupsen/logrus v1.9.0
 ## explicit; go 1.13
 github.com/sirupsen/logrus
