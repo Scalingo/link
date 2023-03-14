@@ -14,7 +14,7 @@ services:
       HOSTNAME: link-1
       INTERFACE: eth10
       PORT: 1313
-    command: reflex -r '\.go$$' -R '_test\.go$$' -s -- sh -c 'go build && ./link'
+    command: reflex -r '\.go$$' -R '_test\.go$$' -s -- sh -c 'go build -buildvcs=false && ./link'
     depends_on:
       - etcd
   link-2:
