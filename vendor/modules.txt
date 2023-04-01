@@ -94,7 +94,7 @@ github.com/pmezard/go-difflib/difflib
 # github.com/rivo/uniseg v0.4.4
 ## explicit; go 1.18
 github.com/rivo/uniseg
-# github.com/rollbar/rollbar-go v1.4.4
+# github.com/rollbar/rollbar-go v1.4.5
 ## explicit; go 1.13
 github.com/rollbar/rollbar-go
 # github.com/russross/blackfriday/v2 v2.1.0
