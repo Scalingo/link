@@ -18,49 +18,24 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
-// Package exit provides stubs so that unit tests can exercise code that calls
-// os.Exit(1).
-package exit
+package zapcore
 
-import "os"
+import (
+	"encoding/json"
+	"io"
+)
 
-var _exit = os.Exit
-
-// With terminates the process by calling os.Exit(code). If the package is
-// stubbed, it instead records a call in the testing spy.
-func With(code int) {
-	_exit(code)
+// ReflectedEncoder serializes log fields that can't be serialized with Zap's
+// JSON encoder. These have the ReflectType field type.
+// Use EncoderConfig.NewReflectedEncoder to set this.
+type ReflectedEncoder interface {
+	// Encode encodes and writes to the underlying data stream.
+	Encode(interface{}) error
 }
 
-// A StubbedExit is a testing fake for os.Exit.
-type StubbedExit struct {
-	Exited bool
-	Code   int
-	prev   func(code int)
-}
-
-// Stub substitutes a fake for the call to os.Exit(1).
-func Stub() *StubbedExit {
-	s := &StubbedExit{prev: _exit}
-	_exit = s.exit
-	return s
-}
-
-// WithStub runs the supplied function with Exit stubbed. It returns the stub
-// used, so that users can test whether the process would have crashed.
-func WithStub(f func()) *StubbedExit {
-	s := Stub()
-	defer s.Unstub()
-	f()
-	return s
-}
-
-// Unstub restores the previous exit function.
-func (se *StubbedExit) Unstub() {
-	_exit = se.prev
-}
-
-func (se *StubbedExit) exit(code int) {
-	se.Exited = true
-	se.Code = code
+func defaultReflectedEncoder(w io.Writer) ReflectedEncoder {
+	enc := json.NewEncoder(w)
+	// For consistency with our custom JSON encoder.
+	enc.SetEscapeHTML(false)
+	return enc
 }
