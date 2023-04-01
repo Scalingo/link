@@ -19,7 +19,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.0
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/urfave/cli v1.22.12
 	github.com/vishvananda/netlink v1.1.0
 	go.etcd.io/etcd/api/v3 v3.5.6
