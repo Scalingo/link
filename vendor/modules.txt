@@ -1,7 +1,7 @@
 # github.com/Scalingo/errgo-rollbar v0.2.1
 ## explicit; go 1.17
 github.com/Scalingo/errgo-rollbar
-# github.com/Scalingo/go-handlers v1.7.0
+# github.com/Scalingo/go-handlers v1.8.0
 ## explicit; go 1.17
 github.com/Scalingo/go-handlers
 # github.com/Scalingo/go-philae/v4 v4.4.7
