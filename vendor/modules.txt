@@ -15,8 +15,8 @@ github.com/Scalingo/go-utils/crypto
 # github.com/Scalingo/go-utils/errors v1.1.1
 ## explicit; go 1.17
 github.com/Scalingo/go-utils/errors
-# github.com/Scalingo/go-utils/errors/v2 v2.2.0
-## explicit; go 1.17
+# github.com/Scalingo/go-utils/errors/v2 v2.3.0
+## explicit; go 1.20
 github.com/Scalingo/go-utils/errors/v2
 # github.com/Scalingo/go-utils/etcd v1.1.1
 ## explicit; go 1.17

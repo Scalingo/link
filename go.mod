@@ -29,7 +29,7 @@ require (
 require (
 	github.com/Scalingo/errgo-rollbar v0.2.1 // indirect
 	github.com/Scalingo/go-utils/crypto v1.0.0 // indirect
-	github.com/Scalingo/go-utils/errors/v2 v2.2.0 // indirect
+	github.com/Scalingo/go-utils/errors/v2 v2.3.0 // indirect
 	github.com/Scalingo/go-utils/security v1.0.0 // indirect
 	github.com/Scalingo/logrus-rollbar v1.4.1 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
