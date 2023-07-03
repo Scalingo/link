@@ -102,7 +102,7 @@ LinK configuration is entirely done by setting environment variables.
 
 ## How do we bind the IPs?
 
-To add an interface LinK adds the IP to the configured interface and send an
+To add an interface, LinK adds the IP to the configured interface and send an
 unsolicited ARP request on the network (see [Gratuitous
 ARP](https://wiki.wireshark.org/Gratuitous_ARP)).
 
@@ -113,7 +113,7 @@ ip addr add MY_IP dev MY_INTERFACE
 arping -B -S MY_IP -I MY_INTERFACE
 ```
 
-To unbind an IP we will just remove it from the interface.
+To unbind an IP, LinK removes it from the interface.
 
 This is the equivalent of:
 
@@ -123,7 +123,7 @@ ip addr del MY_IP dev MY_INTERFACE
 
 ## Dev environment
 
-To make it work in dev you might want to make some dummy interfaces:
+To make it work in dev you might want to create some dummy interfaces:
 
 ```shell
 modprobe dummy
