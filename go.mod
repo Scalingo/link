@@ -3,7 +3,7 @@ module github.com/Scalingo/link/v2
 go 1.20
 
 require (
-	github.com/Scalingo/go-handlers v1.8.0
+	github.com/Scalingo/go-handlers v1.8.1
 	github.com/Scalingo/go-philae/v4 v4.4.7
 	github.com/Scalingo/go-utils/errors v1.1.1
 	github.com/Scalingo/go-utils/etcd v1.1.1
@@ -18,7 +18,7 @@ require (
 	github.com/looplab/fsm v1.0.1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.9.2
+	github.com/sirupsen/logrus v1.9.3
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli v1.22.13
 	github.com/vishvananda/netlink v1.1.0
@@ -36,7 +36,6 @@ require (
 	github.com/coreos/go-systemd/v22 v22.5.0 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.2 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/gofrs/uuid v4.4.0+incompatible // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
