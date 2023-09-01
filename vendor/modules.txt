@@ -143,7 +143,7 @@ go.etcd.io/etcd/client/v3
 go.etcd.io/etcd/client/v3/credentials
 go.etcd.io/etcd/client/v3/internal/endpoint
 go.etcd.io/etcd/client/v3/internal/resolver
-# go.uber.org/atomic v1.10.0
+# go.uber.org/atomic v1.11.0
 ## explicit; go 1.18
 go.uber.org/atomic
 # go.uber.org/multierr v1.11.0
