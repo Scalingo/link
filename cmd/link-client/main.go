@@ -7,7 +7,7 @@ import (
 	"os"
 	"strconv"
 
-	aurora "github.com/logrusorgru/aurora/v3"
+	"github.com/logrusorgru/aurora/v3"
 	"github.com/pkg/errors"
 	"github.com/urfave/cli/v2"
 
@@ -59,7 +59,10 @@ func main() {
 			ArgsUsage: "ID",
 			Action: func(c *cli.Context) error {
 				if c.NArg() != 1 {
-					cli.ShowCommandHelp(c, c.Command.Name)
+					err := cli.ShowCommandHelp(c, c.Command.Name)
+					if err != nil {
+						return errors.Wrap(err, "show destroy command helper")
+					}
 					return nil
 				}
 				client := getClientFromCtx(c)
@@ -75,7 +78,10 @@ func main() {
 			ArgsUsage: "ID",
 			Action: func(c *cli.Context) error {
 				if c.NArg() != 1 {
-					cli.ShowCommandHelp(c, c.Command.Name)
+					err := cli.ShowCommandHelp(c, c.Command.Name)
+					if err != nil {
+						return errors.Wrap(err, "show get command helper")
+					}
 					return nil
 				}
 				client := getClientFromCtx(c)
@@ -91,7 +97,10 @@ func main() {
 			ArgsUsage: "ID",
 			Action: func(c *cli.Context) error {
 				if c.NArg() != 1 {
-					cli.ShowCommandHelp(c, c.Command.Name)
+					err := cli.ShowCommandHelp(c, c.Command.Name)
+					if err != nil {
+						return errors.Wrap(err, "show failover command helper")
+					}
 					return nil
 				}
 				client := getClientFromCtx(c)
@@ -117,7 +126,10 @@ func main() {
 					// 1 For the IP
 					// And 2 per Healthchecks
 					// So NArgs % 2 must be == 1
-					cli.ShowCommandHelp(c, c.Command.Name)
+					err := cli.ShowCommandHelp(c, c.Command.Name)
+					if err != nil {
+						return errors.Wrap(err, "show add command helper")
+					}
 					return nil
 				}
 				client := getClientFromCtx(c)
@@ -162,7 +174,10 @@ func main() {
 					// 1 For the IP
 					// And 2 per Healthchecks
 					// So NArgs % 2 must be == 1
-					cli.ShowCommandHelp(c, c.Command.Name)
+					err := cli.ShowCommandHelp(c, c.Command.Name)
+					if err != nil {
+						return errors.Wrap(err, "show update-healthchecks command helper")
+					}
 					return nil
 				}
 

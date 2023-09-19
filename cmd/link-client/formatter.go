@@ -7,14 +7,13 @@ import (
 	"strconv"
 	"strings"
 
-	aurora "github.com/logrusorgru/aurora/v3"
+	"github.com/logrusorgru/aurora/v3"
 	"github.com/olekukonko/tablewriter"
 
 	"github.com/Scalingo/link/v2/api"
 )
 
 func formatIPs(ips []api.IP) {
-
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"ID", "IP", "Status", "CHECKS"})
 
@@ -58,7 +57,7 @@ func formatStatus(ip api.IP) string {
 	case api.Activated:
 		return aurora.Green("ACTIVATED").String()
 	case api.Standby:
-		return aurora.Brown("STANDBY").String()
+		return aurora.Yellow("STANDBY").String()
 	case api.Failing:
 		return aurora.Red("FAILING").String()
 	default:
