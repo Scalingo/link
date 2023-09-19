@@ -9,7 +9,7 @@ import (
 
 	aurora "github.com/logrusorgru/aurora/v3"
 	"github.com/pkg/errors"
-	"github.com/urfave/cli"
+	"github.com/urfave/cli/v2"
 
 	"github.com/Scalingo/link/v2/api"
 	"github.com/Scalingo/link/v2/models"
@@ -23,24 +23,26 @@ func main() {
 	app.Version = Version
 
 	app.Flags = []cli.Flag{
-		cli.StringFlag{
+		&cli.StringFlag{
 			Name:  "host",
 			Value: "127.0.0.1:1313",
 			Usage: "Host to contact",
 		},
-		cli.StringFlag{
-			Name:  "user, u",
-			Value: "",
-			Usage: "Username for basic auth",
+		&cli.StringFlag{
+			Name:    "user",
+			Aliases: []string{"u"},
+			Value:   "",
+			Usage:   "Username for basic auth",
 		},
-		cli.StringFlag{
-			Name:  "password, p",
-			Value: "",
-			Usage: "Password for basic auth",
+		&cli.StringFlag{
+			Name:    "password",
+			Aliases: []string{"p"},
+			Value:   "",
+			Usage:   "Password for basic auth",
 		},
 	}
 
-	app.Commands = []cli.Command{
+	app.Commands = []*cli.Command{
 		{
 			Name: "list",
 			Action: func(c *cli.Context) error {
@@ -104,7 +106,7 @@ func main() {
 			Name:      "add",
 			ArgsUsage: "IP [CHECK_TYPE CHECK_ENDPOINT]...",
 			Flags: []cli.Flag{
-				cli.IntFlag{
+				&cli.IntFlag{
 					Name:  "healthcheck-interval",
 					Value: 0,
 					Usage: "Duration between healthchecks",
@@ -221,16 +223,16 @@ func main() {
 
 func getClientFromCtx(c *cli.Context) api.HTTPClient {
 	var opts []api.ClientOpt
-	if c.GlobalString("host") != "" {
-		opts = append(opts, api.WithURL(c.GlobalString("host")))
+	if c.String("host") != "" {
+		opts = append(opts, api.WithURL(c.String("host")))
 	}
 
-	if c.GlobalString("user") != "" {
-		opts = append(opts, api.WithUser(c.GlobalString("user")))
+	if c.String("user") != "" {
+		opts = append(opts, api.WithUser(c.String("user")))
 	}
 
-	if c.GlobalString("password") != "" {
-		opts = append(opts, api.WithPassword(c.GlobalString("password")))
+	if c.String("password") != "" {
+		opts = append(opts, api.WithPassword(c.String("password")))
 	}
 
 	return api.NewHTTPClient(opts...)
