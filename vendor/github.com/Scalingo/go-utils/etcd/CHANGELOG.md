@@ -2,6 +2,10 @@
 
 ## To be Released
 
+## v1.1.2
+
+* Various dependencies updates
+
 ## v1.1.1
 
 * chore(go): use go 1.17
