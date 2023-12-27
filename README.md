@@ -1,4 +1,4 @@
-# LinK v2.0.4
+# LinK v2.0.5
 
 ![publish workflow](https://github.com/Scalingo/link/actions/workflows/publish.yml/badge.svg)
 
@@ -147,8 +147,20 @@ Bump new version number in:
 Commit, tag and create a new release:
 
 ```sh
+version="2.0.5"
+
+git switch --create release/${version}
 git add CHANGELOG.md README.md
-git commit -m "Bump v2.0.4"
-git tag v2.0.4
-git push origin master v2.0.4
+git commit -m "Bump v${version}"
+git push --set-upstream origin release/${version}
+gh pr create --reviewer=EtienneM --fill-first
 ```
+
+Once the pull request merged, you can tag the new release.
+
+```sh
+git tag v${version}
+git push origin master v${version}
+```
+
+A GitHub Action will create the release.
