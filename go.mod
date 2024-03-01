@@ -29,7 +29,7 @@ require (
 require (
 	github.com/Scalingo/errgo-rollbar v0.2.1 // indirect
 	github.com/Scalingo/go-utils/crypto v1.0.0 // indirect
-	github.com/Scalingo/go-utils/errors/v2 v2.3.0 // indirect
+	github.com/Scalingo/go-utils/errors/v2 v2.4.0 // indirect
 	github.com/Scalingo/go-utils/security v1.0.0 // indirect
 	github.com/Scalingo/logrus-rollbar v1.4.1 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
@@ -40,7 +40,7 @@ require (
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
-	github.com/rivo/uniseg v0.4.6 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rollbar/rollbar-go v1.4.5 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
 	github.com/urfave/negroni v1.0.0 // indirect
@@ -48,14 +48,14 @@ require (
 	github.com/xrash/smetrics v0.0.0-20201216005158-039620a65673 // indirect
 	go.etcd.io/etcd/client/pkg/v3 v3.5.12 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
-	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/net v0.20.0 // indirect
-	golang.org/x/sys v0.16.0 // indirect
+	go.uber.org/zap v1.27.0 // indirect
+	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/sys v0.17.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
-	google.golang.org/genproto v0.0.0-20231106174013-bbf56f31fb17 // indirect
-	google.golang.org/genproto/googleapis/api v0.0.0-20231106174013-bbf56f31fb17 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20231106174013-bbf56f31fb17 // indirect
-	google.golang.org/grpc v1.61.0 // indirect
+	google.golang.org/genproto v0.0.0-20240123012728-ef4313101c80 // indirect
+	google.golang.org/genproto/googleapis/api v0.0.0-20240123012728-ef4313101c80 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240123012728-ef4313101c80 // indirect
+	google.golang.org/grpc v1.62.0 // indirect
 	google.golang.org/protobuf v1.32.0 // indirect
 	gopkg.in/errgo.v1 v1.0.1 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
