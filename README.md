@@ -128,7 +128,7 @@ manipulated by LinK to simulate failover.
 
 The best way is to use systemd to automate this setup:
 
-```
+```bash
 for idx in 10 11 12 ; do
   echo "[NetDev]
 Name=eth${idx}
