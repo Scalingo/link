@@ -121,21 +121,31 @@ This is the equivalent of:
 ip addr del MY_IP dev MY_INTERFACE
 ```
 
-## Dev environment
+## Development environment
 
-To make it work in dev you might want to create some dummy interfaces:
+To make it work in dev you need to create dummy interfaces which will be
+manipulated by LinK to simulate failover.
 
-```shell
-modprobe dummy
-ip link add eth10 type dummy
-ip link set eth10 up
-ip link add eth11 type dummy
-ip link set eth11 up
-ip link add eth12 type dummy
-ip link set eth12 up
+The best way is to use systemd to automate this setup:
+
+```
+for idx in 10 11 12 ; do
+  echo "[NetDev]
+Name=eth${idx}
+Kind=dummy" | sudo tee "/etc/systemd/network/10-sc-dummy-eth${idx}.netdev"
+done
+
+echo "[Match]
+Name=eth1*
+[Link]
+ActivationPolicy=up" | sudo tee "/etc/systemd/network/11-sc-dummy-activation.network"
 ```
 
-The script `start.sh` can be executed as root to automatically do that.
+Then run `systemctl restart systemd-networkd` to activate them immediately.
+
+If you're not using Systemd or want to do the setup manually, the script
+`hacks/setup_dummy_netlink_interfaces.sh` can be executed as root to manually
+create `eth10`, `eth11` and `eth12`.
 
 ## Release a New Version
 
