@@ -51,6 +51,40 @@ services:
     command: reflex --all -r 'link' -s -- sh -c './link'
     depends_on:
       - etcd
+  link-4:
+    build: .
+    volumes:
+      - ./:/go/src/github.com/Scalingo/link
+      - ./_dev/go-cache:/root/.cache
+    cap_add:
+      - NET_ADMIN
+    network_mode: 'host'
+    env_file:
+      - .env
+    environment:
+      HOSTNAME: link-4
+      INTERFACE: eth13
+      PORT: 1316
+    command: reflex --all -r 'link' -s -- sh -c './link'
+    depends_on:
+      - etcd
+  link-5:
+    build: .
+    volumes:
+      - ./:/go/src/github.com/Scalingo/link
+      - ./_dev/go-cache:/root/.cache
+    cap_add:
+      - NET_ADMIN
+    network_mode: 'host'
+    env_file:
+      - .env
+    environment:
+      HOSTNAME: link-5
+      INTERFACE: eth14
+      PORT: 1317
+    command: reflex --all -r 'link' -s -- sh -c './link'
+    depends_on:
+      - etcd
 
   test:
     build: .
