@@ -129,7 +129,7 @@ manipulated by LinK to simulate failover.
 The best way is to use systemd to automate this setup:
 
 ```bash
-for idx in 10 11 12 ; do
+for idx in 10 11 12 13 14; do
   echo "[NetDev]
 Name=eth${idx}
 Kind=dummy" | sudo tee "/etc/systemd/network/10-sc-dummy-eth${idx}.netdev"
@@ -145,7 +145,7 @@ Then run `systemctl restart systemd-networkd` to activate them immediately.
 
 If you're not using Systemd or want to do the setup manually, the script
 `hacks/setup_dummy_netlink_interfaces.sh` can be executed as root to manually
-create `eth10`, `eth11` and `eth12`.
+create `eth10`, `eth11`, `eth13`, `eth14` and `eth15`.
 
 ## Release a New Version
 
