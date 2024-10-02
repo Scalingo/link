@@ -2,6 +2,11 @@
 
 ## To be released
 
+## [2024-10-02] v2.0.6
+
+* build(go): use go 1.22
+* build: various dependencies updates
+
 ## [2023-12-27] v2.0.5
 
 * chore(deps): various updates

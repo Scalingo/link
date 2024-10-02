@@ -1,4 +1,4 @@
-# LinK v2.0.5
+# LinK v2.0.6
 
 ![publish workflow](https://github.com/Scalingo/link/actions/workflows/publish.yml/badge.svg)
 
@@ -157,11 +157,11 @@ Bump new version number in:
 Commit, tag and create a new release:
 
 ```sh
-version="2.0.5"
+version="2.0.6"
 
 git switch --create release/${version}
 git add CHANGELOG.md README.md
-git commit -m "Bump v${version}"
+git commit --message="Bump v${version}"
 git push --set-upstream origin release/${version}
 gh pr create --reviewer=EtienneM --fill-first
 ```
