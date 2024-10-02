@@ -1,6 +1,6 @@
 module github.com/Scalingo/link/v2
 
-go 1.20
+go 1.22
 
 require (
 	github.com/Scalingo/go-handlers v1.8.2
