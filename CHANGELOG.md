@@ -2,6 +2,8 @@
 
 ## To be released
 
+## [2024-10-14] v2.0.7
+
 * fix(publish): disable CGO
 
 ## [2024-10-02] v2.0.6
