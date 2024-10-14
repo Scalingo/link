@@ -2,6 +2,8 @@
 
 ## To be released
 
+* fix(publish): disable CGO
+
 ## [2024-10-02] v2.0.6
 
 * build(go): use go 1.22
