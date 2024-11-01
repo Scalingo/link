@@ -1,9 +1,9 @@
-# Rollbar Hook for [Logrus](https://github.com/sirupsen/logrus) v1.4.1
+# Rollbar Hook for [Logrus](https://github.com/sirupsen/logrus) v1.4.2
 
 ## Setup
 
 ```sh
-go get gopkg.in/Scalingo/logrus-rollbar.v1
+go get github.com/Scalingo/logrus-rollbar
 ```
 
 ## Example
@@ -18,7 +18,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/stvp/rollbar"
-	logrusrollbar "gopkg.in/Scalingo/logrus-rollbar.v1"
+
+	logrusrollbar "github.com/Scalingo/logrus-rollbar"
 )
 
 
@@ -52,9 +53,22 @@ Bump new version number in:
 Commit, tag and create a new release:
 
 ```sh
+version="1.4.2"
+
+git switch --create release/${version}
 git add CHANGELOG.md README.md
-git commit -m "Bump v1.4.1"
-git tag v1.4.1
-git push origin master
-git push --tags
+git commit --message="Bump v${version}"
+git push --set-upstream origin release/${version}
+gh pr create --reviewer=EtienneM --title "$(git log -1 --pretty=%B)"
 ```
+
+Once the pull request merged, you can tag the new release.
+
+```sh
+git tag v${version}
+git push origin master v${version}
+gh release create v${version}
+```
+
+The title of the release should be the version number and the text of the
+release is the same as the changelog.
