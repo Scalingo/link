@@ -8,7 +8,6 @@ import (
 	clientv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/api"
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/ip"
 	"github.com/Scalingo/link/v2/locker"
@@ -26,13 +25,13 @@ var (
 // Scheduler is the central point of LinK it will keep track all of IPs registered on this node
 // however the heavy lifting for a single IP is done in the Manager
 type Scheduler interface {
-	Start(context.Context, models.IP) (models.IP, error)
+	Start(context.Context, models.Endpoint) (models.Endpoint, error)
 	Stop(ctx context.Context, id string) error
 	Failover(ctx context.Context, id string) error
 	Status(string) string
-	ConfiguredIPs(ctx context.Context) []api.IP
-	GetIP(ctx context.Context, id string) *api.IP
-	UpdateIP(context.Context, models.IP) error
+	ConfiguredEndpoints(ctx context.Context) EndpointsWithStatus
+	GetEndpoint(ctx context.Context, id string) *EndpointWithStatus
+	UpdateEndpoint(context.Context, models.Endpoint) error
 }
 
 // IPScheduler is LinK implementation of the Scheduler Interface
@@ -69,13 +68,13 @@ func (s *IPScheduler) Status(id string) string {
 }
 
 // Start schedules a new IP on the host. It launches a new manager for the IP and add it to the tracked IP on this host.
-func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) (models.IP, error) {
+func (s *IPScheduler) Start(ctx context.Context, endpoint models.Endpoint) (models.Endpoint, error) {
 	log := logger.Get(ctx)
-	newIP, err := s.storage.AddIP(ctx, ipAddr)
+	newIP, err := s.storage.AddEndpoint(ctx, endpoint)
 	if err != nil {
 		if errors.Cause(err) != models.ErrIPAlreadyPresent {
 			return newIP, errors.Wrap(err, "fail to add IP to storage")
-		} else if ipAddr.ID == "" { // If the ID is not empty we are in the startup process
+		} else if endpoint.ID == "" { // If the ID is not empty we are in the startup process
 			return newIP, ErrIPAlreadyAssigned
 		}
 	}
@@ -88,7 +87,7 @@ func (s *IPScheduler) Start(ctx context.Context, ipAddr models.IP) (models.IP, e
 	manager, err := ip.NewManager(ctx, s.config, newIP, s.etcd, s.storage, s.leaseManager)
 	if err != nil {
 		if ipAdded {
-			err := s.storage.RemoveIP(ctx, newIP.ID)
+			err := s.storage.RemoveEndpoint(ctx, newIP.ID)
 			if err != nil {
 				log.WithError(err).Error("Fail to remove IP from storage after failed initialization of IP manager")
 			}
@@ -118,7 +117,7 @@ func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 		return errors.Wrap(err, "fail to stop manager")
 	}
 
-	err = s.storage.RemoveIP(ctx, id)
+	err = s.storage.RemoveEndpoint(ctx, id)
 	if err != nil {
 		return errors.Wrap(err, "fail to remove IP from storage")
 	}
@@ -147,22 +146,23 @@ func (s *IPScheduler) Failover(ctx context.Context, id string) error {
 }
 
 // ConfiguredIPs lists all IPs currently tracked by the scheduler
-func (s *IPScheduler) ConfiguredIPs(ctx context.Context) []api.IP {
+func (s *IPScheduler) ConfiguredEndpoints(ctx context.Context) EndpointsWithStatus {
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()
 
-	var ips []api.IP
+	res := make(EndpointsWithStatus, 0, len(s.ipManagers))
+
 	for _, manager := range s.ipManagers {
-		ips = append(ips, api.IP{
-			IP:     manager.IP(),
-			Status: manager.Status(),
+		res = append(res, EndpointWithStatus{
+			Endpoint: manager.Endpoint(),
+			Status:   manager.Status(),
 		})
 	}
-	return ips
+	return res
 }
 
 // GetIP fetches basic information about a tracked IP
-func (s *IPScheduler) GetIP(ctx context.Context, id string) *api.IP {
+func (s *IPScheduler) GetEndpoint(ctx context.Context, id string) *EndpointWithStatus {
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()
 
@@ -170,29 +170,30 @@ func (s *IPScheduler) GetIP(ctx context.Context, id string) *api.IP {
 	if !ok {
 		return nil
 	}
-	return &api.IP{
-		IP:     manager.IP(),
-		Status: manager.Status(),
+
+	return &EndpointWithStatus{
+		Endpoint: manager.Endpoint(),
+		Status:   manager.Status(),
 	}
 }
 
 // UpdateIP updates the IP in the scheduler storage, and the healthchecks in the IP manager.
-func (s *IPScheduler) UpdateIP(ctx context.Context, ip models.IP) error {
+func (s *IPScheduler) UpdateEndpoint(ctx context.Context, endpoint models.Endpoint) error {
 	log := logger.Get(ctx)
 	s.mapMutex.RLock()
-	manager, ok := s.ipManagers[ip.ID]
+	manager, ok := s.ipManagers[endpoint.ID]
 	s.mapMutex.RUnlock()
 	if !ok {
 		log.Info("IP manager not found, skipping the IP update")
 		return nil
 	}
 
-	err := s.storage.UpdateIP(ctx, ip)
+	err := s.storage.UpdateEndpoint(ctx, endpoint)
 	if err != nil {
 		return errors.Wrap(err, "fail to update the IP from storage")
 	}
 
-	manager.SetHealthchecks(ctx, s.config, ip.Checks)
+	manager.SetHealthChecks(ctx, s.config, endpoint.Checks)
 
 	return nil
 }

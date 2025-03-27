@@ -52,7 +52,7 @@ func TestIPController_Create(t *testing.T) {
 			Name:  "With an IP that already has been assigned",
 			Input: `{"ip": "10.0.0.1/32"}`,
 			SchedulerMock: func(mock *schedulermock.MockScheduler) {
-				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.IP{}, scheduler.ErrIPAlreadyAssigned)
+				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.Endpoint{}, scheduler.ErrIPAlreadyAssigned)
 			},
 			ExpectedStatusCode: http.StatusBadRequest,
 			ExpectedBody:       `{"error": "IP already assigned"}`,
@@ -60,14 +60,14 @@ func TestIPController_Create(t *testing.T) {
 			Name:  "When the scheduler fails",
 			Input: `{"ip": "10.0.0.1/32"}`,
 			SchedulerMock: func(mock *schedulermock.MockScheduler) {
-				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.IP{}, errors.New("SchedFail !"))
+				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.Endpoint{}, errors.New("SchedFail !"))
 			},
 			ExpectedError: "SchedFail !",
 		}, {
 			Name:  "When everything works fine",
 			Input: `{"ip": "10.0.0.1/32"}`,
 			SchedulerMock: func(mock *schedulermock.MockScheduler) {
-				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.IP{
+				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.Endpoint{
 					ID: "test",
 					IP: "10.0.0.1/32",
 				}, nil)
@@ -127,7 +127,7 @@ func TestIPController_Patch(t *testing.T) {
 	}{
 		"With an unknown IP": {
 			expectScheduler: func(m *schedulermock.MockScheduler) {
-				m.EXPECT().GetIP(gomock.Any(), linkIPId).Return(nil)
+				m.EXPECT().GetEndpoint(gomock.Any(), linkIPId).Return(nil)
 			},
 			expectedStatusCode: http.StatusNotFound,
 			expectedBody:       `{"resource": "IP", "error": "not found"}`,
@@ -135,15 +135,15 @@ func TestIPController_Patch(t *testing.T) {
 		"With an invalid body": {
 			body: "INVALID",
 			expectScheduler: func(m *schedulermock.MockScheduler) {
-				m.EXPECT().GetIP(gomock.Any(), linkIPId).Return(&api.IP{})
+				m.EXPECT().GetEndpoint(gomock.Any(), linkIPId).Return(&scheduler.EndpointWithStatus{})
 			},
 			expectedStatusCode: http.StatusBadRequest,
-			expectedBody:       `{"error": "invalid json to patch the IP"}`,
+			expectedBody:       `{"error": "invalid json"}`,
 		},
 		"With a port of 0 for the health check": {
 			body: `{"healthchecks": [{"port": 0}]}`,
 			expectScheduler: func(m *schedulermock.MockScheduler) {
-				m.EXPECT().GetIP(gomock.Any(), linkIPId).Return(&api.IP{})
+				m.EXPECT().GetEndpoint(gomock.Any(), linkIPId).Return(&scheduler.EndpointWithStatus{})
 			},
 			expectedStatusCode: http.StatusBadRequest,
 			expectedBody:       `{"error": "health check port cannot be negative"}`,
@@ -151,7 +151,7 @@ func TestIPController_Patch(t *testing.T) {
 		"With a port of 65536 for the health check": {
 			body: `{"healthchecks": [{"port": 65536}]}`,
 			expectScheduler: func(m *schedulermock.MockScheduler) {
-				m.EXPECT().GetIP(gomock.Any(), linkIPId).Return(&api.IP{})
+				m.EXPECT().GetEndpoint(gomock.Any(), linkIPId).Return(&scheduler.EndpointWithStatus{})
 			},
 			expectedStatusCode: http.StatusBadRequest,
 			expectedBody:       `{"error": "health check port cannot be greater than 65535"}`,
@@ -159,13 +159,13 @@ func TestIPController_Patch(t *testing.T) {
 		"if it fails to update the IP": {
 			body: `{"healthchecks": [{"port": 12345}]}`,
 			expectScheduler: func(m *schedulermock.MockScheduler) {
-				m.EXPECT().GetIP(gomock.Any(), linkIPId).Return(&api.IP{
-					IP:     models.IP{ID: linkIPId},
-					Status: api.Activated,
+				m.EXPECT().GetEndpoint(gomock.Any(), linkIPId).Return(&scheduler.EndpointWithStatus{
+					Endpoint: models.Endpoint{ID: linkIPId},
+					Status:   api.Activated,
 				})
-				m.EXPECT().UpdateIP(gomock.Any(), models.IP{
+				m.EXPECT().UpdateEndpoint(gomock.Any(), models.Endpoint{
 					ID: linkIPId,
-					Checks: []models.Healthcheck{
+					Checks: []models.HealthCheck{
 						{Port: 12345},
 					},
 				}).Return(errors.New("err update IP"))
@@ -175,18 +175,18 @@ func TestIPController_Patch(t *testing.T) {
 		"When everything works fine": {
 			body: `{"healthchecks": [{"port": 12345}]}`,
 			expectScheduler: func(m *schedulermock.MockScheduler) {
-				m.EXPECT().GetIP(gomock.Any(), linkIPId).Return(&api.IP{
-					IP:     models.IP{ID: linkIPId},
-					Status: api.Activated,
+				m.EXPECT().GetEndpoint(gomock.Any(), linkIPId).Return(&scheduler.EndpointWithStatus{
+					Endpoint: models.Endpoint{ID: linkIPId},
+					Status:   api.Activated,
 				})
-				m.EXPECT().UpdateIP(gomock.Any(), models.IP{
+				m.EXPECT().UpdateEndpoint(gomock.Any(), models.Endpoint{
 					ID: linkIPId,
-					Checks: []models.Healthcheck{
+					Checks: []models.HealthCheck{
 						{Port: 12345},
 					},
 				})
 			},
-			expectedBody:       fmt.Sprintf(`{"id":"%s","ip":"","checks":[{"type":"","host":"","port":12345}],"healthcheck_interval":0}`+"\n", linkIPId),
+			expectedBody:       fmt.Sprintf(`{"id":"%s","ip":"","status":"ACTIVATED","checks":[{"type":"","host":"","port":12345}],"healthcheck_interval":0}`+"\n", linkIPId),
 			expectedStatusCode: http.StatusOK,
 		},
 	}

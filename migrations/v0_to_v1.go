@@ -97,7 +97,7 @@ func (m V0toV1) Migrate(ctx context.Context) error {
 		}
 
 		// We link again the IP with the current host to trigger the topology change in the IP manager
-		err = m.storage.LinkIPWithCurrentHost(ctx, ipV1)
+		err = m.storage.LinkEndpointWithCurrentHost(ctx, ipV1)
 		if err != nil {
 			log.WithError(err).Error("Fail to link IP with the current host during the migration from v0 to v1")
 			continue

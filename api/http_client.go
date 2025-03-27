@@ -4,14 +4,15 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"net/http"
 	"time"
 
-	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/go-utils/errors/v2"
 )
+
+var _ Client = HTTPClient{}
 
 type HTTPClient struct {
 	url      string
@@ -58,7 +59,7 @@ func WithTimeout(timeout time.Duration) ClientOpt {
 }
 
 func (c HTTPClient) Version(ctx context.Context) (string, error) {
-	req, err := c.getRequest(http.MethodGet, "/version", nil)
+	req, err := c.getRequest(ctx, http.MethodGet, "/version", nil)
 	if err != nil {
 		return "", err
 	}
@@ -68,7 +69,7 @@ func (c HTTPClient) Version(ctx context.Context) (string, error) {
 		return "", err
 	}
 	if resp.StatusCode != http.StatusOK {
-		return "", getErrorFromBody(resp.StatusCode, resp.Body)
+		return "", getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
 	var res map[string]string
@@ -79,161 +80,154 @@ func (c HTTPClient) Version(ctx context.Context) (string, error) {
 	return res["version"], nil
 }
 
-func (c HTTPClient) ListIPs(ctx context.Context) ([]IP, error) {
-	req, err := c.getRequest(http.MethodGet, "/ips", nil)
+func (c HTTPClient) ListEndpoints(ctx context.Context) ([]Endpoint, error) {
+	req, err := c.getRequest(ctx, http.MethodGet, "/ips", nil)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err, "create request")
 	}
 
 	resp, err := c.getClient().Do(req)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err, "do request")
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, getErrorFromBody(resp.StatusCode, resp.Body)
+		return nil, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
-	var res map[string][]IP
+	res := EndpointListResponse{}
 
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err, "read endpoints JSON")
 	}
 
-	return res["ips"], nil
+	return res.Endpoints, nil
 }
 
-func (c HTTPClient) GetIP(ctx context.Context, id string) (IP, error) {
-	req, err := c.getRequest(http.MethodGet, fmt.Sprintf("/ips/%s", id), nil)
+func (c HTTPClient) GetEndpoint(ctx context.Context, id string) (Endpoint, error) {
+	req, err := c.getRequest(ctx, http.MethodGet, fmt.Sprintf("/ips/%s", id), nil)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "create request")
 	}
 
 	resp, err := c.getClient().Do(req)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "do request")
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return IP{}, getErrorFromBody(resp.StatusCode, resp.Body)
+		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
-	var res map[string]IP
+	res := EndpointGetResponse{}
 
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "read endpoint JSON")
 	}
 
-	return res["ip"], nil
+	return res.Endpoint, nil
 }
 
 func (c HTTPClient) Failover(ctx context.Context, id string) error {
-	req, err := c.getRequest(http.MethodPost, fmt.Sprintf("/ips/%s/failover", id), nil)
+	req, err := c.getRequest(ctx, http.MethodPost, fmt.Sprintf("/ips/%s/failover", id), nil)
 	if err != nil {
 		return err
 	}
 
 	resp, err := c.getClient().Do(req)
 	if err != nil {
-		return err
+		return errors.Wrap(ctx, err, "do request")
 	}
 
 	if resp.StatusCode != http.StatusNoContent {
-		return getErrorFromBody(resp.StatusCode, resp.Body)
+		return getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
 	return nil
 }
 
-type AddIPParams struct {
-	HealthcheckInterval int                  `json:"healthcheck_interval"`
-	Checks              []models.Healthcheck `json:"checks"`
+type AddEndpointParams struct {
+	HealthCheckInterval int           `json:"healthcheck_interval"`
+	Checks              []HealthCheck `json:"checks"`
+	IP                  string        `json:"ip"`
 }
 
-func (c HTTPClient) AddIP(ctx context.Context, ip string, params AddIPParams) (IP, error) {
+func (c HTTPClient) AddEndpoint(ctx context.Context, params AddEndpointParams) (Endpoint, error) {
 	buffer := &bytes.Buffer{}
-	err := json.NewEncoder(buffer).Encode(models.IP{
-		IP:                  ip,
-		HealthcheckInterval: params.HealthcheckInterval,
-		Checks:              params.Checks,
-	})
+	err := json.NewEncoder(buffer).Encode(params)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "encode endpoint")
 	}
 
-	req, err := c.getRequest(http.MethodPost, "/ips", buffer)
+	req, err := c.getRequest(ctx, http.MethodPost, "/ips", buffer)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "create request")
 	}
 
 	resp, err := c.getClient().Do(req)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "do request")
 	}
 
-	if resp.StatusCode != http.StatusCreated {
-		return IP{}, getErrorFromBody(resp.StatusCode, resp.Body)
+	if resp.StatusCode != http.StatusOK {
+		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
-	var res IP
+	res := Endpoint{}
 
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "read endpoint JSON")
 	}
 
 	return res, nil
 }
 
-type UpdateIPParams struct {
-	Healthchecks []models.Healthcheck `json:"healthchecks"`
-}
-
-func (c HTTPClient) UpdateIP(ctx context.Context, id string, params UpdateIPParams) (IP, error) {
+func (c HTTPClient) UpdateEndpoint(ctx context.Context, id string, params UpdateEndpointParams) (Endpoint, error) {
 	buffer := &bytes.Buffer{}
 	err := json.NewEncoder(buffer).Encode(params)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "encode endpoint")
 	}
 
-	req, err := c.getRequest(http.MethodPatch, fmt.Sprintf("/ips/%s", id), buffer)
+	req, err := c.getRequest(ctx, http.MethodPatch, fmt.Sprintf("/ips/%s", id), buffer)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "create request")
 	}
 
 	resp, err := c.getClient().Do(req)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "do request")
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return IP{}, getErrorFromBody(resp.StatusCode, resp.Body)
+		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
-	var ip IP
+	var ip Endpoint
 	err = json.NewDecoder(resp.Body).Decode(&ip)
 	if err != nil {
-		return IP{}, err
+		return Endpoint{}, errors.Wrap(ctx, err, "read endpoint JSON")
 	}
 
 	return ip, nil
 }
 
-func (c HTTPClient) RemoveIP(ctx context.Context, id string) error {
-	req, err := c.getRequest(http.MethodDelete, fmt.Sprintf("/ips/%s", id), nil)
+func (c HTTPClient) RemoveEndpoint(ctx context.Context, id string) error {
+	req, err := c.getRequest(ctx, http.MethodDelete, fmt.Sprintf("/ips/%s", id), nil)
 	if err != nil {
-		return err
+		return errors.Wrap(ctx, err, "create request")
 	}
 
 	resp, err := c.getClient().Do(req)
 	if err != nil {
-		return err
+		return errors.Wrap(ctx, err, "do request")
 	}
 
 	if resp.StatusCode != http.StatusNoContent {
-		return getErrorFromBody(resp.StatusCode, resp.Body)
+		return getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
 	return nil
@@ -245,7 +239,7 @@ func (c HTTPClient) getClient() *http.Client {
 	}
 }
 
-func (c HTTPClient) getRequest(method, path string, body io.Reader) (*http.Request, error) {
+func (c HTTPClient) getRequest(ctx context.Context, method, path string, body io.Reader) (*http.Request, error) {
 	var url string
 	if path[0] != '/' {
 		path = "/" + path
@@ -254,7 +248,7 @@ func (c HTTPClient) getRequest(method, path string, body io.Reader) (*http.Reque
 
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ctx, err, "create request")
 	}
 
 	if c.username != "" || c.password != "" {
@@ -264,7 +258,7 @@ func (c HTTPClient) getRequest(method, path string, body io.Reader) (*http.Reque
 	return req, nil
 }
 
-func getErrorFromBody(statusCode int, body io.Reader) error {
+func getErrorFromBody(ctx context.Context, statusCode int, body io.Reader) error {
 	if statusCode/100 == 5 || statusCode/100 == 4 {
 		var res map[string]interface{}
 		err := json.NewDecoder(body).Decode(&res)
@@ -281,7 +275,7 @@ func getErrorFromBody(statusCode int, body io.Reader) error {
 		case 404:
 			return ErrNotFound{value}
 		default:
-			return errors.New(value)
+			return errors.New(ctx, value)
 		}
 	}
 

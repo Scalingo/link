@@ -6,6 +6,7 @@ require (
 	github.com/Scalingo/go-handlers v1.8.2
 	github.com/Scalingo/go-philae/v4 v4.4.7
 	github.com/Scalingo/go-utils/errors v1.1.1
+	github.com/Scalingo/go-utils/errors/v2 v2.4.0
 	github.com/Scalingo/go-utils/etcd v1.1.2
 	github.com/Scalingo/go-utils/logger v1.4.0
 	github.com/Scalingo/go-utils/retry v1.1.1
@@ -29,7 +30,6 @@ require (
 require (
 	github.com/Scalingo/errgo-rollbar v0.2.1 // indirect
 	github.com/Scalingo/go-utils/crypto v1.0.0 // indirect
-	github.com/Scalingo/go-utils/errors/v2 v2.4.0 // indirect
 	github.com/Scalingo/go-utils/security v1.0.0 // indirect
 	github.com/Scalingo/logrus-rollbar v1.4.2 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect

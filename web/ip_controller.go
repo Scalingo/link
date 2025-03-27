@@ -31,11 +31,13 @@ func (c ipController) List(w http.ResponseWriter, r *http.Request, _ map[string]
 	log := logger.Get(ctx)
 	w.Header().Set("Content-Type", "application/json")
 
-	ips := c.scheduler.ConfiguredIPs(ctx)
+	ips := c.scheduler.ConfiguredEndpoints(ctx)
 
-	err := json.NewEncoder(w).Encode(map[string][]api.IP{
-		"ips": ips,
-	})
+	res := api.EndpointListResponse{
+		Endpoints: ips.ToAPIType(),
+	}
+
+	err := json.NewEncoder(w).Encode(res)
 	if err != nil {
 		log.WithError(err).Error("Fail to encode IPs")
 		return nil
@@ -48,15 +50,15 @@ func (c ipController) Get(w http.ResponseWriter, r *http.Request, params map[str
 	log := logger.Get(ctx)
 	w.Header().Set("Content-Type", "application/json")
 
-	ip := c.scheduler.GetIP(ctx, params["id"])
+	ip := c.scheduler.GetEndpoint(ctx, params["id"])
 	if ip == nil {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(`{"resource": "IP", "error": "not found"}`))
 		return nil
 	}
 
-	err := json.NewEncoder(w).Encode(map[string]api.IP{
-		"ip": *ip,
+	err := json.NewEncoder(w).Encode(api.EndpointGetResponse{
+		Endpoint: ip.ToAPIType(),
 	})
 
 	if err != nil {
@@ -72,92 +74,98 @@ func (c ipController) Create(w http.ResponseWriter, r *http.Request, _ map[strin
 	log := logger.Get(ctx)
 
 	w.Header().Set("Content-Type", "application/json")
-	var ip models.IP
-	err := json.NewDecoder(r.Body).Decode(&ip)
+	var endpointParams api.AddEndpointParams
+	err := json.NewDecoder(r.Body).Decode(&endpointParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`{"error": "invalid json"}`))
 		return nil
 	}
-	ip.ID = ""
-	log = log.WithFields(ip.ToLogrusFields())
-	ctx = logger.ToCtx(ctx, log)
-	log.Info("Creating a new LinK IP")
-
-	_, err = netlink.ParseAddr(ip.IP)
+	_, err = netlink.ParseAddr(endpointParams.IP)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(`{"error": "invalid IP"}`))
 		return nil
 	}
 
-	err = checkIPHealthchecks(ctx, ip.Checks)
+	err = checkEndpointHealthChecks(ctx, endpointParams.Checks)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err.Error())))
 		return nil
 	}
 
+	endpoint := models.Endpoint{
+		IP:                  endpointParams.IP,
+		HealthCheckInterval: endpointParams.HealthCheckInterval,
+		Checks:              models.HealthChecksFromAPIType(endpointParams.Checks),
+	}
+
+	endpoint.ID = ""
+	log = log.WithFields(endpoint.ToLogrusFields())
+	ctx = logger.ToCtx(ctx, log)
+	log.Info("Creating a new LinK Endpoint")
+
 	ctx = logger.ToCtx(context.Background(), log)
-	ip, err = c.scheduler.Start(ctx, ip)
+	endpoint, err = c.scheduler.Start(ctx, endpoint)
 	if err != nil {
 		if err == scheduler.ErrIPAlreadyAssigned {
 			w.WriteHeader(http.StatusBadRequest)
 			w.Write([]byte(`{"error": "IP already assigned"}`))
 			return nil
 		}
-		return errors.Wrap(err, "fail to start IP manager")
+		return errors.Wrap(err, "start endpoint manager")
 	}
-	log = log.WithFields(ip.ToLogrusFields())
+	log = log.WithFields(endpoint.ToLogrusFields())
 	ctx = logger.ToCtx(ctx, log)
 
 	w.WriteHeader(http.StatusCreated)
 
-	err = json.NewEncoder(w).Encode(ip)
+	err = json.NewEncoder(w).Encode(endpoint.ToAPIType())
 	if err != nil {
-		log.WithError(err).Error("Fail to encode IP")
+		log.WithError(err).Error("Fail to encode endpoint")
 	}
 	return nil
 }
 
-// Patch updates the healthchecks configured on the given IP. It actually **replaces** the currently configured healthchecks.
+// Patch updates the health checks configured on the given IP. It actually **replaces** the currently configured healthchecks.
 func (c ipController) Patch(w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	ctx := r.Context()
 	log := logger.Get(ctx)
 	w.Header().Set("Content-Type", "application/json")
 
-	ip := c.scheduler.GetIP(ctx, params["id"])
-	if ip == nil {
+	endpoint := c.scheduler.GetEndpoint(ctx, params["id"])
+	if endpoint == nil {
 		w.WriteHeader(http.StatusNotFound)
 		w.Write([]byte(`{"resource": "IP", "error": "not found"}`))
 		return nil
 	}
-	log = log.WithFields(ip.ToLogrusFields())
+	log = log.WithFields(endpoint.ToLogrusFields())
 	ctx = logger.ToCtx(ctx, log)
-	log.Info("Updating a LinK IP healthchecks")
+	log.Info("Updating an endpoint health checks")
 
-	var patchParams api.UpdateIPParams
+	var patchParams api.UpdateEndpointParams
 	err := json.NewDecoder(r.Body).Decode(&patchParams)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		_, _ = w.Write([]byte(`{"error": "invalid json to patch the IP"}`))
+		_, _ = w.Write([]byte(`{"error": "invalid json"}`))
 		return nil
 	}
 
-	err = checkIPHealthchecks(ctx, patchParams.Healthchecks)
+	err = checkEndpointHealthChecks(ctx, patchParams.HealthChecks)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		_, _ = w.Write([]byte(fmt.Sprintf(`{"error": "%s"}`, err.Error())))
 		return nil
 	}
 
-	ip.Checks = patchParams.Healthchecks
-	err = c.scheduler.UpdateIP(ctx, ip.IP)
+	endpoint.Checks = models.HealthChecksFromAPIType(patchParams.HealthChecks)
+	err = c.scheduler.UpdateEndpoint(ctx, endpoint.Endpoint)
 	if err != nil {
-		return errors.Wrapf(err, "fail to update the LinK IP '%s'", ip.ID)
+		return errors.Wrapf(err, "fail to update the LinK IP '%s'", endpoint.ID)
 	}
 
-	err = json.NewEncoder(w).Encode(ip.IP)
+	err = json.NewEncoder(w).Encode(endpoint.ToAPIType())
 	if err != nil {
 		log.WithError(err).Error("Fail to encode the IP after patching it")
 		return nil
@@ -209,8 +217,8 @@ func (c ipController) Failover(w http.ResponseWriter, r *http.Request, params ma
 	return nil
 }
 
-func checkIPHealthchecks(ctx context.Context, healthchecks []models.Healthcheck) error {
-	for _, check := range healthchecks {
+func checkEndpointHealthChecks(ctx context.Context, healthChecks []api.HealthCheck) error {
+	for _, check := range healthChecks {
 		if check.Port <= 0 {
 			return errors.New("health check port cannot be negative")
 		}

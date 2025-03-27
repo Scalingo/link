@@ -5,6 +5,7 @@ import (
 
 	"github.com/Scalingo/go-philae/v4/prober"
 	"github.com/Scalingo/go-philae/v4/tcpprobe"
+	"github.com/Scalingo/link/v2/api"
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/models"
 )
@@ -17,11 +18,11 @@ type checker struct {
 	prober *prober.Prober
 }
 
-func FromChecks(cfg config.Config, checks []models.Healthcheck) checker {
+func FromChecks(cfg config.Config, checks []models.HealthCheck) checker {
 	prober := prober.NewProber()
 	for _, check := range checks {
 		switch check.Type {
-		case models.TCPHealthCheck:
+		case api.TCPHealthCheck:
 			prober.AddProbe(tcpprobe.NewTCPProbe("tcp", check.Addr(), tcpprobe.TCPOptions{
 				Timeout: cfg.HealthcheckTimeout,
 			}))

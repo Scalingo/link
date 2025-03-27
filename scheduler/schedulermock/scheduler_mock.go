@@ -8,10 +8,9 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
-
-	api "github.com/Scalingo/link/v2/api"
 	models "github.com/Scalingo/link/v2/models"
+	scheduler "github.com/Scalingo/link/v2/scheduler"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockScheduler is a mock of Scheduler interface.
@@ -37,18 +36,18 @@ func (m *MockScheduler) EXPECT() *MockSchedulerMockRecorder {
 	return m.recorder
 }
 
-// ConfiguredIPs mocks base method.
-func (m *MockScheduler) ConfiguredIPs(arg0 context.Context) []api.IP {
+// ConfiguredEndpoints mocks base method.
+func (m *MockScheduler) ConfiguredEndpoints(arg0 context.Context) scheduler.EndpointsWithStatus {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ConfiguredIPs", arg0)
-	ret0, _ := ret[0].([]api.IP)
+	ret := m.ctrl.Call(m, "ConfiguredEndpoints", arg0)
+	ret0, _ := ret[0].(scheduler.EndpointsWithStatus)
 	return ret0
 }
 
-// ConfiguredIPs indicates an expected call of ConfiguredIPs.
-func (mr *MockSchedulerMockRecorder) ConfiguredIPs(arg0 interface{}) *gomock.Call {
+// ConfiguredEndpoints indicates an expected call of ConfiguredEndpoints.
+func (mr *MockSchedulerMockRecorder) ConfiguredEndpoints(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfiguredIPs", reflect.TypeOf((*MockScheduler)(nil).ConfiguredIPs), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfiguredEndpoints", reflect.TypeOf((*MockScheduler)(nil).ConfiguredEndpoints), arg0)
 }
 
 // Failover mocks base method.
@@ -65,25 +64,25 @@ func (mr *MockSchedulerMockRecorder) Failover(arg0, arg1 interface{}) *gomock.Ca
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Failover", reflect.TypeOf((*MockScheduler)(nil).Failover), arg0, arg1)
 }
 
-// GetIP mocks base method.
-func (m *MockScheduler) GetIP(arg0 context.Context, arg1 string) *api.IP {
+// GetEndpoint mocks base method.
+func (m *MockScheduler) GetEndpoint(arg0 context.Context, arg1 string) *scheduler.EndpointWithStatus {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetIP", arg0, arg1)
-	ret0, _ := ret[0].(*api.IP)
+	ret := m.ctrl.Call(m, "GetEndpoint", arg0, arg1)
+	ret0, _ := ret[0].(*scheduler.EndpointWithStatus)
 	return ret0
 }
 
-// GetIP indicates an expected call of GetIP.
-func (mr *MockSchedulerMockRecorder) GetIP(arg0, arg1 interface{}) *gomock.Call {
+// GetEndpoint indicates an expected call of GetEndpoint.
+func (mr *MockSchedulerMockRecorder) GetEndpoint(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIP", reflect.TypeOf((*MockScheduler)(nil).GetIP), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpoint", reflect.TypeOf((*MockScheduler)(nil).GetEndpoint), arg0, arg1)
 }
 
 // Start mocks base method.
-func (m *MockScheduler) Start(arg0 context.Context, arg1 models.IP) (models.IP, error) {
+func (m *MockScheduler) Start(arg0 context.Context, arg1 models.Endpoint) (models.Endpoint, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Start", arg0, arg1)
-	ret0, _ := ret[0].(models.IP)
+	ret0, _ := ret[0].(models.Endpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -122,16 +121,16 @@ func (mr *MockSchedulerMockRecorder) Stop(arg0, arg1 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockScheduler)(nil).Stop), arg0, arg1)
 }
 
-// UpdateIP mocks base method.
-func (m *MockScheduler) UpdateIP(arg0 context.Context, arg1 models.IP) error {
+// UpdateEndpoint mocks base method.
+func (m *MockScheduler) UpdateEndpoint(arg0 context.Context, arg1 models.Endpoint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateIP", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateEndpoint", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateIP indicates an expected call of UpdateIP.
-func (mr *MockSchedulerMockRecorder) UpdateIP(arg0, arg1 interface{}) *gomock.Call {
+// UpdateEndpoint indicates an expected call of UpdateEndpoint.
+func (mr *MockSchedulerMockRecorder) UpdateEndpoint(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIP", reflect.TypeOf((*MockScheduler)(nil).UpdateIP), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEndpoint", reflect.TypeOf((*MockScheduler)(nil).UpdateEndpoint), arg0, arg1)
 }

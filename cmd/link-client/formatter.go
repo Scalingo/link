@@ -13,25 +13,25 @@ import (
 	"github.com/Scalingo/link/v2/api"
 )
 
-func formatIPs(ips []api.IP) {
+func formatEndpoints(endpoints []api.Endpoint) {
 	table := tablewriter.NewWriter(os.Stdout)
 	table.SetHeader([]string{"ID", "IP", "Status", "CHECKS"})
 
-	for _, ip := range ips {
-		status := formatStatus(ip)
+	for _, endpoint := range endpoints {
+		status := formatStatus(endpoint)
 
 		checks := "None"
-		if len(ip.Checks) > 0 {
+		if len(endpoint.Checks) > 0 {
 			var c []string
-			for _, check := range ip.IP.Checks {
+			for _, check := range endpoint.Checks {
 				c = append(c, fmt.Sprintf("%s - %s", check.Type, net.JoinHostPort(check.Host, strconv.Itoa(check.Port))))
 			}
 
 			checks = strings.Join(c, ",")
 		}
 		table.Append([]string{
-			ip.ID,
-			ip.IP.IP,
+			endpoint.ID,
+			endpoint.IP,
 			status,
 			checks,
 		})
@@ -39,7 +39,7 @@ func formatIPs(ips []api.IP) {
 	table.Render()
 }
 
-func formatIP(ip api.IP) {
+func formatEndpoint(ip api.Endpoint) {
 	fmt.Printf("ID:\t%s\n", ip.ID)
 	fmt.Printf("Status:\t%s\n", formatStatus(ip))
 	if len(ip.Checks) == 0 {
@@ -52,8 +52,8 @@ func formatIP(ip api.IP) {
 	}
 }
 
-func formatStatus(ip api.IP) string {
-	switch ip.Status {
+func formatStatus(endpoint api.Endpoint) string {
+	switch endpoint.Status {
 	case api.Activated:
 		return aurora.Green("ACTIVATED").String()
 	case api.Standby:
@@ -61,6 +61,6 @@ func formatStatus(ip api.IP) string {
 	case api.Failing:
 		return aurora.Red("FAILING").String()
 	default:
-		return ip.Status
+		return endpoint.Status
 	}
 }

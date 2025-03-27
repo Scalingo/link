@@ -21,7 +21,7 @@ func TestSetActivated(t *testing.T) {
 
 		networkMock := networkmock.NewMockNetworkInterface(ctrl)
 
-		ip := models.IP{
+		ip := models.Endpoint{
 			IP: "10.0.0.1/32",
 			ID: "test-1234",
 		}
@@ -29,7 +29,7 @@ func TestSetActivated(t *testing.T) {
 
 		manager := &manager{
 			networkInterface: networkMock,
-			ip:               ip,
+			endpoint:         ip,
 		}
 
 		manager.setActivated(context.Background(), &fsm.Event{})
@@ -41,7 +41,7 @@ func TestSetStandBy(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ip := models.IP{
+		ip := models.Endpoint{
 			IP: "10.0.0.1/32",
 			ID: "test-1234",
 		}
@@ -51,7 +51,7 @@ func TestSetStandBy(t *testing.T) {
 
 		manager := &manager{
 			networkInterface: networkMock,
-			ip:               ip,
+			endpoint:         ip,
 		}
 
 		manager.setStandBy(context.Background(), &fsm.Event{})
@@ -66,7 +66,7 @@ func TestSetFailing(t *testing.T) {
 		networkMock := networkmock.NewMockNetworkInterface(ctrl)
 		lockerMock := lockermock.NewMockLocker(ctrl)
 
-		ip := models.IP{
+		ip := models.Endpoint{
 			IP: "10.0.0.1/32",
 			ID: "test-1234",
 		}
@@ -76,7 +76,7 @@ func TestSetFailing(t *testing.T) {
 		manager := &manager{
 			networkInterface: networkMock,
 			locker:           lockerMock,
-			ip:               ip,
+			endpoint:         ip,
 		}
 
 		manager.setFailing(context.Background(), &fsm.Event{})
@@ -84,7 +84,7 @@ func TestSetFailing(t *testing.T) {
 }
 
 func TestStartARPEnsure(t *testing.T) {
-	ip := models.IP{
+	ip := models.Endpoint{
 		IP: "10.0.0.1/32",
 		ID: "test-1234",
 	}
@@ -109,7 +109,7 @@ func TestStartARPEnsure(t *testing.T) {
 			networkInterface: networkMock,
 			stateMachine:     sm,
 			config:           config,
-			ip:               ip,
+			endpoint:         ip,
 		}
 
 		doneChan := make(chan bool)
@@ -143,7 +143,7 @@ func TestStartARPEnsure(t *testing.T) {
 			networkInterface: networkMock,
 			stateMachine:     sm,
 			config:           config,
-			ip:               ip,
+			endpoint:         ip,
 		}
 
 		doneChan := make(chan bool)

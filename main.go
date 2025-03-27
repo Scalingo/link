@@ -71,7 +71,7 @@ func main() {
 
 	scheduler := scheduler.NewIPScheduler(config, etcd, storage, leaseManager)
 
-	ips, err := storage.GetIPs(ctx)
+	ips, err := storage.GetEndpoints(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to list configured IPs")
 		panic(err)

@@ -27,7 +27,7 @@ func (m *manager) Stop(ctx context.Context) error {
 	ctx = logger.ToCtx(ctx, log)
 
 	log.Info("Stops the IP manager")
-	hosts, err := m.storage.GetIPHosts(ctx, m.IP())
+	hosts, err := m.storage.GetEndpointHosts(ctx, m.Endpoint())
 	if err != nil {
 		return errors.Wrap(err, "fail to get new hosts")
 	}
@@ -60,7 +60,7 @@ func (m *manager) Stop(ctx context.Context) error {
 	}
 
 	log.Info("Unlink IP from the host")
-	err = m.storage.UnlinkIPFromCurrentHost(ctx, m.ip)
+	err = m.storage.UnlinkEndpointFromCurrentHost(ctx, m.endpoint)
 	if err != nil {
 		return errors.Wrap(err, "fail to unlink IP")
 	}

@@ -20,8 +20,8 @@ type v0IP struct {
 	LeaseID int64  `json:"lease_id,omitempty"`
 }
 
-func (v0IP v0IP) convertToV1() models.IP {
-	return models.IP{
+func (v0IP v0IP) convertToV1() models.Endpoint {
+	return models.Endpoint{
 		ID: v0IP.ID,
 		IP: v0IP.IP,
 	}
@@ -80,7 +80,7 @@ func (e v0EtcdStorage) isMaster(ctx context.Context, ip v0IP) (bool, error) {
 }
 
 // putIP puts the v1 IP in the new etcd key.
-func (e v0EtcdStorage) putIP(ctx context.Context, ip models.IP, hostname string) error {
+func (e v0EtcdStorage) putIP(ctx context.Context, ip models.Endpoint, hostname string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 

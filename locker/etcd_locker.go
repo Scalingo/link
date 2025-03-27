@@ -26,20 +26,20 @@ type etcdLocker struct {
 	kvEtcd            clientv3.KV
 	key               string
 	config            config.Config
-	ip                models.IP
+	ip                models.Endpoint
 	leaseManager      EtcdLeaseManager
 	leaseSubscriberID string
 	lock              *sync.Mutex
 }
 
 // NewEtcdLocker return an implemtation of Locker based on the ETCD database
-func NewEtcdLocker(config config.Config, etcd *clientv3.Client, leaseManager EtcdLeaseManager, ip models.IP) Locker {
-	key := fmt.Sprintf("%s/default/%s", models.EtcdLinkDirectory, ip.StorableIP())
+func NewEtcdLocker(config config.Config, etcd *clientv3.Client, leaseManager EtcdLeaseManager, endpoint models.Endpoint) Locker {
+	key := fmt.Sprintf("%s/default/%s", models.EtcdLinkDirectory, endpoint.StorableIP())
 	return &etcdLocker{
 		kvEtcd:       etcd,
 		key:          key,
 		config:       config,
-		ip:           ip,
+		ip:           endpoint,
 		leaseManager: leaseManager,
 		lock:         &sync.Mutex{},
 	}

@@ -12,7 +12,6 @@ import (
 	"github.com/urfave/cli/v2"
 
 	"github.com/Scalingo/link/v2/api"
-	"github.com/Scalingo/link/v2/models"
 )
 
 var Version = "dev"
@@ -47,11 +46,11 @@ func main() {
 			Name: "list",
 			Action: func(c *cli.Context) error {
 				client := getClientFromCtx(c)
-				ips, err := client.ListIPs(context.Background())
+				ips, err := client.ListEndpoints(context.Background())
 				if err != nil {
 					return err
 				}
-				formatIPs(ips)
+				formatEndpoints(ips)
 				return nil
 			},
 		}, {
@@ -66,11 +65,11 @@ func main() {
 					return nil
 				}
 				client := getClientFromCtx(c)
-				err := client.RemoveIP(context.Background(), c.Args().First())
+				err := client.RemoveEndpoint(context.Background(), c.Args().First())
 				if err != nil {
 					return err
 				}
-				fmt.Println(aurora.Green(fmt.Sprintf("IP %v deleted.", c.Args().First())))
+				fmt.Println(aurora.Green(fmt.Sprintf("Endpoint %v deleted.", c.Args().First())))
 				return nil
 			},
 		}, {
@@ -85,11 +84,11 @@ func main() {
 					return nil
 				}
 				client := getClientFromCtx(c)
-				ip, err := client.GetIP(context.Background(), c.Args().First())
+				endpoints, err := client.GetEndpoint(context.Background(), c.Args().First())
 				if err != nil {
 					return err
 				}
-				formatIP(ip)
+				formatEndpoint(endpoints)
 				return nil
 			},
 		}, {
@@ -118,13 +117,13 @@ func main() {
 				&cli.IntFlag{
 					Name:  "healthcheck-interval",
 					Value: 0,
-					Usage: "Duration between healthchecks",
+					Usage: "Duration between health checks",
 				},
 			},
 			Action: func(c *cli.Context) error {
 				if c.NArg()%2 == 0 {
 					// 1 For the IP
-					// And 2 per Healthchecks
+					// And 2 per Health checks
 					// So NArgs % 2 must be == 1
 					err := cli.ShowCommandHelp(c, c.Command.Name)
 					if err != nil {
@@ -134,7 +133,7 @@ func main() {
 				}
 				client := getClientFromCtx(c)
 				ip := c.Args().First()
-				var checks []models.Healthcheck
+				var checks []api.HealthCheck
 				curArg := 1
 				for curArg < c.NArg() {
 					endpoint := c.Args().Get(curArg + 1)
@@ -146,24 +145,25 @@ func main() {
 					if err != nil {
 						return fmt.Errorf("invalid endpoint: %s", endpoint)
 					}
-					checks = append(checks, models.Healthcheck{
-						Type: models.HealthcheckType(c.Args().Get(curArg)),
+					checks = append(checks, api.HealthCheck{
+						Type: api.HealthCheckType(c.Args().Get(curArg)),
 						Host: host,
 						Port: portI,
 					})
 					curArg += 2
 				}
 
-				params := api.AddIPParams{
+				params := api.AddEndpointParams{
 					Checks:              checks,
-					HealthcheckInterval: c.Int("healthcheck-interval"),
+					HealthCheckInterval: c.Int("health check-interval"),
+					IP:                  ip,
 				}
-				newIP, err := client.AddIP(context.Background(), ip, params)
+				newEndpoint, err := client.AddEndpoint(context.Background(), params)
 				if err != nil {
 					return err
 				}
 
-				fmt.Println(aurora.Green(fmt.Sprintf("IP %s (%s) successfully added", newIP.IP.IP, newIP.ID)))
+				fmt.Println(aurora.Green(fmt.Sprintf("Endpoint %s (%s) successfully added", newEndpoint.ID, newEndpoint.IP)))
 				return nil
 			},
 		}, {
@@ -172,7 +172,7 @@ func main() {
 			Action: func(c *cli.Context) error {
 				if c.NArg()%2 == 0 {
 					// 1 For the IP
-					// And 2 per Healthchecks
+					// And 2 per Health checks
 					// So NArgs % 2 must be == 1
 					err := cli.ShowCommandHelp(c, c.Command.Name)
 					if err != nil {
@@ -181,38 +181,38 @@ func main() {
 					return nil
 				}
 
-				var healthchecks []models.Healthcheck
+				var healthChecks []api.HealthCheck
 				curArg := 1
 				for curArg < c.NArg() {
-					healthcheckType := c.Args().Get(curArg)
+					healthCheckType := c.Args().Get(curArg)
 					endpoint := c.Args().Get(curArg + 1)
 					host, port, err := net.SplitHostPort(endpoint)
 					if err != nil {
-						return fmt.Errorf("invalid healthcheck endpoint: %s", endpoint)
+						return fmt.Errorf("invalid health check endpoint: %s", endpoint)
 					}
 					portI, err := strconv.Atoi(port)
 					if err != nil {
-						return fmt.Errorf("invalid healthcheck port: %s", port)
+						return fmt.Errorf("invalid health check port: %s", port)
 					}
-					healthchecks = append(healthchecks, models.Healthcheck{
-						Type: models.HealthcheckType(healthcheckType),
+					healthChecks = append(healthChecks, api.HealthCheck{
+						Type: api.HealthCheckType(healthCheckType),
 						Host: host,
 						Port: portI,
 					})
 					curArg += 2
 				}
 
-				linkIPId := c.Args().First()
+				linkEndpointID := c.Args().First()
 
 				client := getClientFromCtx(c)
-				ip, err := client.UpdateIP(context.Background(),
-					linkIPId, api.UpdateIPParams{Healthchecks: healthchecks},
+				ip, err := client.UpdateEndpoint(context.Background(),
+					linkEndpointID, api.UpdateEndpointParams{HealthChecks: healthChecks},
 				)
 				if err != nil {
-					return errors.Wrapf(err, "fail to update the IP healthchecks '%s'", linkIPId)
+					return errors.Wrapf(err, "update the endpoint health checks '%s'", linkEndpointID)
 				}
 
-				fmt.Println(aurora.Green(fmt.Sprintf("Healthchecks of the IP %s (%s) successfully updated", ip.IP.IP, ip.ID)))
+				fmt.Println(aurora.Green(fmt.Sprintf("Health checks of the Endpoint %s (%s) successfully updated", ip.IP, ip.ID)))
 				return nil
 			},
 		}, {

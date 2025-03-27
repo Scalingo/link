@@ -14,7 +14,7 @@ import (
 func (m *manager) setActivated(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: ACTIVATED")
-	err := m.networkInterface.EnsureIP(m.ip.IP)
+	err := m.networkInterface.EnsureIP(m.endpoint.IP)
 	if err != nil {
 		log.WithError(err).Error("Fail to activate IP")
 	}
@@ -23,7 +23,7 @@ func (m *manager) setActivated(ctx context.Context, _ *fsm.Event) {
 func (m *manager) setStandBy(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: STANDBY")
-	err := m.networkInterface.RemoveIP(m.ip.IP)
+	err := m.networkInterface.RemoveIP(m.endpoint.IP)
 	if err != nil {
 		log.WithError(err).Error("Fail to de-activate IP")
 	}
@@ -33,7 +33,7 @@ func (m *manager) setFailing(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: FAILING")
 
-	err := m.networkInterface.RemoveIP(m.ip.IP)
+	err := m.networkInterface.RemoveIP(m.endpoint.IP)
 	if err != nil {
 		log.WithError(err).Error("Fail to de-activate IP")
 	}
@@ -58,7 +58,7 @@ func (m *manager) startArpEnsure(ctx context.Context) {
 
 		if currentState == ACTIVATED && garpCount < m.config.ARPGratuitousCount {
 			log.Debug("Send gratuitous ARP request")
-			err := m.networkInterface.EnsureIP(m.ip.IP)
+			err := m.networkInterface.EnsureIP(m.endpoint.IP)
 			if err != nil {
 				log.WithError(err).Error("Fail to ensure IP")
 			} else {

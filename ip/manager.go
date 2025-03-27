@@ -26,14 +26,14 @@ type Manager interface {
 	Stop(context.Context) error
 	Failover(context.Context) error
 	Status() string
-	IP() models.IP
-	SetHealthchecks(context.Context, config.Config, []models.Healthcheck)
+	Endpoint() models.Endpoint
+	SetHealthChecks(context.Context, config.Config, []models.HealthCheck)
 }
 
 type manager struct {
 	networkInterface        network.NetworkInterface
 	stateMachine            *fsm.FSM
-	ip                      models.IP
+	endpoint                models.Endpoint
 	stopMutex               sync.RWMutex
 	locker                  locker.Locker
 	checker                 healthcheck.Checker
@@ -44,34 +44,34 @@ type manager struct {
 	retry                   retry.Retry
 	eventChan               chan string
 	keepaliveRetry          int
-	healthcheckFailingCount int
+	healthCheckFailingCount int
 	stopped                 bool
 }
 
-func NewManager(ctx context.Context, cfg config.Config, ip models.IP, client *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) (*manager, error) {
+func NewManager(ctx context.Context, cfg config.Config, endpoint models.Endpoint, client *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) (*manager, error) {
 	i, err := network.NewNetworkInterfaceFromName(cfg.Interface)
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to instantiate network interface")
 	}
 
 	log := logger.Get(ctx).WithFields(logrus.Fields{
-		"ip": ip.IP,
+		"ip": endpoint.IP,
 	})
 	ctx = logger.ToCtx(ctx, log)
 
 	m := &manager{
 		networkInterface:        i,
-		ip:                      ip,
-		locker:                  locker.NewEtcdLocker(cfg, client, leaseManager, ip),
-		checker:                 healthcheck.FromChecks(cfg, ip.Checks),
+		endpoint:                endpoint,
+		locker:                  locker.NewEtcdLocker(cfg, client, leaseManager, endpoint),
+		checker:                 healthcheck.FromChecks(cfg, endpoint.Checks),
 		config:                  cfg,
 		storage:                 storage,
 		eventChan:               make(chan string),
-		healthcheckFailingCount: 0,
+		healthCheckFailingCount: 0,
 		retry:                   retry.New(retry.WithWaitDuration(10*time.Second), retry.WithMaxAttempts(5)),
 	}
 
-	prefix := fmt.Sprintf("%s/ips/%s", models.EtcdLinkDirectory, ip.StorableIP())
+	prefix := fmt.Sprintf("%s/ips/%s", models.EtcdLinkDirectory, endpoint.StorableIP())
 	m.watcher = watcher.NewWatcher(client, prefix, m.onTopologyChange)
 
 	m.stateMachine = NewStateMachine(ctx, NewStateMachineOpts{
@@ -83,14 +83,14 @@ func NewManager(ctx context.Context, cfg config.Config, ip models.IP, client *cl
 }
 
 func (m *manager) Start(ctx context.Context) {
-	log := logger.Get(ctx).WithFields(m.ip.ToLogrusFields())
+	log := logger.Get(ctx).WithFields(m.endpoint.ToLogrusFields())
 	log.Info("Starting manager")
 
 	err := m.retry.Do(ctx, func(ctx context.Context) error {
-		return m.storage.LinkIPWithCurrentHost(ctx, m.ip)
+		return m.storage.LinkEndpointWithCurrentHost(ctx, m.endpoint)
 	})
 	if err != nil {
-		log.WithError(err).Error("Fail to link IP")
+		log.WithError(err).Error("Fail to link endpoint")
 	}
 
 	ctx = logger.ToCtx(ctx, log)
@@ -118,8 +118,8 @@ func (m *manager) Status() string {
 }
 
 // IP returns the ip model linked to this manager
-func (m *manager) IP() models.IP {
-	return m.ip
+func (m *manager) Endpoint() models.Endpoint {
+	return m.endpoint
 }
 
 // sendEvent sends an event to the state machine
@@ -130,11 +130,11 @@ func (m *manager) sendEvent(status string) {
 	m.eventChan <- status
 }
 
-func (m *manager) SetHealthchecks(ctx context.Context, cfg config.Config, healthchecks []models.Healthcheck) {
+func (m *manager) SetHealthChecks(ctx context.Context, cfg config.Config, healthchecks []models.HealthCheck) {
 	log := logger.Get(ctx)
 	log.WithField("healtchchecks", healthchecks).Debug("Set new healthchecks")
 
-	m.ip.Checks = healthchecks
+	m.endpoint.Checks = healthchecks
 	m.checkerMutex.Lock()
 	m.checker = healthcheck.FromChecks(cfg, healthchecks)
 	m.checkerMutex.Unlock()

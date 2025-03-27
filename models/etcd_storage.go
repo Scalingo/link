@@ -42,7 +42,7 @@ func NewEtcdStorage(config config.Config) etcdStorage {
 	}
 }
 
-func (e etcdStorage) GetIPs(ctx context.Context) ([]IP, error) {
+func (e etcdStorage) GetEndpoints(ctx context.Context) (Endpoints, error) {
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to get etcd client")
@@ -57,65 +57,65 @@ func (e etcdStorage) GetIPs(ctx context.Context) ([]IP, error) {
 		return nil, errors.Wrap(err, "fail to get list of IPs from etcd")
 	}
 
-	ips := make([]IP, 0)
+	endpoints := make(Endpoints, 0)
 	for _, kv := range resp.Kvs {
-		var ip IP
-		err := json.Unmarshal(kv.Value, &ip)
+		var endpoint Endpoint
+		err := json.Unmarshal(kv.Value, &endpoint)
 		if err != nil {
 			return nil, errors.Wrapf(err, "invalid json for %s", kv.Key)
 		}
-		ips = append(ips, ip)
+		endpoints = append(endpoints, endpoint)
 	}
-	return ips, nil
+	return endpoints, nil
 }
 
-func (e etcdStorage) AddIP(ctx context.Context, ip IP) (IP, error) {
-	ips, err := e.GetIPs(ctx)
+func (e etcdStorage) AddEndpoint(ctx context.Context, endpoint Endpoint) (Endpoint, error) {
+	ips, err := e.GetEndpoints(ctx)
 	if err != nil {
-		return ip, errors.Wrap(err, "fail to contact etcd")
+		return endpoint, errors.Wrap(err, "fail to contact etcd")
 	}
 
 	for _, i := range ips {
-		if i.IP == ip.IP {
+		if i.IP == endpoint.IP {
 			return i, ErrIPAlreadyPresent
 		}
 	}
 
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
-		return ip, errors.Wrap(err, "fail to get etcd client")
+		return endpoint, errors.Wrap(err, "fail to get etcd client")
 	}
 	defer closer.Close()
 
 	id, err := uuid.NewV4()
 	if err != nil {
-		return ip, errors.Wrap(err, "fail to generate ID")
+		return endpoint, errors.Wrap(err, "fail to generate ID")
 	}
 
-	ip.ID = "vip-" + id.String()
+	endpoint.ID = "vip-" + id.String()
 
 	// We do not want to store the status in database. This will always be STANDBY.
 	// So we set it to "" and let the omitempty do its job.
-	ip.Status = ""
-	value, err := json.Marshal(ip)
+	endpoint.Status = ""
+	value, err := json.Marshal(endpoint)
 	if err != nil {
-		return ip, errors.Wrap(err, "fail to marshal IP")
+		return endpoint, errors.Wrap(err, "fail to marshal IP")
 	}
 
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-	_, err = client.Put(etcdCtx, e.keyFor(ip), string(value))
+	_, err = client.Put(etcdCtx, e.keyFor(endpoint), string(value))
 	if err != nil {
-		return ip, errors.Wrapf(err, "fail to save IP")
+		return endpoint, errors.Wrapf(err, "fail to save IP")
 	}
 
-	return ip, nil
+	return endpoint, nil
 }
 
-func (e etcdStorage) UpdateIP(ctx context.Context, ip IP) error {
+func (e etcdStorage) UpdateEndpoint(ctx context.Context, endpoint Endpoint) error {
 	log := logger.Get(ctx)
-	if ip.ID == "" {
-		return fmt.Errorf("invalid IP ID: %s", ip.IP)
+	if endpoint.ID == "" {
+		return fmt.Errorf("invalid IP ID: %s", endpoint.IP)
 	}
 
 	client, closer, err := e.newEtcdClient()
@@ -123,14 +123,14 @@ func (e etcdStorage) UpdateIP(ctx context.Context, ip IP) error {
 		return errors.Wrap(err, "fail to open client")
 	}
 	defer closer.Close()
-	ip.Status = ""
+	endpoint.Status = ""
 
-	value, err := json.Marshal(ip)
+	value, err := json.Marshal(endpoint)
 	if err != nil {
 		return errors.Wrap(err, "fail to marshal IP")
 	}
 
-	etcdKey := e.keyFor(ip)
+	etcdKey := e.keyFor(endpoint)
 	log.WithFields(logrus.Fields{
 		"etcd_key": etcdKey,
 		"value":    string(value),
@@ -145,7 +145,7 @@ func (e etcdStorage) UpdateIP(ctx context.Context, ip IP) error {
 	return nil
 }
 
-func (e etcdStorage) RemoveIP(ctx context.Context, id string) error {
+func (e etcdStorage) RemoveEndpoint(ctx context.Context, id string) error {
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
@@ -221,8 +221,8 @@ func (e etcdStorage) SaveHost(ctx context.Context, host Host) error {
 	return nil
 }
 
-func (e etcdStorage) LinkIPWithCurrentHost(ctx context.Context, ip IP) error {
-	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, ip.StorableIP(), e.hostname)
+func (e etcdStorage) LinkEndpointWithCurrentHost(ctx context.Context, endpoint Endpoint) error {
+	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, endpoint.StorableIP(), e.hostname)
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
@@ -245,8 +245,8 @@ func (e etcdStorage) LinkIPWithCurrentHost(ctx context.Context, ip IP) error {
 	return nil
 }
 
-func (e etcdStorage) UnlinkIPFromCurrentHost(ctx context.Context, ip IP) error {
-	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, ip.StorableIP(), e.hostname)
+func (e etcdStorage) UnlinkEndpointFromCurrentHost(ctx context.Context, endpoint Endpoint) error {
+	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, endpoint.StorableIP(), e.hostname)
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
@@ -262,8 +262,8 @@ func (e etcdStorage) UnlinkIPFromCurrentHost(ctx context.Context, ip IP) error {
 	return nil
 }
 
-func (e etcdStorage) GetIPHosts(ctx context.Context, ip IP) ([]string, error) {
-	key := fmt.Sprintf("%s/ips/%s", EtcdLinkDirectory, ip.StorableIP())
+func (e etcdStorage) GetEndpointHosts(ctx context.Context, endpoint Endpoint) ([]string, error) {
+	key := fmt.Sprintf("%s/ips/%s", EtcdLinkDirectory, endpoint.StorableIP())
 
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
@@ -295,8 +295,8 @@ func (e etcdStorage) newEtcdClient() (clientv3.KV, io.Closer, error) {
 	return clientv3.KV(c), c, nil
 }
 
-func (e etcdStorage) keyFor(ip IP) string {
-	return fmt.Sprintf("%s/hosts/%s/%s", EtcdLinkDirectory, e.hostname, ip.ID)
+func (e etcdStorage) keyFor(endpoint Endpoint) string {
+	return fmt.Sprintf("%s/hosts/%s/%s", EtcdLinkDirectory, e.hostname, endpoint.ID)
 }
 
 func (e etcdStorage) keyForHost(hostname string) string {
