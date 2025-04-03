@@ -66,8 +66,9 @@ func (c HTTPClient) Version(ctx context.Context) (string, error) {
 
 	resp, err := c.getClient().Do(req)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(ctx, err, "do request")
 	}
+	defer resp.Body.Close()
 	if resp.StatusCode != http.StatusOK {
 		return "", getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
@@ -75,13 +76,13 @@ func (c HTTPClient) Version(ctx context.Context) (string, error) {
 	var res map[string]string
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(ctx, err, "read version JSON")
 	}
 	return res["version"], nil
 }
 
 func (c HTTPClient) ListEndpoints(ctx context.Context) ([]Endpoint, error) {
-	req, err := c.getRequest(ctx, http.MethodGet, "/ips", nil)
+	req, err := c.getRequest(ctx, http.MethodGet, "/endpoints", nil)
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "create request")
 	}
@@ -90,6 +91,7 @@ func (c HTTPClient) ListEndpoints(ctx context.Context) ([]Endpoint, error) {
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "do request")
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
@@ -106,7 +108,7 @@ func (c HTTPClient) ListEndpoints(ctx context.Context) ([]Endpoint, error) {
 }
 
 func (c HTTPClient) GetEndpoint(ctx context.Context, id string) (Endpoint, error) {
-	req, err := c.getRequest(ctx, http.MethodGet, fmt.Sprintf("/ips/%s", id), nil)
+	req, err := c.getRequest(ctx, http.MethodGet, "/endpoints/"+id, nil)
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "create request")
 	}
@@ -115,6 +117,7 @@ func (c HTTPClient) GetEndpoint(ctx context.Context, id string) (Endpoint, error
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "do request")
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
@@ -131,7 +134,7 @@ func (c HTTPClient) GetEndpoint(ctx context.Context, id string) (Endpoint, error
 }
 
 func (c HTTPClient) Failover(ctx context.Context, id string) error {
-	req, err := c.getRequest(ctx, http.MethodPost, fmt.Sprintf("/ips/%s/failover", id), nil)
+	req, err := c.getRequest(ctx, http.MethodPost, fmt.Sprintf("/endpoints/%s/failover", id), nil)
 	if err != nil {
 		return err
 	}
@@ -140,18 +143,13 @@ func (c HTTPClient) Failover(ctx context.Context, id string) error {
 	if err != nil {
 		return errors.Wrap(ctx, err, "do request")
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusNoContent {
 		return getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
 	return nil
-}
-
-type AddEndpointParams struct {
-	HealthCheckInterval int           `json:"healthcheck_interval"`
-	Checks              []HealthCheck `json:"checks"`
-	IP                  string        `json:"ip"`
 }
 
 func (c HTTPClient) AddEndpoint(ctx context.Context, params AddEndpointParams) (Endpoint, error) {
@@ -161,7 +159,7 @@ func (c HTTPClient) AddEndpoint(ctx context.Context, params AddEndpointParams) (
 		return Endpoint{}, errors.Wrap(ctx, err, "encode endpoint")
 	}
 
-	req, err := c.getRequest(ctx, http.MethodPost, "/ips", buffer)
+	req, err := c.getRequest(ctx, http.MethodPost, "/endpoints", buffer)
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "create request")
 	}
@@ -170,6 +168,7 @@ func (c HTTPClient) AddEndpoint(ctx context.Context, params AddEndpointParams) (
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "do request")
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
@@ -192,7 +191,7 @@ func (c HTTPClient) UpdateEndpoint(ctx context.Context, id string, params Update
 		return Endpoint{}, errors.Wrap(ctx, err, "encode endpoint")
 	}
 
-	req, err := c.getRequest(ctx, http.MethodPatch, fmt.Sprintf("/ips/%s", id), buffer)
+	req, err := c.getRequest(ctx, http.MethodPatch, "/endpoints/"+id, buffer)
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "create request")
 	}
@@ -201,6 +200,7 @@ func (c HTTPClient) UpdateEndpoint(ctx context.Context, id string, params Update
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "do request")
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
 		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
@@ -216,7 +216,7 @@ func (c HTTPClient) UpdateEndpoint(ctx context.Context, id string, params Update
 }
 
 func (c HTTPClient) RemoveEndpoint(ctx context.Context, id string) error {
-	req, err := c.getRequest(ctx, http.MethodDelete, fmt.Sprintf("/ips/%s", id), nil)
+	req, err := c.getRequest(ctx, http.MethodDelete, "/endpoints/"+id, nil)
 	if err != nil {
 		return errors.Wrap(ctx, err, "create request")
 	}
@@ -225,6 +225,7 @@ func (c HTTPClient) RemoveEndpoint(ctx context.Context, id string) error {
 	if err != nil {
 		return errors.Wrap(ctx, err, "do request")
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusNoContent {
 		return getErrorFromBody(ctx, resp.StatusCode, resp.Body)
