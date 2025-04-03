@@ -81,6 +81,10 @@ func (c EndpointController) Create(w http.ResponseWriter, r *http.Request, _ map
 		PluginConfig:        params.PluginConfig,
 	})
 	if err != nil {
+		if errors.Is(err, scheduler.ErrEndpointAlreadyAssigned) {
+			w.WriteHeader(http.StatusConflict)
+			return err
+		}
 		return errors.Wrap(ctx, err, "create endpoint")
 	}
 

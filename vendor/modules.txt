@@ -40,9 +40,6 @@ github.com/coreos/go-semver/semver
 # github.com/coreos/go-systemd/v22 v22.5.0
 ## explicit; go 1.12
 github.com/coreos/go-systemd/v22/journal
-# github.com/cpuguy83/go-md2man/v2 v2.0.6
-## explicit; go 1.12
-github.com/cpuguy83/go-md2man/v2/md2man
 # github.com/davecgh/go-spew v1.1.1
 ## explicit
 github.com/davecgh/go-spew/spew
@@ -93,9 +90,6 @@ github.com/rivo/uniseg
 # github.com/rollbar/rollbar-go v1.4.5
 ## explicit; go 1.13
 github.com/rollbar/rollbar-go
-# github.com/russross/blackfriday/v2 v2.1.0
-## explicit
-github.com/russross/blackfriday/v2
 # github.com/sirupsen/logrus v1.9.3
 ## explicit; go 1.13
 github.com/sirupsen/logrus
@@ -104,9 +98,9 @@ github.com/sirupsen/logrus
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/assert/yaml
 github.com/stretchr/testify/require
-# github.com/urfave/cli/v2 v2.27.5
-## explicit; go 1.18
-github.com/urfave/cli/v2
+# github.com/urfave/cli/v3 v3.1.1
+## explicit; go 1.22
+github.com/urfave/cli/v3
 # github.com/urfave/negroni v1.0.0
 ## explicit
 github.com/urfave/negroni
@@ -117,9 +111,6 @@ github.com/vishvananda/netlink/nl
 # github.com/vishvananda/netns v0.0.5
 ## explicit; go 1.17
 github.com/vishvananda/netns
-# github.com/xrash/smetrics v0.0.0-20240521201337-686a1a2994c1
-## explicit; go 1.15
-github.com/xrash/smetrics
 # go.etcd.io/etcd/api/v3 v3.5.18
 ## explicit; go 1.22
 go.etcd.io/etcd/api/v3/authpb

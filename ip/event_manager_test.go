@@ -2,7 +2,6 @@ package ip
 
 import (
 	"context"
-	"fmt"
 	"testing"
 	"time"
 
@@ -211,7 +210,6 @@ func TestManager_Stop(t *testing.T) {
 					t.Fatal("eventChan was never closed")
 					break
 				case event, ok := <-eventChan:
-					fmt.Println(ok, event)
 					if !ok {
 						stop = true
 						break

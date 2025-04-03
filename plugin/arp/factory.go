@@ -75,7 +75,7 @@ func (f Factory) Create(ctx context.Context, endpoint models.Endpoint) (plugin.P
 	}, nil
 }
 
-func (f Factory) Validate(ctx context.Context, endpoint models.Endpoint) error {
+func (f Factory) Validate(_ context.Context, endpoint models.Endpoint) error {
 	validation := errors.NewValidationErrorsBuilder()
 	var cfg PluginConfig
 	err := json.Unmarshal(endpoint.PluginConfig, &cfg)
@@ -93,5 +93,9 @@ func (f Factory) Validate(ctx context.Context, endpoint models.Endpoint) error {
 		}
 	}
 
-	return validation.Build()
+	validationErr := validation.Build()
+	if validationErr != nil {
+		return validationErr
+	}
+	return nil
 }

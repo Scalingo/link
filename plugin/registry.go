@@ -61,6 +61,5 @@ func (r *registry) Validate(ctx context.Context, endpoint models.Endpoint) error
 	if err != nil {
 		return errors.Wrap(ctx, err, "validate plugin")
 	}
-
 	return nil
 }

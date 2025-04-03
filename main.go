@@ -108,6 +108,7 @@ func main() {
 	endpointController := web.NewEndpointController(scheduler, storage, endpointCreator)
 	versionController := web.NewVersionController(Version)
 	r := handlers.NewRouter(log)
+	r.Use(handlers.ErrorMiddleware)
 
 	if config.User != "" || config.Password != "" {
 		r.Use(handlers.AuthMiddleware(func(user, password string) bool {

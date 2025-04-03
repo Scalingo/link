@@ -16,11 +16,11 @@ import (
 )
 
 var (
-	// ErrIPAlreadyAssigned can be sent by AddIP if the IP has already been assigned to this scheduler
-	ErrIPAlreadyAssigned = errors.New("IP already assigned")
+	// ErrEndpointAlreadyAssigned can be sent by Start if there is another endpoint with the same election key
+	ErrEndpointAlreadyAssigned = errors.New("An endpoint with the same election key already exists on that host")
 
-	// ErrIPNotFound can be sent if an operation has been called on an unregistered IP
-	ErrIPNotFound = errors.New("IP not found")
+	// ErrEndpointNotFound can be sent if an operation has been called on an unregistered Endpoint
+	ErrEndpointNotFound = errors.New("Endpoint not found")
 )
 
 // Scheduler is the central point of LinK it will keep track all of IPs registered on this node
@@ -37,25 +37,25 @@ type Scheduler interface {
 
 // IPScheduler is LinK implementation of the Scheduler Interface
 type IPScheduler struct {
-	mapMutex       sync.RWMutex
-	ipManagers     map[string]ip.Manager
-	etcd           *etcdv3.Client
-	config         config.Config
-	storage        models.Storage
-	leaseManager   locker.EtcdLeaseManager
-	pluginRegistry plugin.Registry
+	mapMutex         sync.RWMutex
+	endpointManagers map[string]ip.Manager
+	etcd             *etcdv3.Client
+	config           config.Config
+	storage          models.Storage
+	leaseManager     locker.EtcdLeaseManager
+	pluginRegistry   plugin.Registry
 }
 
 // NewIPScheduler creates and configures a Scheduler
 func NewIPScheduler(config config.Config, etcd *etcdv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager, registry plugin.Registry) *IPScheduler {
 	return &IPScheduler{
-		mapMutex:       sync.RWMutex{},
-		ipManagers:     make(map[string]ip.Manager),
-		etcd:           etcd,
-		config:         config,
-		storage:        storage,
-		leaseManager:   leaseManager,
-		pluginRegistry: registry,
+		mapMutex:         sync.RWMutex{},
+		endpointManagers: make(map[string]ip.Manager),
+		etcd:             etcd,
+		config:           config,
+		storage:          storage,
+		leaseManager:     leaseManager,
+		pluginRegistry:   registry,
 	}
 }
 
@@ -63,7 +63,7 @@ func NewIPScheduler(config config.Config, etcd *etcdv3.Client, storage models.St
 func (s *IPScheduler) Status(id string) string {
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()
-	manager, ok := s.ipManagers[id]
+	manager, ok := s.endpointManagers[id]
 	if ok {
 		return manager.Status()
 	}
@@ -81,6 +81,12 @@ func (s *IPScheduler) Start(ctx context.Context, endpoint models.Endpoint) (mode
 		return endpoint, errors.Wrap(err, "initialize plugin")
 	}
 
+	for _, manager := range s.endpointManagers {
+		if manager.ElectionKey(ctx) == plugin.ElectionKey(ctx) {
+			return endpoint, ErrEndpointAlreadyAssigned
+		}
+	}
+
 	log.Info("Initialize a new IP manager")
 
 	manager, err := ip.NewManager(ctx, s.config, endpoint, s.etcd, s.storage, s.leaseManager, plugin)
@@ -89,7 +95,7 @@ func (s *IPScheduler) Start(ctx context.Context, endpoint models.Endpoint) (mode
 	}
 
 	s.mapMutex.Lock()
-	s.ipManagers[endpoint.ID] = manager
+	s.endpointManagers[endpoint.ID] = manager
 	s.mapMutex.Unlock()
 	go manager.Start(ctx)
 
@@ -99,10 +105,10 @@ func (s *IPScheduler) Start(ctx context.Context, endpoint models.Endpoint) (mode
 // Stop the manager of the specified IP and remove it from the tracked IP
 func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 	s.mapMutex.RLock()
-	manager, ok := s.ipManagers[id]
+	manager, ok := s.endpointManagers[id]
 	s.mapMutex.RUnlock()
 	if !ok {
-		return ErrIPNotFound
+		return ErrEndpointNotFound
 	}
 
 	err := manager.Stop(ctx)
@@ -112,17 +118,17 @@ func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 
 	s.mapMutex.Lock()
 	defer s.mapMutex.Unlock()
-	delete(s.ipManagers, id)
+	delete(s.endpointManagers, id)
 	return nil
 }
 
 // Failover triggers a failover on a specific IP
 func (s *IPScheduler) Failover(ctx context.Context, id string) error {
 	s.mapMutex.RLock()
-	manager, ok := s.ipManagers[id]
+	manager, ok := s.endpointManagers[id]
 	s.mapMutex.RUnlock()
 	if !ok {
-		return ErrIPNotFound
+		return ErrEndpointNotFound
 	}
 
 	err := manager.Failover(ctx)
@@ -138,9 +144,9 @@ func (s *IPScheduler) ConfiguredEndpoints(ctx context.Context) EndpointsWithStat
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()
 
-	res := make(EndpointsWithStatus, 0, len(s.ipManagers))
+	res := make(EndpointsWithStatus, 0, len(s.endpointManagers))
 
-	for _, manager := range s.ipManagers {
+	for _, manager := range s.endpointManagers {
 		res = append(res, EndpointWithStatus{
 			Endpoint:    manager.Endpoint(),
 			Status:      manager.Status(),
@@ -155,7 +161,7 @@ func (s *IPScheduler) GetEndpoint(ctx context.Context, id string) *EndpointWithS
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()
 
-	manager, ok := s.ipManagers[id]
+	manager, ok := s.endpointManagers[id]
 	if !ok {
 		return nil
 	}
@@ -171,7 +177,7 @@ func (s *IPScheduler) GetEndpoint(ctx context.Context, id string) *EndpointWithS
 func (s *IPScheduler) UpdateEndpoint(ctx context.Context, endpoint models.Endpoint) error {
 	log := logger.Get(ctx)
 	s.mapMutex.RLock()
-	manager, ok := s.ipManagers[endpoint.ID]
+	manager, ok := s.endpointManagers[endpoint.ID]
 	s.mapMutex.RUnlock()
 	if !ok {
 		log.Info("IP manager not found, skipping the IP update")

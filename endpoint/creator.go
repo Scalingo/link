@@ -41,7 +41,7 @@ func (c *creator) CreateEndpoint(ctx context.Context, params CreateEndpointParam
 	log := logger.Get(ctx)
 	checks := models.HealthChecksFromAPIType(params.Checks)
 
-	log.Info("Validating plugin")
+	log.Info("Validating Health checks")
 	validationErr := checks.Validate(ctx)
 	if validationErr != nil {
 		return models.Endpoint{}, errors.Wrap(ctx, validationErr, "validate health checks")

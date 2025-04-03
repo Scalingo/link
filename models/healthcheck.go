@@ -25,7 +25,7 @@ type HealthCheck struct {
 	Port int                 `json:"port"`
 }
 
-func (h HealthCheck) Validate(_ context.Context) *errors.ValidationErrors {
+func (h HealthCheck) Validate(_ context.Context) error {
 	validation := errors.NewValidationErrorsBuilder()
 	if h.Type == "" {
 		validation.Set("type", "Health check type is required")
@@ -40,7 +40,11 @@ func (h HealthCheck) Validate(_ context.Context) *errors.ValidationErrors {
 		validation.Set("port", "Port must be between 1 and 65535")
 	}
 
-	return validation.Build()
+	validationErr := validation.Build()
+	if validationErr != nil {
+		return validationErr
+	}
+	return nil
 }
 
 func (h HealthCheck) Addr() string {
@@ -71,12 +75,16 @@ func HealthChecksFromAPIType(hs []api.HealthCheck) HealthChecks {
 	return checks
 }
 
-func (h HealthChecks) Validate(ctx context.Context) *errors.ValidationErrors {
+func (h HealthChecks) Validate(ctx context.Context) error {
 	validation := errors.NewValidationErrorsBuilder()
 	for i, check := range h {
 		if err := check.Validate(ctx); err != nil {
 			validation.Set(strconv.Itoa(i), err.Error())
 		}
 	}
-	return validation.Build()
+	validationErr := validation.Build()
+	if validationErr != nil {
+		return validationErr
+	}
+	return nil
 }

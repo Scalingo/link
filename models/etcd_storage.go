@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"path/filepath"
 	"time"
 
 	"github.com/gofrs/uuid/v5"
@@ -263,7 +264,7 @@ func (e EtcdStorage) GetEndpointHosts(ctx context.Context, lockKey string) ([]st
 
 	results := make([]string, resp.Count)
 	for i, kv := range resp.Kvs {
-		results[i] = string(kv.Key)
+		results[i] = filepath.Base(string(kv.Key))
 	}
 	return results, nil
 }

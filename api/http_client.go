@@ -170,7 +170,7 @@ func (c HTTPClient) AddEndpoint(ctx context.Context, params AddEndpointParams) (
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
+	if resp.StatusCode != http.StatusCreated {
 		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
@@ -234,6 +234,32 @@ func (c HTTPClient) RemoveEndpoint(ctx context.Context, id string) error {
 	return nil
 }
 
+func (c HTTPClient) GetEndpointHosts(ctx context.Context, id string) ([]Host, error) {
+	req, err := c.getRequest(ctx, http.MethodGet, "/endpoints/"+id+"/hosts", nil)
+	if err != nil {
+		return nil, errors.Wrap(ctx, err, "create request")
+	}
+
+	resp, err := c.getClient().Do(req)
+	if err != nil {
+		return nil, errors.Wrap(ctx, err, "do request")
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
+	}
+
+	res := GetEndpointHostsResponse{}
+
+	err = json.NewDecoder(resp.Body).Decode(&res)
+	if err != nil {
+		return nil, errors.Wrap(ctx, err, "read endpoint JSON")
+	}
+
+	return res.Hosts, nil
+}
+
 func (c HTTPClient) getClient() *http.Client {
 	return &http.Client{
 		Timeout: c.timeout,
@@ -260,25 +286,30 @@ func (c HTTPClient) getRequest(ctx context.Context, method, path string, body io
 }
 
 func getErrorFromBody(ctx context.Context, statusCode int, body io.Reader) error {
-	if statusCode/100 == 5 || statusCode/100 == 4 {
-		var res map[string]interface{}
-		err := json.NewDecoder(body).Decode(&res)
-		value := fmt.Sprintf("Unexpected status code: %v", statusCode)
-		if err == nil {
-			if msg, ok := res["msg"]; ok {
-				value = fmt.Sprintf("%v", msg)
-			}
-			if msg, ok := res["error"]; ok {
-				value = fmt.Sprintf("%v", msg)
-			}
-		}
-		switch statusCode {
-		case 404:
-			return ErrNotFound{value}
-		default:
-			return errors.New(ctx, value)
-		}
+	if statusCode/100 != 5 && statusCode/100 != 4 {
+		return fmt.Errorf("Unexpected status code: %v", statusCode)
 	}
-
-	return fmt.Errorf("Unexpected status code: %v", statusCode)
+	response, err := io.ReadAll(body)
+	if err != nil {
+		return errors.Wrapf(ctx, err, "fail to read error body of failed request (StatusCode: %d)", statusCode)
+	}
+	var res map[string]interface{}
+	err = json.Unmarshal(response, &res)
+	value := fmt.Sprintf("Unexpected status code: %v", statusCode)
+	if err == nil {
+		if msg, ok := res["msg"]; ok {
+			value = fmt.Sprintf("%v", msg)
+		}
+		if msg, ok := res["error"]; ok {
+			value = fmt.Sprintf("%v", msg)
+		}
+	} else {
+		value += ": " + string(response)
+	}
+	switch statusCode {
+	case 404:
+		return ErrNotFound{value}
+	default:
+		return errors.New(ctx, value)
+	}
 }

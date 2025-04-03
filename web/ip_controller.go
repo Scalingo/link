@@ -94,7 +94,7 @@ func (c IPController) Create(w http.ResponseWriter, r *http.Request, _ map[strin
 		return nil
 	}
 
-	pluginConfig, err := json.Marshal(arp.PluginConfig{
+	pluginConfig, _ := json.Marshal(arp.PluginConfig{
 		IP: endpointParams.IP,
 	})
 
