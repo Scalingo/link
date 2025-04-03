@@ -32,17 +32,17 @@ var (
 	ErrHostNotFound     = errors.New("host not found")
 )
 
-type etcdStorage struct {
+type EtcdStorage struct {
 	hostname string
 }
 
-func NewEtcdStorage(config config.Config) etcdStorage {
-	return etcdStorage{
+func NewEtcdStorage(config config.Config) EtcdStorage {
+	return EtcdStorage{
 		hostname: config.Hostname,
 	}
 }
 
-func (e etcdStorage) GetEndpoints(ctx context.Context) (Endpoints, error) {
+func (e EtcdStorage) GetEndpoints(ctx context.Context) (Endpoints, error) {
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to get etcd client")
@@ -52,7 +52,7 @@ func (e etcdStorage) GetEndpoints(ctx context.Context) (Endpoints, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	resp, err := client.Get(ctx, fmt.Sprintf("%s/hosts/%s", EtcdLinkDirectory, e.hostname), clientv3.WithPrefix())
+	resp, err := client.Get(ctx, fmt.Sprintf("%s/hosts/%s", EtcdLinkDirectory, e.hostname), etcdv3.WithPrefix())
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to get list of IPs from etcd")
 	}
@@ -130,7 +130,7 @@ func (e EtcdStorage) UpdateEndpoint(ctx context.Context, endpoint Endpoint) erro
 	return nil
 }
 
-func (e etcdStorage) RemoveEndpoint(ctx context.Context, id string) error {
+func (e EtcdStorage) RemoveEndpoint(ctx context.Context, id string) error {
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
@@ -147,7 +147,7 @@ func (e etcdStorage) RemoveEndpoint(ctx context.Context, id string) error {
 	return nil
 }
 
-func (e etcdStorage) GetCurrentHost(ctx context.Context) (Host, error) {
+func (e EtcdStorage) GetCurrentHost(ctx context.Context) (Host, error) {
 	host, err := e.getHost(ctx, e.hostname)
 	if err != nil {
 		return host, errors.Wrap(err, "fail to get current host")
@@ -156,13 +156,13 @@ func (e etcdStorage) GetCurrentHost(ctx context.Context) (Host, error) {
 	return host, nil
 }
 
-func (e etcdStorage) getHost(ctx context.Context, hostname string) (Host, error) {
+func (e EtcdStorage) getHost(ctx context.Context, hostname string) (Host, error) {
 	var host Host
-	client, close, err := e.newEtcdClient()
+	client, clientClose, err := e.newEtcdClient()
 	if err != nil {
 		return host, errors.Wrap(err, "fail to get etcd client")
 	}
-	defer close.Close()
+	defer clientClose.Close()
 
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -268,19 +268,19 @@ func (e EtcdStorage) GetEndpointHosts(ctx context.Context, lockKey string) ([]st
 	return results, nil
 }
 
-func (e etcdStorage) newEtcdClient() (clientv3.KV, io.Closer, error) {
+func (e EtcdStorage) newEtcdClient() (etcdv3.KV, io.Closer, error) {
 	c, err := etcd.ClientFromEnv()
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "fail to get etcd client from config")
 	}
 
-	return clientv3.KV(c), c, nil
+	return etcdv3.KV(c), c, nil
 }
 
-func (e etcdStorage) keyFor(endpoint Endpoint) string {
+func (e EtcdStorage) keyFor(endpoint Endpoint) string {
 	return fmt.Sprintf("%s/hosts/%s/%s", EtcdLinkDirectory, e.hostname, endpoint.ID)
 }
 
-func (e etcdStorage) keyForHost(hostname string) string {
+func (e EtcdStorage) keyForHost(hostname string) string {
 	return fmt.Sprintf("%s/config/%s", EtcdLinkDirectory, hostname)
 }

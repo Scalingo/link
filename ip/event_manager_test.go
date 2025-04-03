@@ -89,7 +89,7 @@ func TestManager_TryToGetIP(t *testing.T) {
 
 			cfg.KeepAliveRetry = example.KeepAliveRetry
 
-			manager := &manager{
+			manager := &EndpointManager{
 				locker:       locker,
 				config:       cfg,
 				stateMachine: fsm.NewFSM(example.CurrentState, fsm.Events{}, fsm.Callbacks{}),

@@ -21,7 +21,7 @@ var (
 	ErrReallocationTimedOut = errors.New("reallocation timed out")
 )
 
-func (m *manager) waitForReallocation(ctx context.Context) error {
+func (m *EndpointManager) waitForReallocation(ctx context.Context) error {
 	log := logger.Get(ctx).WithField("process", "wait-for-reallocation")
 
 	retryer := retry.New(retry.WithMaxDuration(m.config.KeepAliveInterval),
@@ -59,7 +59,7 @@ func (m *manager) waitForReallocation(ctx context.Context) error {
 // This function refuses to trigger a failover if the node is not master or if there are no other nodes.
 // To trigger the failover, we unlock the IP (remove the lock key) and update the link between the host and the IP.
 // Updating the link notifies watchers on this IP and other hosts will try to get the IP.
-func (m *manager) Failover(ctx context.Context) error {
+func (m *EndpointManager) Failover(ctx context.Context) error {
 	isMaster, err := m.locker.IsMaster(ctx)
 	if err != nil {
 		return errors.Wrap(err, "fail to check if the node is master")

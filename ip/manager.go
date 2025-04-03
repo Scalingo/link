@@ -29,8 +29,7 @@ type Manager interface {
 	SetHealthChecks(ctx context.Context, config config.Config, checks []models.HealthCheck)
 }
 
-type manager struct {
-	networkInterface        network.NetworkInterface
+type EndpointManager struct {
 	stateMachine            *fsm.FSM
 	endpoint                models.Endpoint
 	stopMutex               sync.RWMutex
@@ -52,8 +51,7 @@ func NewManager(ctx context.Context, cfg config.Config, endpoint models.Endpoint
 	log := logger.Get(ctx).WithFields(endpoint.ToLogrusFields())
 	ctx = logger.ToCtx(ctx, log)
 
-	m := &manager{
-		networkInterface:        i,
+	m := &EndpointManager{
 		endpoint:                endpoint,
 		locker:                  locker.NewEtcdLocker(cfg, client, leaseManager, endpoint, plugin.ElectionKey(ctx)),
 		checker:                 healthcheck.FromChecks(cfg, endpoint.Checks),
@@ -107,29 +105,33 @@ func (m *EndpointManager) Start(ctx context.Context) {
 }
 
 // Status returns the current state of the state machine
-func (m *manager) Status() string {
+func (m *EndpointManager) Status() string {
 	return m.stateMachine.Current()
 }
 
 // IP returns the ip model linked to this manager
-func (m *manager) Endpoint() models.Endpoint {
+func (m *EndpointManager) Endpoint() models.Endpoint {
 	return m.endpoint
 }
 
+func (m *EndpointManager) ElectionKey(ctx context.Context) string {
+	return m.plugin.ElectionKey(ctx)
+}
+
 // sendEvent sends an event to the state machine
-func (m *manager) sendEvent(status string) {
+func (m *EndpointManager) sendEvent(status string) {
 	if m.isStopped() {
 		return
 	}
 	m.eventChan <- status
 }
 
-func (m *manager) SetHealthChecks(ctx context.Context, cfg config.Config, healthchecks []models.HealthCheck) {
+func (m *EndpointManager) SetHealthChecks(ctx context.Context, cfg config.Config, healthChecks []models.HealthCheck) {
 	log := logger.Get(ctx)
-	log.WithField("healtchchecks", healthchecks).Debug("Set new healthchecks")
+	log.WithField("health_checks", healthChecks).Debug("Set new health checks")
 
-	m.endpoint.Checks = healthchecks
+	m.endpoint.Checks = healthChecks
 	m.checkerMutex.Lock()
-	m.checker = healthcheck.FromChecks(cfg, healthchecks)
+	m.checker = healthcheck.FromChecks(cfg, healthChecks)
 	m.checkerMutex.Unlock()
 }

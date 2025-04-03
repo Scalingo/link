@@ -63,11 +63,11 @@ func TestManager_HealthChecker(t *testing.T) {
 			checker := healthcheckmock.NewMockChecker(ctrl)
 			example.Checker(checker)
 
-			manager := &manager{
+			manager := &EndpointManager{
 				checker:      checker,
 				stateMachine: fsm.NewFSM(example.CurrentState, fsm.Events{}, fsm.Callbacks{}),
 				config: config.Config{
-					HealthcheckInterval:     10 * time.Millisecond,
+					HealthCheckInterval:     10 * time.Millisecond,
 					FailCountBeforeFailover: 3,
 					KeepAliveInterval:       10 * time.Millisecond,
 				},

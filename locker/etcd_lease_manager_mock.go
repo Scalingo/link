@@ -9,7 +9,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	v3 "go.etcd.io/etcd/client/v3"
 )
 
 // MockEtcdLeaseManager is a mock of EtcdLeaseManager interface.
@@ -36,10 +36,10 @@ func (m *MockEtcdLeaseManager) EXPECT() *MockEtcdLeaseManagerMockRecorder {
 }
 
 // GetLease mocks base method.
-func (m *MockEtcdLeaseManager) GetLease(arg0 context.Context) (clientv3.LeaseID, error) {
+func (m *MockEtcdLeaseManager) GetLease(arg0 context.Context) (v3.LeaseID, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetLease", arg0)
-	ret0, _ := ret[0].(clientv3.LeaseID)
+	ret0, _ := ret[0].(v3.LeaseID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -51,7 +51,7 @@ func (mr *MockEtcdLeaseManagerMockRecorder) GetLease(arg0 interface{}) *gomock.C
 }
 
 // MarkLeaseAsDirty mocks base method.
-func (m *MockEtcdLeaseManager) MarkLeaseAsDirty(arg0 context.Context, arg1 clientv3.LeaseID) error {
+func (m *MockEtcdLeaseManager) MarkLeaseAsDirty(arg0 context.Context, arg1 v3.LeaseID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MarkLeaseAsDirty", arg0, arg1)
 	ret0, _ := ret[0].(error)

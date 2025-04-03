@@ -6,11 +6,10 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid/v5"
-	"github.com/pkg/errors"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
-	scalingoerrors "github.com/Scalingo/go-utils/errors"
+	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/models"
@@ -19,20 +18,20 @@ import (
 const DataVersion = 1
 
 // ErrCallbackNotFound is launched when a user tries to delete a callback that does not exist
-var ErrCallbackNotFound = errors.New("lease callback not found")
+var ErrCallbackNotFound = errors.New(context.Background(), "lease callback not found")
 
 // ErrGetLeaseTimeout is launched when a user calls GetLease and we fail to provide one in time
-var ErrGetLeaseTimeout = errors.New("timeout while trying to get lease")
+var ErrGetLeaseTimeout = errors.New(context.Background(), "timeout while trying to get lease")
 
 // LeaseChangedCallback is a callback called by the lease manager when the leaseID has changed so that all managers could try to regenerate their keys
-type LeaseChangedCallback func(ctx context.Context, oldLeaseID, newLeaseID clientv3.LeaseID)
+type LeaseChangedCallback func(ctx context.Context, oldLeaseID, newLeaseID etcdv3.LeaseID)
 
 // EtcdLeaseManager let you get the current server lease for the server
 type EtcdLeaseManager interface {
 	Start(ctx context.Context) error
 	Stop(ctx context.Context)
-	GetLease(ctx context.Context) (clientv3.LeaseID, error)                                    // This will get the current lease or wait for one to be generated
-	MarkLeaseAsDirty(ctx context.Context, leaseID clientv3.LeaseID) error                      // This is sent by clients if they think that there might be an issue with the Lease
+	GetLease(ctx context.Context) (etcdv3.LeaseID, error)                                      // This will get the current lease or wait for one to be generated
+	MarkLeaseAsDirty(ctx context.Context, leaseID etcdv3.LeaseID) error                        // This is sent by clients if they think that there might be an issue with the Lease
 	SubscribeToLeaseChange(ctx context.Context, callback LeaseChangedCallback) (string, error) // Subscribe to lease changes. This function returns an ID that should be used to unsubscribe.
 	UnsubscribeToLeaseChange(ctx context.Context, id string) error                             // Unsubscribe from the lease changes
 }
@@ -40,13 +39,13 @@ type EtcdLeaseManager interface {
 type etcdLeaseManager struct {
 	stopper            chan bool
 	config             config.Config
-	leases             clientv3.Lease
-	kv                 clientv3.KV
+	leases             etcdv3.Lease
+	kv                 etcdv3.KV
 	storage            models.Storage
-	leaseID            clientv3.LeaseID
+	leaseID            etcdv3.LeaseID
 	callbacks          map[string]LeaseChangedCallback
 	lastRefreshedAt    time.Time
-	leaseDirtyNotifier chan clientv3.LeaseID
+	leaseDirtyNotifier chan etcdv3.LeaseID
 	leaseErrorNotifier chan bool
 	forceLeaseRefresh  bool
 	callbackLock       *sync.RWMutex
@@ -54,10 +53,10 @@ type etcdLeaseManager struct {
 }
 
 // NewEtcdLeaseManager returns a default manager that implements the EtcdLeaseManager interface
-func NewEtcdLeaseManager(ctx context.Context, config config.Config, storage models.Storage, etcd *clientv3.Client) EtcdLeaseManager {
+func NewEtcdLeaseManager(_ context.Context, config config.Config, storage models.Storage, etcd *etcdv3.Client) EtcdLeaseManager {
 	return &etcdLeaseManager{
 		stopper:            make(chan bool, 1),
-		leaseDirtyNotifier: make(chan clientv3.LeaseID, 1),
+		leaseDirtyNotifier: make(chan etcdv3.LeaseID, 1),
 		leaseErrorNotifier: make(chan bool, 1),
 		leases:             etcd,
 		kv:                 etcd,
@@ -70,7 +69,7 @@ func NewEtcdLeaseManager(ctx context.Context, config config.Config, storage mode
 	}
 }
 
-func (m *etcdLeaseManager) GetLease(ctx context.Context) (clientv3.LeaseID, error) {
+func (m *etcdLeaseManager) GetLease(ctx context.Context) (etcdv3.LeaseID, error) {
 	log := logger.Get(ctx)
 	// If the lease has been generated, send it
 	m.leaseLock.RLock()
@@ -84,44 +83,49 @@ func (m *etcdLeaseManager) GetLease(ctx context.Context) (clientv3.LeaseID, erro
 	log.Debug("Generating a new lease")
 	// If the lease has not been generated yet (or is dirty)
 	// Prepare the return channel
-	leaseChan := make(chan clientv3.LeaseID, 1)
+	leaseChan := make(chan etcdv3.LeaseID, 1)
 
 	// Use our own subscribe mechanism to know when the new lease has been generated
-	id, err := m.SubscribeToLeaseChange(ctx, func(ctx context.Context, _, leaseID clientv3.LeaseID) {
+	id, err := m.SubscribeToLeaseChange(ctx, func(_ context.Context, _, leaseID etcdv3.LeaseID) {
 		leaseChan <- leaseID
 	})
 	if err != nil {
-		return clientv3.NoLease, errors.Wrap(err, "fail to subscribe to leaseID changes")
+		return etcdv3.NoLease, errors.Wrap(ctx, err, "fail to subscribe to leaseID changes")
 	}
-	defer m.UnsubscribeToLeaseChange(ctx, id) // Do not forget to clean it
+	defer func() {
+		err := m.UnsubscribeToLeaseChange(ctx, id) // Do not forget to clean it
+		if err != nil && err != ErrCallbackNotFound {
+			log.WithError(err).Error("fail to unsubscribe from lease changes")
+		}
+	}()
 
 	// The timer is a safeguard to prevent a race condition between the initial lease generation and the GetLease calls. By waiting max twice the KeepAliveInterval, we are safe.
 	timer := time.NewTimer(2 * m.config.KeepAliveInterval)
 	select {
 	case <-timer.C:
 		// If the command timed out
-		return clientv3.NoLease, ErrGetLeaseTimeout
+		return etcdv3.NoLease, ErrGetLeaseTimeout
 	case leaseID = <-leaseChan:
 		log.Debug("Lease has been generated in time")
 	}
 	return leaseID, nil // We got the lease in time \o/
 }
 
-func (m *etcdLeaseManager) MarkLeaseAsDirty(ctx context.Context, leaseID clientv3.LeaseID) error {
+func (m *etcdLeaseManager) MarkLeaseAsDirty(_ context.Context, leaseID etcdv3.LeaseID) error {
 	m.leaseDirtyNotifier <- leaseID
 	return nil
 }
 
 func (m *etcdLeaseManager) SubscribeToLeaseChange(ctx context.Context, callback LeaseChangedCallback) (string, error) {
 	if callback == nil {
-		panic("nil callback")
+		return "", errors.New(ctx, "callback cannot be nil")
 	}
 
 	log := logger.Get(ctx)
 	log.Debug("Subscribe to lease change")
 	uuid, err := uuid.NewV4()
 	if err != nil {
-		return "", errors.Wrap(err, "fail to generate UUID")
+		return "", errors.Wrap(ctx, err, "fail to generate UUID")
 	}
 
 	m.callbackLock.Lock()
@@ -131,7 +135,7 @@ func (m *etcdLeaseManager) SubscribeToLeaseChange(ctx context.Context, callback 
 	return id, nil
 }
 
-func (m *etcdLeaseManager) UnsubscribeToLeaseChange(ctx context.Context, id string) error {
+func (m *etcdLeaseManager) UnsubscribeToLeaseChange(_ context.Context, id string) error {
 	m.callbackLock.Lock()
 	defer m.callbackLock.Unlock()
 
@@ -153,12 +157,12 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 	// not have any guarantee that we are the one that will take those locks.
 	log.Info("Getting old leaseID")
 	host, err := m.storage.GetCurrentHost(ctx)
-	if err != nil && scalingoerrors.RootCause(err) != models.ErrHostNotFound {
-		return errors.Wrap(err, "fail to find host config")
+	if err != nil && !errors.Is(err, models.ErrHostNotFound) {
+		return errors.Wrap(ctx, err, "fail to find host config")
 	}
 	if host.LeaseID != 0 {
 		log.Infof("Starting with LeaseID=%v", host.LeaseID)
-		m.leaseID = clientv3.LeaseID(host.LeaseID)
+		m.leaseID = etcdv3.LeaseID(host.LeaseID)
 		m.lastRefreshedAt = time.Now()
 	} else {
 		log.Info("LeaseID not found, starting with LeaseID=0")
@@ -168,7 +172,7 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 
 	_, err = m.SubscribeToLeaseChange(ctx, m.storeLeaseChange)
 	if err != nil {
-		return errors.Wrap(err, "fail to subscribe to lease changes")
+		return errors.Wrap(ctx, err, "fail to subscribe to lease changes")
 	}
 
 	// Step 2: Start the lease refresher. This codes has to be running constantly to keep the lease
@@ -217,18 +221,20 @@ func (m *etcdLeaseManager) refresh(ctx context.Context) error {
 
 	// If the lease has not been generated yet (or if it is dirty)
 	if m.leaseID == 0 || m.forceLeaseRefresh || m.hasLeaseExpired(ctx) {
-		if m.forceLeaseRefresh {
-			log.Info("New lease requested, regenerating lease")
-		} else if m.leaseID == 0 {
+		switch {
+		case m.forceLeaseRefresh:
+			log.Info("Lease is dirty, regenerating lease")
+		case m.leaseID == 0:
 			log.Info("LeaseID = 0, regenerating lease")
-		} else {
-			log.Info("The lease has expired, regenerating lease")
+		default:
+			log.Info("Lease has expired, regenerating lease")
 		}
+
 		oldLeaseID := m.leaseID
 		leaseTime := int64(m.config.LeaseTime().Seconds())
 		grant, err := m.leases.Grant(ctx, leaseTime)
 		if err != nil {
-			return errors.Wrap(err, "fail to regenerate lease")
+			return errors.Wrap(ctx, err, "fail to regenerate lease")
 		}
 		log.WithField("lease_id", grant.ID).Info("New LeaseID generated")
 
@@ -248,18 +254,18 @@ func (m *etcdLeaseManager) refresh(ctx context.Context) error {
 			m.leaseErrorNotifier <- true
 			return nil
 		}
-		return errors.Wrap(err, "keep alive failed but the lease might still be valid, continuing")
+		return errors.Wrap(ctx, err, "keep alive failed but the lease might still be valid, continuing")
 	}
 	m.lastRefreshedAt = time.Now()
 
 	return nil
 }
 
-func (m *etcdLeaseManager) Stop(ctx context.Context) {
+func (m *etcdLeaseManager) Stop(_ context.Context) {
 	m.stopper <- true
 }
 
-func (m etcdLeaseManager) notifyLeaseChanged(ctx context.Context, oldLeaseID, newLeaseID clientv3.LeaseID) {
+func (m *etcdLeaseManager) notifyLeaseChanged(ctx context.Context, oldLeaseID, newLeaseID etcdv3.LeaseID) {
 	m.callbackLock.RLock()
 	defer m.callbackLock.RUnlock()
 
@@ -268,11 +274,11 @@ func (m etcdLeaseManager) notifyLeaseChanged(ctx context.Context, oldLeaseID, ne
 	}
 }
 
-func (m etcdLeaseManager) hasLeaseExpired(ctx context.Context) bool {
+func (m *etcdLeaseManager) hasLeaseExpired(ctx context.Context) bool {
 	return m.lastRefreshedAt.IsZero() || time.Now().After(m.lastRefreshedAt.Add(m.config.LeaseTime()))
 }
 
-func (m etcdLeaseManager) isLeaseDirty(ctx context.Context, leaseID clientv3.LeaseID) bool {
+func (m *etcdLeaseManager) isLeaseDirty(ctx context.Context, leaseID etcdv3.LeaseID) bool {
 	log := logger.Get(ctx)
 	m.leaseLock.RLock()
 	defer m.leaseLock.RUnlock()
@@ -293,7 +299,7 @@ func (m etcdLeaseManager) isLeaseDirty(ctx context.Context, leaseID clientv3.Lea
 	return false
 }
 
-func (m etcdLeaseManager) storeLeaseChange(ctx context.Context, _, leaseID clientv3.LeaseID) {
+func (m *etcdLeaseManager) storeLeaseChange(ctx context.Context, _, leaseID etcdv3.LeaseID) {
 	log := logger.Get(ctx)
 	err := m.storage.SaveHost(ctx, models.Host{
 		Hostname:    m.config.Hostname,

@@ -84,7 +84,7 @@ func (m *EndpointManager) Stop(ctx context.Context) error {
 }
 
 // ipCheckLoop tries to get the VIP at regular intervals. It is useful to get the IP if the current primary crashed.
-func (m *manager) ipCheckLoop(ctx context.Context) {
+func (m *EndpointManager) ipCheckLoop(ctx context.Context) {
 	for {
 		if m.isStopped() {
 			return
@@ -96,7 +96,7 @@ func (m *manager) ipCheckLoop(ctx context.Context) {
 	}
 }
 
-func (m *manager) tryToGetIP(ctx context.Context) {
+func (m *EndpointManager) tryToGetIP(ctx context.Context) {
 	if m.Status() == FAILING {
 		return
 	}
@@ -148,7 +148,7 @@ func (m *manager) tryToGetIP(ctx context.Context) {
 // 1. There is a node that joined the pool of nodes interested by this IP
 // 2. There is a node that left the pool of nodes interested by this IP
 // 3. The current master node is trying to initiate a failover
-func (m *manager) onTopologyChange(ctx context.Context) {
+func (m *EndpointManager) onTopologyChange(ctx context.Context) {
 	log := logger.Get(ctx)
 	if m.isStopped() {
 		return
@@ -167,7 +167,7 @@ func (m *manager) onTopologyChange(ctx context.Context) {
 	m.tryToGetIP(ctx)
 }
 
-func (m *manager) isStopped() bool {
+func (m *EndpointManager) isStopped() bool {
 	m.stopMutex.RLock()
 	defer m.stopMutex.RUnlock()
 	return m.stopped
