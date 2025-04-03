@@ -70,7 +70,7 @@ func (c *creator) CreateEndpoint(ctx context.Context, params CreateEndpointParam
 
 	log.Info("Starting the endpoint scheduler")
 
-	ctx, log = logger.WithFieldsToCtx(ctx, endpoint.ToLogrusFields())
+	ctx, log = logger.WithStructToCtx(ctx, "endpoint", endpoint)
 	schedulerCtx := logger.ToCtx(context.Background(), log)
 
 	endpointID := endpoint.ID

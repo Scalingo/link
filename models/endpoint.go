@@ -25,17 +25,12 @@ type Endpoint struct {
 }
 
 // ToLogrusFields returns a Logrus representation of an IP
-func (i Endpoint) ToLogrusFields() logrus.Fields {
+func (i Endpoint) LogFields() logrus.Fields {
 	return logrus.Fields{
-		"endpoint_id":     i.ID,
-		"endpoint_plugin": i.Plugin,
+		"id":     i.ID,
+		"plugin": i.Plugin,
 	}
 }
-
-// StorableIP transforms the IP to a string that is compatible with ETCD key naming rules
-// func (i Endpoint) StorableIP() string {
-// 	return strings.Replace(i.IP, "/", "_", -1)
-// }
 
 func (i Endpoint) ToAPIType() api.Endpoint {
 	// Retro Compatibility: Can be removed when all LinK switched to the v3 API and storage.

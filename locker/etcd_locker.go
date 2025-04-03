@@ -130,7 +130,8 @@ func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
 }
 
 func (l *etcdLocker) leaseChanged(ctx context.Context, oldLeaseID, newLeaseID etcdv3.LeaseID) {
-	log := logger.Get(ctx).WithFields(l.endpoint.ToLogrusFields()).WithFields(logrus.Fields{
+	ctx, log := logger.WithStructToCtx(ctx, "endpoint", l.endpoint)
+	log = log.WithFields(logrus.Fields{
 		"oldLeaseID": oldLeaseID,
 		"newLeaseID": newLeaseID,
 	})

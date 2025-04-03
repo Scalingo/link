@@ -48,8 +48,7 @@ type EndpointManager struct {
 }
 
 func NewManager(ctx context.Context, cfg config.Config, endpoint models.Endpoint, client *etcdv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager, plugin plugin.Plugin) (*EndpointManager, error) {
-	log := logger.Get(ctx).WithFields(endpoint.ToLogrusFields())
-	ctx = logger.ToCtx(ctx, log)
+	ctx, _ = logger.WithStructToCtx(ctx, "endpoint", endpoint)
 
 	m := &EndpointManager{
 		endpoint:                endpoint,
@@ -75,7 +74,7 @@ func NewManager(ctx context.Context, cfg config.Config, endpoint models.Endpoint
 }
 
 func (m *EndpointManager) Start(ctx context.Context) {
-	log := logger.Get(ctx).WithFields(m.endpoint.ToLogrusFields())
+	ctx, log := logger.WithStructToCtx(ctx, "endpoint", m.endpoint)
 	log.Info("Starting manager")
 
 	err := m.retry.Do(ctx, func(ctx context.Context) error {

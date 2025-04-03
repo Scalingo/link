@@ -57,7 +57,7 @@ func (m V2toV3) Migrate(ctx context.Context) error {
 		if endpoint.Plugin != "" {
 			continue
 		}
-		ctx, log := logger.WithFieldsToCtx(ctx, endpoint.ToLogrusFields())
+		ctx, log := logger.WithStructToCtx(ctx, "endpoint", endpoint)
 		log.Info("Migrating endpoint to v3")
 		pluginConfig, _ := json.Marshal(arp.PluginConfig{
 			IP: endpoint.IP,
