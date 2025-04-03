@@ -48,7 +48,7 @@ func TestSetStandBy(t *testing.T) {
 		}
 
 		pluginMock := pluginmock.NewMockPlugin(ctrl)
-		pluginMock.EXPECT().Disable(gomock.Any()).Return(nil)
+		pluginMock.EXPECT().Deactivate(gomock.Any()).Return(nil)
 
 		manager := &EndpointManager{
 			plugin:   pluginMock,
@@ -72,7 +72,7 @@ func TestSetFailing(t *testing.T) {
 		}
 
 		pluginMock := pluginmock.NewMockPlugin(ctrl)
-		pluginMock.EXPECT().Disable(gomock.Any()).Return(nil)
+		pluginMock.EXPECT().Deactivate(gomock.Any()).Return(nil)
 		lockerMock.EXPECT().Unlock(gomock.Any()).Return(nil)
 
 		manager := &EndpointManager{

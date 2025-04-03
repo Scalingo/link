@@ -48,18 +48,18 @@ func (mr *MockPluginMockRecorder) Activate(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Activate", reflect.TypeOf((*MockPlugin)(nil).Activate), arg0)
 }
 
-// Disable mocks base method.
-func (m *MockPlugin) Disable(arg0 context.Context) error {
+// Deactivate mocks base method.
+func (m *MockPlugin) Deactivate(arg0 context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Disable", arg0)
+	ret := m.ctrl.Call(m, "Deactivate", arg0)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// Disable indicates an expected call of Disable.
-func (mr *MockPluginMockRecorder) Disable(arg0 interface{}) *gomock.Call {
+// Deactivate indicates an expected call of Deactivate.
+func (mr *MockPluginMockRecorder) Deactivate(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Disable", reflect.TypeOf((*MockPlugin)(nil).Disable), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deactivate", reflect.TypeOf((*MockPlugin)(nil).Deactivate), arg0)
 }
 
 // ElectionKey mocks base method.

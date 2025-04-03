@@ -11,10 +11,9 @@ type Plugin interface {
 	// This method is called when the state machine transition to the ACTIVATED state.
 	Activate(ctx context.Context) error
 
-	// TODO (leo): DeActivate
 	// Disable is called when the endpoint needs to be disabled on the current host.
 	// This method is called when the state machine transition from the ACTIVATED state to any other state.
-	Disable(ctx context.Context) error
+	Deactivate(ctx context.Context) error
 
 	// Ensure is called at regular interval when the endpoint is in the ACTIVATED state.
 	Ensure(ctx context.Context) error

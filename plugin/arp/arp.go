@@ -29,7 +29,7 @@ func (p *Plugin) Activate(ctx context.Context) error {
 	return nil
 }
 
-func (p *Plugin) Disable(ctx context.Context) error {
+func (p *Plugin) Deactivate(ctx context.Context) error {
 	p.garpCount = 0
 	err := p.netInterface.RemoveIP(p.ip)
 	if err != nil {

@@ -23,7 +23,7 @@ func (m *EndpointManager) setActivated(ctx context.Context, _ *fsm.Event) {
 func (m *EndpointManager) setStandBy(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: STANDBY")
-	err := m.plugin.Disable(ctx)
+	err := m.plugin.Deactivate(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to de-activate endpoint")
 	}
@@ -33,7 +33,7 @@ func (m *EndpointManager) setFailing(ctx context.Context, _ *fsm.Event) {
 	log := logger.Get(ctx)
 	log.Info("New state: FAILING")
 
-	err := m.plugin.Disable(ctx)
+	err := m.plugin.Deactivate(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to de-activate IP")
 	}
