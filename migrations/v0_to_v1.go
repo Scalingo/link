@@ -29,6 +29,10 @@ func NewV0toV1Migration(hostname string, leaseManager locker.EtcdLeaseManager, s
 	}
 }
 
+func (m V0toV1) Name() string {
+	return "v0 to v1"
+}
+
 func (m V0toV1) NeedsMigration(ctx context.Context) (bool, error) {
 	log := logger.Get(ctx)
 
@@ -108,7 +112,7 @@ func (m V0toV1) Migrate(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "fail to get current host to update its data version")
 	}
-	host.DataVersion = locker.DataVersion
+	host.DataVersion = 1
 
 	err = m.storage.SaveHost(ctx, host)
 	if err != nil {

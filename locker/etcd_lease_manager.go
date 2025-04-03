@@ -15,7 +15,7 @@ import (
 	"github.com/Scalingo/link/v2/models"
 )
 
-const DataVersion = 1
+const DataVersion = 3
 
 // ErrCallbackNotFound is launched when a user tries to delete a callback that does not exist
 var ErrCallbackNotFound = errors.New(context.Background(), "lease callback not found")
@@ -274,7 +274,7 @@ func (m *etcdLeaseManager) notifyLeaseChanged(ctx context.Context, oldLeaseID, n
 	}
 }
 
-func (m *etcdLeaseManager) hasLeaseExpired(ctx context.Context) bool {
+func (m *etcdLeaseManager) hasLeaseExpired(_ context.Context) bool {
 	return m.lastRefreshedAt.IsZero() || time.Now().After(m.lastRefreshedAt.Add(m.config.LeaseTime()))
 }
 

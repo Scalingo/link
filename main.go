@@ -56,28 +56,23 @@ func main() {
 		panic(err)
 	}
 
-	// We need to check if it is needed to migrate data from v0 to v1 before the lease manager is started so that we are sure that the host data version is still the one from the previous LinK execution.
-	migrationV0toV1 := migrations.NewV0toV1Migration(config.Hostname, leaseManager, storage)
-	needsMigrationV0toV1, err := migrationV0toV1.NeedsMigration(ctx)
-	if err != nil {
-		panic(err)
-	}
+	migrationRunner := migrations.NewMigrationRunner(config, storage, leaseManager)
+
+	// We run the migration in a goroutine. Because the migrations can take a long time and locks might expires.
+	// This could cause unwanted failover.
+	// All major versions of LinK should be compatible with the previous and next major data version.
+	go func(ctx context.Context) {
+		err := migrationRunner.Run(ctx)
+		if err != nil {
+			log.WithError(err).Error("Fail to run migrations")
+			return
+		}
+	}(ctx)
 
 	err = leaseManager.Start(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to start lease manager")
 		panic(err)
-	}
-
-	// v0 to v1 migration needs to be executed after the lease manager is started as we generate the host lease ID in this method.
-	if needsMigrationV0toV1 {
-		go func(ctx context.Context) {
-			err := migrationV0toV1.Migrate(ctx)
-			if err != nil {
-				log.WithError(err).Error("Fail to migrate data from v0 to v1")
-				return
-			}
-		}(ctx)
 	}
 
 	scheduler := scheduler.NewIPScheduler(config, etcd, storage, leaseManager, pluginRegistry)
