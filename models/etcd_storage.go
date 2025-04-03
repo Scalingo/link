@@ -10,7 +10,7 @@ import (
 	"github.com/gofrs/uuid/v5"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/go-utils/etcd"
 	"github.com/Scalingo/go-utils/logger"
@@ -94,9 +94,6 @@ func (e etcdStorage) AddEndpoint(ctx context.Context, endpoint Endpoint) (Endpoi
 
 	endpoint.ID = "vip-" + id.String()
 
-	// We do not want to store the status in database. This will always be STANDBY.
-	// So we set it to "" and let the omitempty do its job.
-	endpoint.Status = ""
 	value, err := json.Marshal(endpoint)
 	if err != nil {
 		return endpoint, errors.Wrap(err, "fail to marshal IP")
@@ -112,10 +109,10 @@ func (e etcdStorage) AddEndpoint(ctx context.Context, endpoint Endpoint) (Endpoi
 	return endpoint, nil
 }
 
-func (e etcdStorage) UpdateEndpoint(ctx context.Context, endpoint Endpoint) error {
+func (e EtcdStorage) UpdateEndpoint(ctx context.Context, endpoint Endpoint) error {
 	log := logger.Get(ctx)
 	if endpoint.ID == "" {
-		return fmt.Errorf("invalid IP ID: %s", endpoint.IP)
+		return fmt.Errorf("invalid endpoint ID: %s", endpoint.ID)
 	}
 
 	client, closer, err := e.newEtcdClient()
@@ -123,11 +120,10 @@ func (e etcdStorage) UpdateEndpoint(ctx context.Context, endpoint Endpoint) erro
 		return errors.Wrap(err, "fail to open client")
 	}
 	defer closer.Close()
-	endpoint.Status = ""
 
 	value, err := json.Marshal(endpoint)
 	if err != nil {
-		return errors.Wrap(err, "fail to marshal IP")
+		return errors.Wrap(err, "fail to marshal endpoint")
 	}
 
 	etcdKey := e.keyFor(endpoint)
@@ -199,17 +195,14 @@ func (e etcdStorage) getHost(ctx context.Context, hostname string) (Host, error)
 	return host, nil
 }
 
-func (e etcdStorage) SaveHost(ctx context.Context, host Host) error {
+func (e EtcdStorage) SaveHost(ctx context.Context, host Host) error {
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
 	}
 	defer closer.Close()
 
-	value, err := json.Marshal(host)
-	if err != nil {
-		return errors.Wrap(err, "fail to marshal host")
-	}
+	value, _ := json.Marshal(host)
 
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
@@ -221,15 +214,15 @@ func (e etcdStorage) SaveHost(ctx context.Context, host Host) error {
 	return nil
 }
 
-func (e etcdStorage) LinkEndpointWithCurrentHost(ctx context.Context, endpoint Endpoint) error {
-	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, endpoint.StorableIP(), e.hostname)
+func (e EtcdStorage) LinkEndpointWithCurrentHost(ctx context.Context, lockKey string) error {
+	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, lockKey, e.hostname)
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
 	}
 	defer closer.Close()
 
-	payload, err := json.Marshal(IPLink{
+	payload, err := json.Marshal(EndpointLink{
 		UpdatedAt: time.Now(),
 	})
 	if err != nil {
@@ -245,8 +238,8 @@ func (e etcdStorage) LinkEndpointWithCurrentHost(ctx context.Context, endpoint E
 	return nil
 }
 
-func (e etcdStorage) UnlinkEndpointFromCurrentHost(ctx context.Context, endpoint Endpoint) error {
-	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, endpoint.StorableIP(), e.hostname)
+func (e EtcdStorage) UnlinkEndpointFromCurrentHost(ctx context.Context, lockKey string) error {
+	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, lockKey, e.hostname)
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return errors.Wrap(err, "fail to get etcd client")
@@ -262,8 +255,8 @@ func (e etcdStorage) UnlinkEndpointFromCurrentHost(ctx context.Context, endpoint
 	return nil
 }
 
-func (e etcdStorage) GetEndpointHosts(ctx context.Context, endpoint Endpoint) ([]string, error) {
-	key := fmt.Sprintf("%s/ips/%s", EtcdLinkDirectory, endpoint.StorableIP())
+func (e EtcdStorage) GetEndpointHosts(ctx context.Context, lockKey string) ([]string, error) {
+	key := fmt.Sprintf("%s/ips/%s", EtcdLinkDirectory, lockKey)
 
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
@@ -274,7 +267,7 @@ func (e etcdStorage) GetEndpointHosts(ctx context.Context, endpoint Endpoint) ([
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	resp, err := client.Get(etcdCtx, key, clientv3.WithPrefix())
+	resp, err := client.Get(etcdCtx, key, etcdv3.WithPrefix())
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to list ip links")
 	}

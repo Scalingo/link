@@ -11,7 +11,7 @@ import (
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/locker/lockermock"
 	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/network/networkmock"
+	"github.com/Scalingo/link/v2/plugin/pluginmock"
 )
 
 func TestSetActivated(t *testing.T) {
@@ -19,17 +19,18 @@ func TestSetActivated(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		networkMock := networkmock.NewMockNetworkInterface(ctrl)
+		pluginMock := pluginmock.NewMockPlugin(ctrl)
 
 		ip := models.Endpoint{
 			IP: "10.0.0.1/32",
 			ID: "test-1234",
 		}
-		networkMock.EXPECT().EnsureIP(ip.IP).Return(nil)
 
-		manager := &manager{
-			networkInterface: networkMock,
-			endpoint:         ip,
+		pluginMock.EXPECT().Activate(gomock.Any()).Return(nil)
+
+		manager := &EndpointManager{
+			plugin:   pluginMock,
+			endpoint: ip,
 		}
 
 		manager.setActivated(context.Background(), &fsm.Event{})
@@ -46,12 +47,12 @@ func TestSetStandBy(t *testing.T) {
 			ID: "test-1234",
 		}
 
-		networkMock := networkmock.NewMockNetworkInterface(ctrl)
-		networkMock.EXPECT().RemoveIP(ip.IP).Return(nil)
+		pluginMock := pluginmock.NewMockPlugin(ctrl)
+		pluginMock.EXPECT().Disable(gomock.Any()).Return(nil)
 
-		manager := &manager{
-			networkInterface: networkMock,
-			endpoint:         ip,
+		manager := &EndpointManager{
+			plugin:   pluginMock,
+			endpoint: ip,
 		}
 
 		manager.setStandBy(context.Background(), &fsm.Event{})
@@ -63,35 +64,35 @@ func TestSetFailing(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		networkMock := networkmock.NewMockNetworkInterface(ctrl)
 		lockerMock := lockermock.NewMockLocker(ctrl)
 
 		ip := models.Endpoint{
 			IP: "10.0.0.1/32",
 			ID: "test-1234",
 		}
-		networkMock.EXPECT().RemoveIP(ip.IP).Return(nil)
+
+		pluginMock := pluginmock.NewMockPlugin(ctrl)
+		pluginMock.EXPECT().Disable(gomock.Any()).Return(nil)
 		lockerMock.EXPECT().Unlock(gomock.Any()).Return(nil)
 
-		manager := &manager{
-			networkInterface: networkMock,
-			locker:           lockerMock,
-			endpoint:         ip,
+		manager := &EndpointManager{
+			plugin:   pluginMock,
+			locker:   lockerMock,
+			endpoint: ip,
 		}
 
 		manager.setFailing(context.Background(), &fsm.Event{})
 	})
 }
 
-func TestStartARPEnsure(t *testing.T) {
+func Test_startPluginEnsureLoop(t *testing.T) {
 	ip := models.Endpoint{
 		IP: "10.0.0.1/32",
 		ID: "test-1234",
 	}
 
 	config := config.Config{
-		ARPGratuitousInterval: 10 * time.Millisecond,
-		ARPGratuitousCount:    3,
+		PluginEnsureInterval: 10 * time.Millisecond,
 	}
 
 	t.Run("If the IP is activated", func(t *testing.T) {
@@ -100,21 +101,21 @@ func TestStartARPEnsure(t *testing.T) {
 
 		ctx := context.Background()
 
-		networkMock := networkmock.NewMockNetworkInterface(ctrl)
-		networkMock.EXPECT().EnsureIP(ip.IP).Return(nil).MaxTimes(config.ARPGratuitousCount)
+		pluginMock := pluginmock.NewMockPlugin(ctrl)
+		pluginMock.EXPECT().Ensure(gomock.Any()).Return(nil).MinTimes(9)
 
 		sm := NewStateMachine(ctx, NewStateMachineOpts{})
 		sm.SetState(ACTIVATED)
-		manager := &manager{
-			networkInterface: networkMock,
-			stateMachine:     sm,
-			config:           config,
-			endpoint:         ip,
+		manager := &EndpointManager{
+			stateMachine: sm,
+			config:       config,
+			endpoint:     ip,
+			plugin:       pluginMock,
 		}
 
 		doneChan := make(chan bool)
 		go func() {
-			manager.startArpEnsure(ctx)
+			manager.startPluginEnsureLoop(ctx)
 			doneChan <- true
 		}()
 		time.Sleep(100 * time.Millisecond)
@@ -136,19 +137,19 @@ func TestStartARPEnsure(t *testing.T) {
 		defer ctrl.Finish()
 
 		ctx := context.Background()
-		networkMock := networkmock.NewMockNetworkInterface(ctrl)
+		pluginMock := pluginmock.NewMockPlugin(ctrl)
 		sm := NewStateMachine(ctx, NewStateMachineOpts{})
 		sm.SetState(FAILING)
-		manager := &manager{
-			networkInterface: networkMock,
-			stateMachine:     sm,
-			config:           config,
-			endpoint:         ip,
+		manager := &EndpointManager{
+			plugin:       pluginMock,
+			stateMachine: sm,
+			config:       config,
+			endpoint:     ip,
 		}
 
 		doneChan := make(chan bool)
 		go func() {
-			manager.startArpEnsure(ctx)
+			manager.startPluginEnsureLoop(ctx)
 			doneChan <- true
 		}()
 		time.Sleep(50 * time.Millisecond)
@@ -164,5 +165,4 @@ func TestStartARPEnsure(t *testing.T) {
 		case <-doneChan:
 		}
 	})
-
 }

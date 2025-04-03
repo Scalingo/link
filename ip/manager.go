@@ -7,9 +7,7 @@ import (
 	"time"
 
 	"github.com/looplab/fsm"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/go-utils/retry"
@@ -17,17 +15,18 @@ import (
 	"github.com/Scalingo/link/v2/healthcheck"
 	"github.com/Scalingo/link/v2/locker"
 	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/network"
+	"github.com/Scalingo/link/v2/plugin"
 	"github.com/Scalingo/link/v2/watcher"
 )
 
 type Manager interface {
-	Start(context.Context)
-	Stop(context.Context) error
-	Failover(context.Context) error
+	Start(ctx context.Context)
+	Stop(ctx context.Context) error
+	Failover(ctx context.Context) error
 	Status() string
 	Endpoint() models.Endpoint
-	SetHealthChecks(context.Context, config.Config, []models.HealthCheck)
+	ElectionKey(ctx context.Context) string
+	SetHealthChecks(ctx context.Context, config config.Config, checks []models.HealthCheck)
 }
 
 type manager struct {
@@ -42,36 +41,31 @@ type manager struct {
 	storage                 models.Storage
 	watcher                 watcher.Watcher
 	retry                   retry.Retry
+	plugin                  plugin.Plugin
 	eventChan               chan string
 	keepaliveRetry          int
 	healthCheckFailingCount int
 	stopped                 bool
 }
 
-func NewManager(ctx context.Context, cfg config.Config, endpoint models.Endpoint, client *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) (*manager, error) {
-	i, err := network.NewNetworkInterfaceFromName(cfg.Interface)
-	if err != nil {
-		return nil, errors.Wrap(err, "fail to instantiate network interface")
-	}
-
-	log := logger.Get(ctx).WithFields(logrus.Fields{
-		"ip": endpoint.IP,
-	})
+func NewManager(ctx context.Context, cfg config.Config, endpoint models.Endpoint, client *etcdv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager, plugin plugin.Plugin) (*EndpointManager, error) {
+	log := logger.Get(ctx).WithFields(endpoint.ToLogrusFields())
 	ctx = logger.ToCtx(ctx, log)
 
 	m := &manager{
 		networkInterface:        i,
 		endpoint:                endpoint,
-		locker:                  locker.NewEtcdLocker(cfg, client, leaseManager, endpoint),
+		locker:                  locker.NewEtcdLocker(cfg, client, leaseManager, endpoint, plugin.ElectionKey(ctx)),
 		checker:                 healthcheck.FromChecks(cfg, endpoint.Checks),
 		config:                  cfg,
 		storage:                 storage,
 		eventChan:               make(chan string),
 		healthCheckFailingCount: 0,
 		retry:                   retry.New(retry.WithWaitDuration(10*time.Second), retry.WithMaxAttempts(5)),
+		plugin:                  plugin,
 	}
 
-	prefix := fmt.Sprintf("%s/ips/%s", models.EtcdLinkDirectory, endpoint.StorableIP())
+	prefix := fmt.Sprintf("%s/ips/%s", models.EtcdLinkDirectory, plugin.ElectionKey(ctx))
 	m.watcher = watcher.NewWatcher(client, prefix, m.onTopologyChange)
 
 	m.stateMachine = NewStateMachine(ctx, NewStateMachineOpts{
@@ -82,22 +76,22 @@ func NewManager(ctx context.Context, cfg config.Config, endpoint models.Endpoint
 	return m, nil
 }
 
-func (m *manager) Start(ctx context.Context) {
+func (m *EndpointManager) Start(ctx context.Context) {
 	log := logger.Get(ctx).WithFields(m.endpoint.ToLogrusFields())
 	log.Info("Starting manager")
 
 	err := m.retry.Do(ctx, func(ctx context.Context) error {
-		return m.storage.LinkEndpointWithCurrentHost(ctx, m.endpoint)
+		return m.storage.LinkEndpointWithCurrentHost(ctx, m.plugin.ElectionKey(ctx))
 	})
 	if err != nil {
 		log.WithError(err).Error("Fail to link endpoint")
 	}
 
 	ctx = logger.ToCtx(ctx, log)
-	go m.ipCheckLoop(ctx)    // Will continuously try to get the IP
-	go m.healthChecker(ctx)  // Healthchecker
-	go m.startArpEnsure(ctx) // ARP Gratuitous announces
-	go m.watcher.Start(ctx)  // Start a watcher that will notify us if other hosts are joining or leaving this IP
+	go m.ipCheckLoop(ctx)   // Will continuously try to get the IP
+	go m.healthChecker(ctx) // HealthChecker
+	go m.startPluginEnsureLoop(ctx)
+	go m.watcher.Start(ctx) // Start a watcher that will notify us if other hosts are joining or leaving this IP
 
 	for event := range m.eventChan {
 		err := m.stateMachine.Event(ctx, event)

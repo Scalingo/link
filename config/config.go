@@ -1,31 +1,31 @@
 package config
 
 import (
+	"context"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/pkg/errors"
+
+	"github.com/Scalingo/go-utils/logger"
 )
 
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
-
 type Config struct {
-	Interface             string        `envconfig:"INTERFACE"`
-	Hostname              string        `envconfig:"HOSTNAME"`
-	User                  string        `envconfig:"USER"`
-	Password              string        `envconfig:"PASSWORD"`
-	Port                  int           `envconfig:"PORT" default:"1313"`
-	KeepAliveInterval     time.Duration `envconfig:"KEEPALIVE_INTERVAL" default:"3s"`
-	KeepAliveRetry        int           `envconfig:"KEEPALIVE_RETRY" default:"5"`
-	HealthcheckInterval   time.Duration `envconfig:"HEALTH_CHECK_INTERVAL" default:"5s"`
-	HealthcheckTimeout    time.Duration `envconfig:"HEALTH_CHECK_TIMEOUT" default:"5s"`
-	ARPGratuitousInterval time.Duration `envconfig:"ARP_GRATUITOUS_INTERVAL" default:"1s"`
-	// Number of gratuitous ARP (GARP) packets sent when the state becomes 'ACTIVATED'
-	ARPGratuitousCount      int `envconfig:"ARP_GRATUITOUS_COUNT" default:"3"`
-	FailCountBeforeFailover int `envconfig:"FAIL_COUNT_BEFORE_FAILOVER" default:"3"`
+	Hostname            string        `envconfig:"HOSTNAME"`
+	User                string        `envconfig:"USER"`
+	Password            string        `envconfig:"PASSWORD"`
+	Port                int           `envconfig:"PORT" default:"1313"`
+	KeepAliveInterval   time.Duration `envconfig:"KEEPALIVE_INTERVAL" default:"3s"`
+	KeepAliveRetry      int           `envconfig:"KEEPALIVE_RETRY" default:"5"`
+	HealthCheckInterval time.Duration `envconfig:"HEALTH_CHECK_INTERVAL" default:"5s"`
+	HealthCheckTimeout  time.Duration `envconfig:"HEALTH_CHECK_TIMEOUT" default:"5s"`
+
+	PluginEnsureInterval time.Duration `envconfig:"PLUGIN_ENSURE_INTERVAL" default:"1s"`
+
+	ARPGratuitousInterval   time.Duration `envconfig:"ARP_GRATUITOUS_INTERVAL" default:"1s"` // Deprecated: Use PluginEnsureInterval
+	FailCountBeforeFailover int           `envconfig:"FAIL_COUNT_BEFORE_FAILOVER" default:"3"`
 }
 
 // LeaseTime is 5 * the global keepalive interval
@@ -39,11 +39,17 @@ func RandomDurationAround(duration time.Duration, scatteringPercentage float64) 
 	return time.Duration(int64(duration) + rand.Int63n(delta) - (delta / 2))
 }
 
-func Build() (Config, error) {
+func Build(ctx context.Context) (Config, error) {
+	log := logger.Get(ctx)
 	var config Config
 	err := envconfig.Process("", &config)
 	if err != nil {
 		return config, errors.Wrap(err, "fail to parse environment")
+	}
+
+	if _, ok := os.LookupEnv("ARP_GRATUITOUS_INTERVAL"); ok {
+		log.Error("ARP_GRATUITOUS_INTERVAL is deprecated, please use PLUGIN_ENSURE_INTERVAL instead")
+		config.PluginEnsureInterval = config.ARPGratuitousInterval
 	}
 
 	return config, nil

@@ -1,14 +1,17 @@
 {
   "github.com/Scalingo/link/api.Client": "39 c0 14 3b 26 2f 0e f0 c2 bf ed 15 8c 3f 7e e5 28 d7 27 df",
+  "github.com/Scalingo/link/endpoint.Creator": "08 11 a3 5f 98 c3 65 43 52 4e 35 b8 7e bf e0 36 22 c3 fe bd",
   "github.com/Scalingo/link/healthcheck.Checker": "68 49 fe 4d a3 bb 44 44 63 fd 68 46 63 a1 ac c4 f9 5b 51 3e",
-  "github.com/Scalingo/link/locker.EtcdLeaseManager": "ac 51 8b 50 0f d3 c1 d5 76 33 64 4c 3b 57 13 a9 08 f0 58 91",
+  "github.com/Scalingo/link/locker.EtcdLeaseManager": "7b a3 86 21 66 c9 17 13 a4 83 30 b2 1e ec ff 1d 3f 2e e4 53",
   "github.com/Scalingo/link/locker.Locker": "a5 24 96 0f 1b f5 df b8 d8 dd 15 83 a1 d2 b2 d3 53 fa 25 0d",
-  "github.com/Scalingo/link/models.Storage": "5d 58 75 d4 27 26 25 c7 69 d4 1a 8a f9 dc 38 0c 97 47 62 3d",
+  "github.com/Scalingo/link/models.Storage": "f3 97 4e b6 3d 0e ea 04 2b 42 cb fe 4d 01 55 26 ba a6 aa 9a",
   "github.com/Scalingo/link/network.ARP": "20 bb b8 da 57 d8 84 21 24 36 cc 40 34 be f6 c3 e6 e9 f9 78",
-  "github.com/Scalingo/link/network.NetworkInterface": "02 61 47 58 85 b3 ce f2 ee 69 f8 58 4b ca cd eb 5b ed f9 3c",
+  "github.com/Scalingo/link/network.Interface": "02 61 47 58 85 b3 ce f2 ee 69 f8 58 4b ca cd eb 5b ed f9 3c",
+  "github.com/Scalingo/link/plugin.Plugin": "e0 24 7f 60 d6 94 0f 37 e4 47 3c a2 08 fa 61 85 00 37 c4 f2",
+  "github.com/Scalingo/link/plugin.Registry": "c8 78 46 f7 f6 6e b8 3c 3e f3 3e a5 f8 15 56 d2 79 6b c5 95",
   "github.com/Scalingo/link/scheduler.Scheduler": "6d c9 01 1d 2e d4 8f ae e4 a2 6d d1 04 a7 ae 25 11 8b 36 cb",
-  "github.com/Scalingo/link/watcher.Watcher": "22 fd 8e 1a 88 fd 2f 56 0b 5b 14 19 e4 49 cb d7 12 3a 6a 95",
+  "github.com/Scalingo/link/watcher.Watcher": "ec 8d f6 d4 6d 64 c7 76 87 fd 72 43 c6 ed d9 89 0e a6 9a 71",
   "go.etcd.io/etcd/client/v3.KV": "b5 dc 10 4e dc 95 f2 cf 0a 6c e7 c5 ac 0a 47 5f 60 44 31 40",
-  "go.etcd.io/etcd/client/v3.Lease": "78 b5 23 7b 09 60 b0 41 9c d1 84 04 80 c2 3f 69 d3 96 5f 8c",
+  "go.etcd.io/etcd/client/v3.Lease": "99 a3 9a 8e 9a 63 6f fe 01 0f 6b b1 06 ae ac 2b 1d 09 19 70",
   "go.etcd.io/etcd/client/v3.Txn": "2b d8 86 0c 62 87 e9 d4 e5 71 78 81 ef 89 ec 5a e8 30 43 e1"
 }

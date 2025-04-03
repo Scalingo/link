@@ -15,7 +15,7 @@ import (
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/locker/lockermock"
 	"github.com/Scalingo/link/v2/models/modelsmock"
-	"github.com/Scalingo/link/v2/network/networkmock"
+	"github.com/Scalingo/link/v2/plugin/pluginmock"
 	"github.com/Scalingo/link/v2/watcher/watchermock"
 )
 
@@ -84,7 +84,7 @@ func TestManager_TryToGetIP(t *testing.T) {
 				example.Locker(locker)
 			}
 
-			cfg, err := config.Build()
+			cfg, err := config.Build(ctx)
 			require.NoError(t, err)
 
 			cfg.KeepAliveRetry = example.KeepAliveRetry
@@ -157,7 +157,7 @@ func TestManager_Stop(t *testing.T) {
 			CurrentState:              FAILING,
 			Events:                    []string{},
 		}, {
-			Name: "When there are other hosts trying to take the ip",
+			Name: "When there are other hosts trying to take the lock",
 			Locker: func(l *lockermock.MockLocker) {
 				l.EXPECT().IsMaster(gomock.Any()).Return(true, nil)
 				l.EXPECT().IsMaster(gomock.Any()).Return(false, nil)
@@ -176,26 +176,28 @@ func TestManager_Stop(t *testing.T) {
 			lockerMock := lockermock.NewMockLocker(ctrl)
 			storageMock := modelsmock.NewMockStorage(ctrl)
 			watcherMock := watchermock.NewMockWatcher(ctrl)
-			networkMock := networkmock.NewMockNetworkInterface(ctrl)
+			pluginMock := pluginmock.NewMockPlugin(ctrl)
+
+			pluginMock.EXPECT().ElectionKey(gomock.Any()).Return("test-election-key").AnyTimes()
 
 			hosts := make([]string, example.HostCount)
-			storageMock.EXPECT().GetEndpointHosts(gomock.Any(), gomock.Any()).Return(hosts, nil)
+			storageMock.EXPECT().GetEndpointHosts(gomock.Any(), "test-election-key").Return(hosts, nil)
 			if example.Locker != nil {
 				example.Locker(lockerMock)
 			}
-			watcherMock.EXPECT().Stop(gomock.Any()).Return(nil)
+			watcherMock.EXPECT().Stop(gomock.Any())
 			lockerMock.EXPECT().Stop(gomock.Any()).Return(nil)
-			storageMock.EXPECT().UnlinkEndpointFromCurrentHost(gomock.Any(), gomock.Any()).Return(nil)
+			storageMock.EXPECT().UnlinkEndpointFromCurrentHost(gomock.Any(), "test-election-key").Return(nil)
 			eventChan := make(chan string, 2)
 			events := make([]string, 0)
 
-			manager := &manager{
-				stateMachine:     fsm.NewFSM(example.CurrentState, fsm.Events{}, fsm.Callbacks{}),
-				locker:           lockerMock,
-				storage:          storageMock,
-				watcher:          watcherMock,
-				networkInterface: networkMock,
-				eventChan:        eventChan,
+			manager := &EndpointManager{
+				stateMachine: fsm.NewFSM(example.CurrentState, fsm.Events{}, fsm.Callbacks{}),
+				locker:       lockerMock,
+				storage:      storageMock,
+				watcher:      watcherMock,
+				eventChan:    eventChan,
+				plugin:       pluginMock,
 			}
 
 			err := manager.Stop(context.Background())

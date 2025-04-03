@@ -67,7 +67,7 @@ func (m *manager) Failover(ctx context.Context) error {
 	if !isMaster {
 		return ErrIsNotMaster
 	}
-	hosts, err := m.storage.GetEndpointHosts(ctx, m.Endpoint())
+	hosts, err := m.storage.GetEndpointHosts(ctx, m.plugin.ElectionKey(ctx))
 	if err != nil {
 		return errors.Wrap(err, "fail to list other nodes listening for this IP")
 	}
@@ -82,7 +82,7 @@ func (m *manager) Failover(ctx context.Context) error {
 	}
 
 	// Update the IP link that will trigger every other watchers on this IP
-	err = m.storage.LinkEndpointWithCurrentHost(ctx, m.Endpoint())
+	err = m.storage.LinkEndpointWithCurrentHost(ctx, m.plugin.ElectionKey(ctx))
 	if err != nil {
 		return errors.Wrap(err, "fail to update the IP Link")
 	}

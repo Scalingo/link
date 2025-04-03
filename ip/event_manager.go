@@ -22,12 +22,12 @@ import (
 	2.4. Send a demoted event so that the state machine is in a state to remote the IP
 */
 
-func (m *manager) Stop(ctx context.Context) error {
+func (m *EndpointManager) Stop(ctx context.Context) error {
 	log := logger.Get(ctx).WithField("process", "stop")
 	ctx = logger.ToCtx(ctx, log)
 
 	log.Info("Stops the IP manager")
-	hosts, err := m.storage.GetEndpointHosts(ctx, m.Endpoint())
+	hosts, err := m.storage.GetEndpointHosts(ctx, m.plugin.ElectionKey(ctx))
 	if err != nil {
 		return errors.Wrap(err, "fail to get new hosts")
 	}
@@ -54,13 +54,10 @@ func (m *manager) Stop(ctx context.Context) error {
 	}
 
 	log.Info("Stop the watcher")
-	err = m.watcher.Stop(ctx)
-	if err != nil {
-		log.WithError(err).Error("Fail to stop the watcher")
-	}
+	m.watcher.Stop(ctx)
 
 	log.Info("Unlink IP from the host")
-	err = m.storage.UnlinkEndpointFromCurrentHost(ctx, m.endpoint)
+	err = m.storage.UnlinkEndpointFromCurrentHost(ctx, m.plugin.ElectionKey(ctx))
 	if err != nil {
 		return errors.Wrap(err, "fail to unlink IP")
 	}

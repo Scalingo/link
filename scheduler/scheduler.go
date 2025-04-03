@@ -5,13 +5,14 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/ip"
 	"github.com/Scalingo/link/v2/locker"
 	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v2/plugin"
 )
 
 var (
@@ -25,34 +26,36 @@ var (
 // Scheduler is the central point of LinK it will keep track all of IPs registered on this node
 // however the heavy lifting for a single IP is done in the Manager
 type Scheduler interface {
-	Start(context.Context, models.Endpoint) (models.Endpoint, error)
+	Start(ctx context.Context, endpoint models.Endpoint) (models.Endpoint, error)
 	Stop(ctx context.Context, id string) error
 	Failover(ctx context.Context, id string) error
-	Status(string) string
+	Status(id string) string
 	ConfiguredEndpoints(ctx context.Context) EndpointsWithStatus
 	GetEndpoint(ctx context.Context, id string) *EndpointWithStatus
-	UpdateEndpoint(context.Context, models.Endpoint) error
+	UpdateEndpoint(ctx context.Context, endpoint models.Endpoint) error
 }
 
 // IPScheduler is LinK implementation of the Scheduler Interface
 type IPScheduler struct {
-	mapMutex     sync.RWMutex
-	ipManagers   map[string]ip.Manager
-	etcd         *clientv3.Client
-	config       config.Config
-	storage      models.Storage
-	leaseManager locker.EtcdLeaseManager
+	mapMutex       sync.RWMutex
+	ipManagers     map[string]ip.Manager
+	etcd           *etcdv3.Client
+	config         config.Config
+	storage        models.Storage
+	leaseManager   locker.EtcdLeaseManager
+	pluginRegistry plugin.Registry
 }
 
 // NewIPScheduler creates and configures a Scheduler
-func NewIPScheduler(config config.Config, etcd *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) *IPScheduler {
+func NewIPScheduler(config config.Config, etcd *etcdv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager, registry plugin.Registry) *IPScheduler {
 	return &IPScheduler{
-		mapMutex:     sync.RWMutex{},
-		ipManagers:   make(map[string]ip.Manager),
-		etcd:         etcd,
-		config:       config,
-		storage:      storage,
-		leaseManager: leaseManager,
+		mapMutex:       sync.RWMutex{},
+		ipManagers:     make(map[string]ip.Manager),
+		etcd:           etcd,
+		config:         config,
+		storage:        storage,
+		leaseManager:   leaseManager,
+		pluginRegistry: registry,
 	}
 }
 
@@ -70,37 +73,27 @@ func (s *IPScheduler) Status(id string) string {
 // Start schedules a new IP on the host. It launches a new manager for the IP and add it to the tracked IP on this host.
 func (s *IPScheduler) Start(ctx context.Context, endpoint models.Endpoint) (models.Endpoint, error) {
 	log := logger.Get(ctx)
-	newIP, err := s.storage.AddEndpoint(ctx, endpoint)
+
+	log.Info("Initialize Endpoint Plugin")
+
+	plugin, err := s.pluginRegistry.Create(ctx, endpoint)
 	if err != nil {
-		if errors.Cause(err) != models.ErrIPAlreadyPresent {
-			return newIP, errors.Wrap(err, "fail to add IP to storage")
-		} else if endpoint.ID == "" { // If the ID is not empty we are in the startup process
-			return newIP, ErrIPAlreadyAssigned
-		}
+		return endpoint, errors.Wrap(err, "initialize plugin")
 	}
-	log = log.WithFields(newIP.ToLogrusFields())
-	ctx = logger.ToCtx(ctx, log)
-	ipAdded := (err == nil)
 
 	log.Info("Initialize a new IP manager")
 
-	manager, err := ip.NewManager(ctx, s.config, newIP, s.etcd, s.storage, s.leaseManager)
+	manager, err := ip.NewManager(ctx, s.config, endpoint, s.etcd, s.storage, s.leaseManager, plugin)
 	if err != nil {
-		if ipAdded {
-			err := s.storage.RemoveEndpoint(ctx, newIP.ID)
-			if err != nil {
-				log.WithError(err).Error("Fail to remove IP from storage after failed initialization of IP manager")
-			}
-		}
-		return newIP, errors.Wrap(err, "fail to initialize manager")
+		return endpoint, errors.Wrap(err, "fail to initialize manager")
 	}
 
 	s.mapMutex.Lock()
-	s.ipManagers[newIP.ID] = manager
+	s.ipManagers[endpoint.ID] = manager
 	s.mapMutex.Unlock()
 	go manager.Start(ctx)
 
-	return newIP, nil
+	return endpoint, nil
 }
 
 // Stop the manager of the specified IP and remove it from the tracked IP
@@ -115,11 +108,6 @@ func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 	err := manager.Stop(ctx)
 	if err != nil {
 		return errors.Wrap(err, "fail to stop manager")
-	}
-
-	err = s.storage.RemoveEndpoint(ctx, id)
-	if err != nil {
-		return errors.Wrap(err, "fail to remove IP from storage")
 	}
 
 	s.mapMutex.Lock()
@@ -154,8 +142,9 @@ func (s *IPScheduler) ConfiguredEndpoints(ctx context.Context) EndpointsWithStat
 
 	for _, manager := range s.ipManagers {
 		res = append(res, EndpointWithStatus{
-			Endpoint: manager.Endpoint(),
-			Status:   manager.Status(),
+			Endpoint:    manager.Endpoint(),
+			Status:      manager.Status(),
+			ElectionKey: manager.ElectionKey(ctx),
 		})
 	}
 	return res
@@ -172,12 +161,13 @@ func (s *IPScheduler) GetEndpoint(ctx context.Context, id string) *EndpointWithS
 	}
 
 	return &EndpointWithStatus{
-		Endpoint: manager.Endpoint(),
-		Status:   manager.Status(),
+		Endpoint:    manager.Endpoint(),
+		Status:      manager.Status(),
+		ElectionKey: manager.ElectionKey(ctx),
 	}
 }
 
-// UpdateIP updates the IP in the scheduler storage, and the healthchecks in the IP manager.
+// UpdateIP updates the IP in the scheduler storage, and the health checks in the IP manager.
 func (s *IPScheduler) UpdateEndpoint(ctx context.Context, endpoint models.Endpoint) error {
 	log := logger.Get(ctx)
 	s.mapMutex.RLock()

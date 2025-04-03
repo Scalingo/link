@@ -5,7 +5,7 @@ import (
 	"sync"
 	"time"
 
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/go-utils/logger"
 )
@@ -13,7 +13,7 @@ import (
 type KeyChangedCallback func(ctx context.Context)
 
 type EtcdWatcher struct {
-	client      clientv3.Watcher
+	client      etcdv3.Watcher
 	prefix      string
 	cancelLock  *sync.Mutex
 	cancelWatch context.CancelFunc
@@ -21,11 +21,11 @@ type EtcdWatcher struct {
 }
 
 type Watcher interface {
-	Start(context.Context) error
-	Stop(context.Context) error
+	Start(ctx context.Context)
+	Stop(ctx context.Context)
 }
 
-func NewWatcher(client clientv3.Watcher, prefix string, callback KeyChangedCallback) Watcher {
+func NewWatcher(client etcdv3.Watcher, prefix string, callback KeyChangedCallback) Watcher {
 	return &EtcdWatcher{
 		client:     client,
 		prefix:     prefix,
@@ -34,20 +34,18 @@ func NewWatcher(client clientv3.Watcher, prefix string, callback KeyChangedCallb
 	}
 }
 
-func (w *EtcdWatcher) Start(ctx context.Context) error {
+func (w *EtcdWatcher) Start(ctx context.Context) {
 	go w.mainEtcdLoop(ctx)
-	return nil
 }
 
-func (w *EtcdWatcher) Stop(ctx context.Context) error {
+func (w *EtcdWatcher) Stop(_ context.Context) {
 	if w.cancelWatch != nil {
 		w.cancelWatch()
 	}
-	return nil
 }
 
 // readEtcdWatchEvents reads the watch notifications from etcd. It returns true if it finished successfully or false if there was an error (and should be retried).
-func (w *EtcdWatcher) readEtcdWatchEvents(ctx context.Context, resp clientv3.WatchChan) bool {
+func (w *EtcdWatcher) readEtcdWatchEvents(ctx context.Context, resp etcdv3.WatchChan) bool {
 	log := logger.Get(ctx).WithField("prefix", w.prefix)
 	for change := range resp {
 		if change.Err() != nil {
@@ -74,7 +72,7 @@ func (w *EtcdWatcher) mainEtcdLoop(ctx context.Context) {
 		w.cancelLock.Lock()
 		w.cancelWatch = cancel
 		w.cancelLock.Unlock()
-		respChan := w.client.Watch(ctx, w.prefix, clientv3.WithPrefix())
+		respChan := w.client.Watch(ctx, w.prefix, etcdv3.WithPrefix())
 		stopped := w.readEtcdWatchEvents(ctx, respChan)
 		if stopped {
 			return

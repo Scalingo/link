@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/link/v2/models"
 )
@@ -28,11 +28,11 @@ func (v0IP v0IP) convertToV1() models.Endpoint {
 }
 
 type v0EtcdStorage struct {
-	etcdClient     clientv3.KV
-	leaseManagerID clientv3.LeaseID
+	etcdClient     etcdv3.KV
+	leaseManagerID etcdv3.LeaseID
 }
 
-func newV0EtcdStorage(etcdClient clientv3.KV, leaseManagerID clientv3.LeaseID) v0EtcdStorage {
+func newV0EtcdStorage(etcdClient etcdv3.KV, leaseManagerID etcdv3.LeaseID) v0EtcdStorage {
 	return v0EtcdStorage{
 		etcdClient:     etcdClient,
 		leaseManagerID: leaseManagerID,
@@ -44,7 +44,7 @@ func (e v0EtcdStorage) getIPs(ctx context.Context, hostname string) ([]v0IP, err
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	resp, err := e.etcdClient.Get(ctx, fmt.Sprintf("%s/hosts/%s", models.EtcdLinkDirectory, hostname), clientv3.WithPrefix())
+	resp, err := e.etcdClient.Get(ctx, fmt.Sprintf("%s/hosts/%s", models.EtcdLinkDirectory, hostname), etcdv3.WithPrefix())
 	if err != nil {
 		return nil, errors.Wrap(err, "fail to get list of IPs from etcd")
 	}
@@ -66,7 +66,7 @@ func (e v0EtcdStorage) isMaster(ctx context.Context, ip v0IP) (bool, error) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	key := fmt.Sprintf("%s/default/%s", models.EtcdLinkDirectory, strings.Replace(ip.IP, "/", "_", -1))
+	key := fmt.Sprintf("%s/default/%s", models.EtcdLinkDirectory, storableIP(ip.IP))
 	resp, err := e.etcdClient.Get(ctx, key)
 	if err != nil {
 		return false, errors.Wrapf(err, "fail to get lock of the IP %s", ip.IP)
@@ -76,18 +76,22 @@ func (e v0EtcdStorage) isMaster(ctx context.Context, ip v0IP) (bool, error) {
 		return false, fmt.Errorf("invalid etcd state (key '%s' not found!)", key)
 	}
 
-	return resp.Kvs[0].Lease == int64(ip.LeaseID), nil
+	return resp.Kvs[0].Lease == ip.LeaseID, nil
 }
 
 // putIP puts the v1 IP in the new etcd key.
-func (e v0EtcdStorage) putIP(ctx context.Context, ip models.Endpoint, hostname string) error {
+func (e v0EtcdStorage) putIP(ctx context.Context, endpoint models.Endpoint, hostname string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	key := fmt.Sprintf("%s/default/%s", models.EtcdLinkDirectory, ip.StorableIP())
-	_, err := e.etcdClient.Put(ctx, key, hostname, clientv3.WithLease(e.leaseManagerID))
+	key := fmt.Sprintf("%s/default/%s", models.EtcdLinkDirectory, endpoint.IP)
+	_, err := e.etcdClient.Put(ctx, key, hostname, etcdv3.WithLease(e.leaseManagerID))
 	if err != nil {
-		return errors.Wrapf(err, "fail to put the IP '%s' in etcd", ip.StorableIP())
+		return errors.Wrapf(err, "fail to put the IP '%s' in etcd", endpoint.IP)
 	}
 	return nil
+}
+
+func storableIP(i string) string {
+	return strings.ReplaceAll(i, "/", "_")
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v2/config"
@@ -23,23 +23,23 @@ var (
 )
 
 type etcdLocker struct {
-	kvEtcd            clientv3.KV
+	kvEtcd            etcdv3.KV
 	key               string
 	config            config.Config
-	ip                models.Endpoint
+	endpoint          models.Endpoint
 	leaseManager      EtcdLeaseManager
 	leaseSubscriberID string
 	lock              *sync.Mutex
 }
 
 // NewEtcdLocker return an implemtation of Locker based on the ETCD database
-func NewEtcdLocker(config config.Config, etcd *clientv3.Client, leaseManager EtcdLeaseManager, endpoint models.Endpoint) Locker {
-	key := fmt.Sprintf("%s/default/%s", models.EtcdLinkDirectory, endpoint.StorableIP())
+func NewEtcdLocker(config config.Config, etcd *etcdv3.Client, leaseManager EtcdLeaseManager, endpoint models.Endpoint, lockKey string) Locker {
+	key := fmt.Sprintf("%s/default/%s", models.EtcdLinkDirectory, lockKey)
 	return &etcdLocker{
 		kvEtcd:       etcd,
 		key:          key,
 		config:       config,
-		ip:           endpoint,
+		endpoint:     endpoint,
 		leaseManager: leaseManager,
 		lock:         &sync.Mutex{},
 	}
@@ -73,9 +73,9 @@ func (l *etcdLocker) Refresh(ctx context.Context) error {
 
 	_, err = l.kvEtcd.Txn(transactionCtx).
 		// If the key does not exists (createRevision == 0)
-		If(clientv3.Compare(clientv3.CreateRevision(l.key), "=", 0)).
+		If(etcdv3.Compare(etcdv3.CreateRevision(l.key), "=", 0)).
 		// Create it with our leaseID
-		Then(clientv3.OpPut(l.key, l.config.Hostname, clientv3.WithLease(leaseID))).
+		Then(etcdv3.OpPut(l.key, l.config.Hostname, etcdv3.WithLease(leaseID))).
 		Commit()
 	if err != nil {
 		// We got an error. Notify the lease manager that there might be an issue and send the error.
@@ -129,8 +129,8 @@ func (l *etcdLocker) IsMaster(ctx context.Context) (bool, error) {
 	return resp.Kvs[0].Lease == int64(leaseID), nil
 }
 
-func (l *etcdLocker) leaseChanged(ctx context.Context, oldLeaseID, newLeaseID clientv3.LeaseID) {
-	log := logger.Get(ctx).WithFields(l.ip.ToLogrusFields()).WithFields(logrus.Fields{
+func (l *etcdLocker) leaseChanged(ctx context.Context, oldLeaseID, newLeaseID etcdv3.LeaseID) {
+	log := logger.Get(ctx).WithFields(l.endpoint.ToLogrusFields()).WithFields(logrus.Fields{
 		"oldLeaseID": oldLeaseID,
 		"newLeaseID": newLeaseID,
 	})
@@ -145,11 +145,11 @@ func (l *etcdLocker) leaseChanged(ctx context.Context, oldLeaseID, newLeaseID cl
 
 	_, err := l.kvEtcd.Txn(ctx).
 		// If the key does exists (createRevision != 0)
-		If(clientv3.Compare(clientv3.CreateRevision(l.key), "!=", 0),
+		If(etcdv3.Compare(etcdv3.CreateRevision(l.key), "!=", 0),
 			// And we had the lock previously
-			clientv3.Compare(clientv3.LeaseValue(l.key), "=", oldLeaseID)).
+			etcdv3.Compare(etcdv3.LeaseValue(l.key), "=", oldLeaseID)).
 		// Replace it with the newLease
-		Then(clientv3.OpPut(l.key, l.config.Hostname, clientv3.WithLease(newLeaseID))).
+		Then(etcdv3.OpPut(l.key, l.config.Hostname, etcdv3.WithLease(newLeaseID))).
 		Commit()
 	if err != nil {
 		log.WithError(err).Errorf("Fail to change lease of key %s", l.key)

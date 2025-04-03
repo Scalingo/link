@@ -8,12 +8,14 @@ import (
 type EndpointWithStatus struct {
 	models.Endpoint
 
-	Status string
+	Status      string
+	ElectionKey string
 }
 
 func (e EndpointWithStatus) ToAPIType() api.Endpoint {
 	res := e.Endpoint.ToAPIType()
 	res.Status = e.Status
+	res.ElectionKey = e.ElectionKey
 	return res
 }
 

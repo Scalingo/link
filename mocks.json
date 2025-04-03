@@ -40,6 +40,18 @@
          "src_package": "locker"
       },
       {
+         "interface": "Plugin",
+         "src_package": "plugin"
+      },
+      {
+         "interface": "Registry",
+         "src_package": "plugin"
+      },
+      {
+         "interface": "Creator",
+         "src_package": "endpoint"
+      },
+      {
          "external": true,
          "src_package": "go.etcd.io/etcd/client/v3",
          "interface": "KV",

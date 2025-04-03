@@ -30,7 +30,7 @@ func main() {
 	log := logger.Default()
 	ctx := logger.ToCtx(context.Background(), log)
 
-	config, err := config.Build()
+	config, err := config.Build(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to init config")
 		panic(err)
@@ -44,6 +44,13 @@ func main() {
 
 	storage := models.NewEtcdStorage(config)
 	leaseManager := locker.NewEtcdLeaseManager(ctx, config, storage, etcd)
+
+	pluginRegistry := plugin.NewRegistry()
+	err = initPlugins(ctx, pluginRegistry)
+	if err != nil {
+		log.WithError(err).Error("Fail to init plugins")
+		panic(err)
+	}
 
 	// We need to check if it is needed to migrate data from v0 to v1 before the lease manager is started so that we are sure that the host data version is still the one from the previous LinK execution.
 	migrationV0toV1 := migrations.NewV0toV1Migration(config.Hostname, leaseManager, storage)
@@ -69,7 +76,7 @@ func main() {
 		}(ctx)
 	}
 
-	scheduler := scheduler.NewIPScheduler(config, etcd, storage, leaseManager)
+	scheduler := scheduler.NewIPScheduler(config, etcd, storage, leaseManager, pluginRegistry)
 
 	ips, err := storage.GetEndpoints(ctx)
 	if err != nil {
@@ -137,4 +144,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func initPlugins(ctx context.Context, registry plugin.Registry) error {
+	err := arp.Register(ctx, registry)
+	if err != nil {
+		return errors.Wrap(ctx, err, "register arp plugin")
+	}
+	return nil
 }
