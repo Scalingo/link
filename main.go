@@ -20,6 +20,8 @@ import (
 	"github.com/Scalingo/link/v2/locker"
 	"github.com/Scalingo/link/v2/migrations"
 	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v2/plugin"
+	"github.com/Scalingo/link/v2/plugin/arp"
 	"github.com/Scalingo/link/v2/scheduler"
 	"github.com/Scalingo/link/v2/web"
 )
