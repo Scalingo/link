@@ -66,7 +66,7 @@ func (mr *MockStorageMockRecorder) GetCurrentHost(arg0 interface{}) *gomock.Call
 }
 
 // GetEndpointHosts mocks base method.
-func (m *MockStorage) GetEndpointHosts(arg0 context.Context, arg1 models.Endpoint) ([]string, error) {
+func (m *MockStorage) GetEndpointHosts(arg0 context.Context, arg1 string) ([]string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetEndpointHosts", arg0, arg1)
 	ret0, _ := ret[0].([]string)
@@ -96,7 +96,7 @@ func (mr *MockStorageMockRecorder) GetEndpoints(arg0 interface{}) *gomock.Call {
 }
 
 // LinkEndpointWithCurrentHost mocks base method.
-func (m *MockStorage) LinkEndpointWithCurrentHost(arg0 context.Context, arg1 models.Endpoint) error {
+func (m *MockStorage) LinkEndpointWithCurrentHost(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "LinkEndpointWithCurrentHost", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -138,7 +138,7 @@ func (mr *MockStorageMockRecorder) SaveHost(arg0, arg1 interface{}) *gomock.Call
 }
 
 // UnlinkEndpointFromCurrentHost mocks base method.
-func (m *MockStorage) UnlinkEndpointFromCurrentHost(arg0 context.Context, arg1 models.Endpoint) error {
+func (m *MockStorage) UnlinkEndpointFromCurrentHost(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnlinkEndpointFromCurrentHost", arg0, arg1)
 	ret0, _ := ret[0].(error)

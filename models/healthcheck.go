@@ -1,9 +1,11 @@
 package models
 
 import (
+	"context"
 	"net"
 	"strconv"
 
+	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/link/v2/api"
 )
 
@@ -21,6 +23,24 @@ type HealthCheck struct {
 	Type api.HealthCheckType `json:"type"`
 	Host string              `json:"host"`
 	Port int                 `json:"port"`
+}
+
+func (h HealthCheck) Validate(_ context.Context) *errors.ValidationErrors {
+	validation := errors.NewValidationErrorsBuilder()
+	if h.Type == "" {
+		validation.Set("type", "Health check type is required")
+	}
+	if h.Type != api.TCPHealthCheck {
+		validation.Set("type", "Health check type is not supported")
+	}
+	if h.Host == "" {
+		validation.Set("host", "Host is required")
+	}
+	if h.Port <= 0 || h.Port > 65535 {
+		validation.Set("port", "Port must be between 1 and 65535")
+	}
+
+	return validation.Build()
 }
 
 func (h HealthCheck) Addr() string {
@@ -49,4 +69,14 @@ func HealthChecksFromAPIType(hs []api.HealthCheck) HealthChecks {
 		checks = append(checks, HealthCheckFromAPIType(check))
 	}
 	return checks
+}
+
+func (h HealthChecks) Validate(ctx context.Context) *errors.ValidationErrors {
+	validation := errors.NewValidationErrorsBuilder()
+	for i, check := range h {
+		if err := check.Validate(ctx); err != nil {
+			validation.Set(strconv.Itoa(i), err.Error())
+		}
+	}
+	return validation.Build()
 }

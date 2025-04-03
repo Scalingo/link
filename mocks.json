@@ -11,7 +11,7 @@
          "src_package": "network"
       },
       {
-         "interface": "NetworkInterface",
+         "interface": "Interface",
          "src_package": "network"
       },
       {

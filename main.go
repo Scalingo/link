@@ -11,10 +11,12 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/Scalingo/go-handlers"
+	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/etcd"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/go-utils/logger/plugins/rollbarplugin"
 	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/endpoint"
 	"github.com/Scalingo/link/v2/locker"
 	"github.com/Scalingo/link/v2/migrations"
 	"github.com/Scalingo/link/v2/models"
@@ -99,7 +101,9 @@ func main() {
 		}
 	}
 
-	ipController := web.NewIPController(scheduler)
+	endpointCreator := endpoint.NewCreator(storage, scheduler, pluginRegistry)
+	ipController := web.NewIPController(scheduler, storage, endpointCreator)
+	endpointController := web.NewEndpointController(scheduler, storage, endpointCreator)
 	versionController := web.NewVersionController(Version)
 	r := handlers.NewRouter(log)
 
@@ -110,12 +114,24 @@ func main() {
 	}
 
 	r.Use(handlers.ErrorMiddleware)
+
+	// Retro compatibility with v2 API.
+	// This will be removed in a future version.
 	r.HandleFunc("/ips", ipController.List).Methods("GET")
 	r.HandleFunc("/ips", ipController.Create).Methods("POST")
-	r.HandleFunc("/ips/{id}", ipController.Destroy).Methods("DELETE")
+	r.HandleFunc("/ips/{id}", endpointController.Update).Methods("DELETE")
 	r.HandleFunc("/ips/{id}", ipController.Get).Methods("GET")
-	r.HandleFunc("/ips/{id}", ipController.Patch).Methods("PUT", "PATCH")
-	r.HandleFunc("/ips/{id}/failover", ipController.Failover).Methods("POST")
+	r.HandleFunc("/ips/{id}", endpointController.Update).Methods("PUT", "PATCH")
+	r.HandleFunc("/ips/{id}/failover", endpointController.Failover).Methods("POST")
+
+	r.HandleFunc("/endpoints", endpointController.List).Methods("GET")
+	r.HandleFunc("/endpoints", endpointController.Create).Methods("POST")
+	r.HandleFunc("/endpoints/{id}", endpointController.Delete).Methods("DELETE")
+	r.HandleFunc("/endpoints/{id}", endpointController.Get).Methods("GET")
+	r.HandleFunc("/endpoints/{id}", endpointController.Update).Methods("PUT", "PATCH")
+	r.HandleFunc("/endpoints/{id}/failover", endpointController.Failover).Methods("POST")
+	r.HandleFunc("/endpoints/{id}/hosts", endpointController.GetHosts).Methods("GET")
+
 	r.HandleFunc("/version", versionController.Version).Methods("GET")
 
 	globalRouter := mux.NewRouter()

@@ -9,10 +9,11 @@ const (
 type Endpoint struct {
 	ID string `json:"id"`
 
-	IP                  string        `json:"ip"`
 	Status              string        `json:"status,omitempty"`
 	Checks              []HealthCheck `json:"checks,omitempty"`
 	HealthCheckInterval int           `json:"healthcheck_interval"`
+	Plugin              string        `json:"plugin,omitempty"`
+	ElectionKey         string        `json:"election_key,omitempty"`
 }
 
 type HealthCheckType string
@@ -28,13 +29,28 @@ type HealthCheck struct {
 }
 
 type EndpointGetResponse struct {
-	Endpoint Endpoint `json:"ip"`
+	Endpoint Endpoint `json:"endpoint"`
 }
 
 type EndpointListResponse struct {
-	Endpoints []Endpoint `json:"ips"`
+	Endpoints []Endpoint `json:"endpoints"`
 }
 
 type UpdateEndpointParams struct {
 	HealthChecks []HealthCheck `json:"healthchecks"`
+}
+
+type AddEndpointParams struct {
+	HealthCheckInterval int           `json:"healthcheck_interval"`
+	Checks              []HealthCheck `json:"checks"`
+	Plugin              string        `json:"plugin"`
+	PluginConfig        any           `json:"plugin_config,omitempty"`
+}
+
+type GetEndpointHostsResponse struct {
+	Hosts []Host `json:"hosts"`
+}
+
+type Host struct {
+	Hostname string `json:"hostname"`
 }

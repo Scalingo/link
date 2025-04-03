@@ -69,18 +69,7 @@ func (e etcdStorage) GetEndpoints(ctx context.Context) (Endpoints, error) {
 	return endpoints, nil
 }
 
-func (e etcdStorage) AddEndpoint(ctx context.Context, endpoint Endpoint) (Endpoint, error) {
-	ips, err := e.GetEndpoints(ctx)
-	if err != nil {
-		return endpoint, errors.Wrap(err, "fail to contact etcd")
-	}
-
-	for _, i := range ips {
-		if i.IP == endpoint.IP {
-			return i, ErrIPAlreadyPresent
-		}
-	}
-
+func (e EtcdStorage) AddEndpoint(ctx context.Context, endpoint Endpoint) (Endpoint, error) {
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
 		return endpoint, errors.Wrap(err, "fail to get etcd client")
