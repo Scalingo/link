@@ -49,6 +49,7 @@ func main() {
 				&cli.StringFlag{
 					Name:     "endpoint-id",
 					Usage:    "ID of the endpoint to destroy",
+					Aliases:  []string{"id", "endpoint"},
 					Required: true,
 				},
 			},
@@ -59,6 +60,7 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:     "endpoint-id",
+					Aliases:  []string{"id", "endpoint"},
 					Usage:    "ID of the endpoint to show",
 					Required: true,
 				},
@@ -69,6 +71,7 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:     "endpoint-id",
+					Aliases:  []string{"id", "endpoint"},
 					Usage:    "ID of the endpoint to failover",
 					Required: true,
 				},
@@ -103,6 +106,7 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:     "endpoint-id",
+					Aliases:  []string{"id", "endpoint"},
 					Usage:    "ID of the endpoint to update",
 					Required: true,
 				},
