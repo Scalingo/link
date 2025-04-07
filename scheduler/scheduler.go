@@ -4,9 +4,10 @@ import (
 	"context"
 	"sync"
 
-	"github.com/pkg/errors"
+	stderrors "github.com/pkg/errors"
 	etcdv3 "go.etcd.io/etcd/client/v3"
 
+	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/ip"
@@ -17,10 +18,10 @@ import (
 
 var (
 	// ErrEndpointAlreadyAssigned can be sent by Start if there is another endpoint with the same election key
-	ErrEndpointAlreadyAssigned = errors.New("An endpoint with the same election key already exists on that host")
+	ErrEndpointAlreadyAssigned = stderrors.New("An endpoint with the same election key already exists on that host")
 
 	// ErrEndpointNotFound can be sent if an operation has been called on an unregistered Endpoint
-	ErrEndpointNotFound = errors.New("Endpoint not found")
+	ErrEndpointNotFound = stderrors.New("Endpoint not found")
 )
 
 // Scheduler is the central point of LinK it will keep track all of IPs registered on this node
@@ -78,12 +79,14 @@ func (s *IPScheduler) Start(ctx context.Context, endpoint models.Endpoint) (mode
 
 	plugin, err := s.pluginRegistry.Create(ctx, endpoint)
 	if err != nil {
-		return endpoint, errors.Wrap(err, "initialize plugin")
+		return endpoint, errors.Wrap(ctx, err, "initialize plugin")
 	}
+
+	ctx, log = logger.WithFieldToCtx(ctx, "election_key", plugin.ElectionKey(ctx))
 
 	for _, manager := range s.endpointManagers {
 		if manager.ElectionKey(ctx) == plugin.ElectionKey(ctx) {
-			return endpoint, ErrEndpointAlreadyAssigned
+			return endpoint, errors.Wrap(ctx, ErrEndpointAlreadyAssigned, "endpoint already assigned")
 		}
 	}
 
@@ -91,7 +94,7 @@ func (s *IPScheduler) Start(ctx context.Context, endpoint models.Endpoint) (mode
 
 	manager, err := ip.NewManager(ctx, s.config, endpoint, s.etcd, s.storage, s.leaseManager, plugin)
 	if err != nil {
-		return endpoint, errors.Wrap(err, "fail to initialize manager")
+		return endpoint, errors.Wrap(ctx, err, "fail to initialize manager")
 	}
 
 	s.mapMutex.Lock()
@@ -113,7 +116,7 @@ func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 
 	err := manager.Stop(ctx)
 	if err != nil {
-		return errors.Wrap(err, "fail to stop manager")
+		return errors.Wrap(ctx, err, "fail to stop manager")
 	}
 
 	s.mapMutex.Lock()
@@ -133,7 +136,7 @@ func (s *IPScheduler) Failover(ctx context.Context, id string) error {
 
 	err := manager.Failover(ctx)
 	if err != nil {
-		return errors.Wrapf(err, "fail to failover the IP %v", id)
+		return errors.Wrapf(ctx, err, "fail to failover the IP %v", id)
 	}
 
 	return nil
@@ -186,7 +189,7 @@ func (s *IPScheduler) UpdateEndpoint(ctx context.Context, endpoint models.Endpoi
 
 	err := s.storage.UpdateEndpoint(ctx, endpoint)
 	if err != nil {
-		return errors.Wrap(err, "fail to update the IP from storage")
+		return errors.Wrap(ctx, err, "fail to update the IP from storage")
 	}
 
 	manager.SetHealthChecks(ctx, s.config, endpoint.Checks)
