@@ -15,14 +15,13 @@ import (
 )
 
 func TestSetActivated(t *testing.T) {
-	t.Run("It should call EnsureIP", func(t *testing.T) {
+	t.Run("It should call the plugin Activated Method", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		pluginMock := pluginmock.NewMockPlugin(ctrl)
 
-		ip := models.Endpoint{
-			IP: "10.0.0.1/32",
+		endpoint := models.Endpoint{
 			ID: "test-1234",
 		}
 
@@ -30,7 +29,7 @@ func TestSetActivated(t *testing.T) {
 
 		manager := &EndpointManager{
 			plugin:   pluginMock,
-			endpoint: ip,
+			endpoint: endpoint,
 		}
 
 		manager.setActivated(context.Background(), &fsm.Event{})
@@ -38,12 +37,11 @@ func TestSetActivated(t *testing.T) {
 }
 
 func TestSetStandBy(t *testing.T) {
-	t.Run("It should call RemoveIP", func(t *testing.T) {
+	t.Run("It should call the plugin Deactivate method", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		ip := models.Endpoint{
-			IP: "10.0.0.1/32",
+		endpoint := models.Endpoint{
 			ID: "test-1234",
 		}
 
@@ -52,7 +50,7 @@ func TestSetStandBy(t *testing.T) {
 
 		manager := &EndpointManager{
 			plugin:   pluginMock,
-			endpoint: ip,
+			endpoint: endpoint,
 		}
 
 		manager.setStandBy(context.Background(), &fsm.Event{})
@@ -60,14 +58,13 @@ func TestSetStandBy(t *testing.T) {
 }
 
 func TestSetFailing(t *testing.T) {
-	t.Run("It remove the IP and stop the locker", func(t *testing.T) {
+	t.Run("It remove the endpoint and stop the locker", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		lockerMock := lockermock.NewMockLocker(ctrl)
 
-		ip := models.Endpoint{
-			IP: "10.0.0.1/32",
+		endpoint := models.Endpoint{
 			ID: "test-1234",
 		}
 
@@ -78,7 +75,7 @@ func TestSetFailing(t *testing.T) {
 		manager := &EndpointManager{
 			plugin:   pluginMock,
 			locker:   lockerMock,
-			endpoint: ip,
+			endpoint: endpoint,
 		}
 
 		manager.setFailing(context.Background(), &fsm.Event{})
@@ -86,8 +83,7 @@ func TestSetFailing(t *testing.T) {
 }
 
 func Test_startPluginEnsureLoop(t *testing.T) {
-	ip := models.Endpoint{
-		IP: "10.0.0.1/32",
+	endpoint := models.Endpoint{
 		ID: "test-1234",
 	}
 
@@ -95,7 +91,7 @@ func Test_startPluginEnsureLoop(t *testing.T) {
 		PluginEnsureInterval: 10 * time.Millisecond,
 	}
 
-	t.Run("If the IP is activated", func(t *testing.T) {
+	t.Run("If the endpoint is activated", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -109,7 +105,7 @@ func Test_startPluginEnsureLoop(t *testing.T) {
 		manager := &EndpointManager{
 			stateMachine: sm,
 			config:       config,
-			endpoint:     ip,
+			endpoint:     endpoint,
 			plugin:       pluginMock,
 		}
 
@@ -132,7 +128,7 @@ func Test_startPluginEnsureLoop(t *testing.T) {
 		}
 	})
 
-	t.Run("If the IP is not activated", func(t *testing.T) {
+	t.Run("If the endpoint is not activated", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
@@ -144,7 +140,7 @@ func Test_startPluginEnsureLoop(t *testing.T) {
 			plugin:       pluginMock,
 			stateMachine: sm,
 			config:       config,
-			endpoint:     ip,
+			endpoint:     endpoint,
 		}
 
 		doneChan := make(chan bool)

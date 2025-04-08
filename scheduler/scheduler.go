@@ -24,8 +24,8 @@ var (
 	ErrEndpointNotFound = stderrors.New("Endpoint not found")
 )
 
-// Scheduler is the central point of LinK it will keep track all of IPs registered on this node
-// however the heavy lifting for a single IP is done in the Manager
+// Scheduler is the central point of LinK it will keep track all of endpoints registered on this node
+// however the heavy lifting for a single endpoint is done in the Manager
 type Scheduler interface {
 	Start(ctx context.Context, endpoint models.Endpoint) (models.Endpoint, error)
 	Stop(ctx context.Context, id string) error
@@ -36,8 +36,8 @@ type Scheduler interface {
 	UpdateEndpoint(ctx context.Context, endpoint models.Endpoint) error
 }
 
-// IPScheduler is LinK implementation of the Scheduler Interface
-type IPScheduler struct {
+// EndpointScheduler is LinK implementation of the Scheduler Interface
+type EndpointScheduler struct {
 	mapMutex         sync.RWMutex
 	endpointManagers map[string]ip.Manager
 	etcd             *etcdv3.Client
@@ -47,9 +47,9 @@ type IPScheduler struct {
 	pluginRegistry   plugin.Registry
 }
 
-// NewIPScheduler creates and configures a Scheduler
-func NewIPScheduler(config config.Config, etcd *etcdv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager, registry plugin.Registry) *IPScheduler {
-	return &IPScheduler{
+// NewEndpointScheduler creates and configures a Scheduler
+func NewEndpointScheduler(config config.Config, etcd *etcdv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager, registry plugin.Registry) *EndpointScheduler {
+	return &EndpointScheduler{
 		mapMutex:         sync.RWMutex{},
 		endpointManagers: make(map[string]ip.Manager),
 		etcd:             etcd,
@@ -60,8 +60,8 @@ func NewIPScheduler(config config.Config, etcd *etcdv3.Client, storage models.St
 	}
 }
 
-// Status gives you access to the state machine status of a specific IP
-func (s *IPScheduler) Status(id string) string {
+// Status gives you access to the state machine status of a specific endpoint
+func (s *EndpointScheduler) Status(id string) string {
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()
 	manager, ok := s.endpointManagers[id]
@@ -71,8 +71,8 @@ func (s *IPScheduler) Status(id string) string {
 	return ""
 }
 
-// Start schedules a new IP on the host. It launches a new manager for the IP and add it to the tracked IP on this host.
-func (s *IPScheduler) Start(ctx context.Context, endpoint models.Endpoint) (models.Endpoint, error) {
+// Start schedules a new endpoint on the host. It launches a new manager for the endpoint and add it to the tracked endpoint on this host.
+func (s *EndpointScheduler) Start(ctx context.Context, endpoint models.Endpoint) (models.Endpoint, error) {
 	log := logger.Get(ctx)
 
 	log.Info("Initialize Endpoint Plugin")
@@ -90,7 +90,7 @@ func (s *IPScheduler) Start(ctx context.Context, endpoint models.Endpoint) (mode
 		}
 	}
 
-	log.Info("Initialize a new IP manager")
+	log.Info("Initialize a new endpoint manager")
 
 	manager, err := ip.NewManager(ctx, s.config, endpoint, s.etcd, s.storage, s.leaseManager, plugin)
 	if err != nil {
@@ -105,8 +105,8 @@ func (s *IPScheduler) Start(ctx context.Context, endpoint models.Endpoint) (mode
 	return endpoint, nil
 }
 
-// Stop the manager of the specified IP and remove it from the tracked IP
-func (s *IPScheduler) Stop(ctx context.Context, id string) error {
+// Stop the manager of the specified endpoint and remove it from the tracked endpoints
+func (s *EndpointScheduler) Stop(ctx context.Context, id string) error {
 	s.mapMutex.RLock()
 	manager, ok := s.endpointManagers[id]
 	s.mapMutex.RUnlock()
@@ -125,8 +125,8 @@ func (s *IPScheduler) Stop(ctx context.Context, id string) error {
 	return nil
 }
 
-// Failover triggers a failover on a specific IP
-func (s *IPScheduler) Failover(ctx context.Context, id string) error {
+// Failover triggers a failover on a specific endpoint
+func (s *EndpointScheduler) Failover(ctx context.Context, id string) error {
 	s.mapMutex.RLock()
 	manager, ok := s.endpointManagers[id]
 	s.mapMutex.RUnlock()
@@ -136,14 +136,14 @@ func (s *IPScheduler) Failover(ctx context.Context, id string) error {
 
 	err := manager.Failover(ctx)
 	if err != nil {
-		return errors.Wrapf(ctx, err, "fail to failover the IP %v", id)
+		return errors.Wrapf(ctx, err, "fail to failover the endpoint %v", id)
 	}
 
 	return nil
 }
 
-// ConfiguredIPs lists all IPs currently tracked by the scheduler
-func (s *IPScheduler) ConfiguredEndpoints(ctx context.Context) EndpointsWithStatus {
+// ConfiguredEndpoints lists all endpoints currently tracked by the scheduler
+func (s *EndpointScheduler) ConfiguredEndpoints(ctx context.Context) EndpointsWithStatus {
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()
 
@@ -159,8 +159,8 @@ func (s *IPScheduler) ConfiguredEndpoints(ctx context.Context) EndpointsWithStat
 	return res
 }
 
-// GetIP fetches basic information about a tracked IP
-func (s *IPScheduler) GetEndpoint(ctx context.Context, id string) *EndpointWithStatus {
+// GetEndpoint fetches basic information about a tracked endpoint
+func (s *EndpointScheduler) GetEndpoint(ctx context.Context, id string) *EndpointWithStatus {
 	s.mapMutex.RLock()
 	defer s.mapMutex.RUnlock()
 
@@ -176,20 +176,20 @@ func (s *IPScheduler) GetEndpoint(ctx context.Context, id string) *EndpointWithS
 	}
 }
 
-// UpdateIP updates the IP in the scheduler storage, and the health checks in the IP manager.
-func (s *IPScheduler) UpdateEndpoint(ctx context.Context, endpoint models.Endpoint) error {
+// UpdateEndpoint updates the endpoint in the scheduler storage, and the health checks in the endpoint manager.
+func (s *EndpointScheduler) UpdateEndpoint(ctx context.Context, endpoint models.Endpoint) error {
 	log := logger.Get(ctx)
 	s.mapMutex.RLock()
 	manager, ok := s.endpointManagers[endpoint.ID]
 	s.mapMutex.RUnlock()
 	if !ok {
-		log.Info("IP manager not found, skipping the IP update")
+		log.Info("Endpoint manager not found, skipping the endpoint update")
 		return nil
 	}
 
 	err := s.storage.UpdateEndpoint(ctx, endpoint)
 	if err != nil {
-		return errors.Wrap(ctx, err, "fail to update the IP from storage")
+		return errors.Wrap(ctx, err, "fail to update the endpoint from storage")
 	}
 
 	manager.SetHealthChecks(ctx, s.config, endpoint.Checks)

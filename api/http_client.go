@@ -206,13 +206,13 @@ func (c HTTPClient) UpdateEndpoint(ctx context.Context, id string, params Update
 		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
-	var ip Endpoint
-	err = json.NewDecoder(resp.Body).Decode(&ip)
+	var endpoint Endpoint
+	err = json.NewDecoder(resp.Body).Decode(&endpoint)
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "read endpoint JSON")
 	}
 
-	return ip, nil
+	return endpoint, nil
 }
 
 func (c HTTPClient) RemoveEndpoint(ctx context.Context, id string) error {

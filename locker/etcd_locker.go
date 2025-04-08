@@ -18,7 +18,7 @@ var (
 	// ErrInvalidEtcdState is an error returned by IsMaster when the key supposed to contain the lock does not exist
 	ErrInvalidEtcdState = errors.New("Invalid etcd state: key not found")
 
-	// ErrNotMaster is an error returned by Unlock when we try to unlock an IP that belongs to someone else
+	// ErrNotMaster is an error returned by Unlock when we try to unlock an endpoint that belongs to someone else
 	ErrNotMaster = errors.New("current host is not master of this lock")
 )
 

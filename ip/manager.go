@@ -62,6 +62,7 @@ func NewManager(ctx context.Context, cfg config.Config, endpoint models.Endpoint
 		plugin:                  plugin,
 	}
 
+	// We need to keep the `/ips/` prefix in the watcher in order to keep backward compatibility.
 	prefix := fmt.Sprintf("%s/ips/%s", models.EtcdLinkDirectory, plugin.ElectionKey(ctx))
 	m.watcher = watcher.NewWatcher(client, prefix, m.onTopologyChange)
 
@@ -85,10 +86,10 @@ func (m *EndpointManager) Start(ctx context.Context) {
 	}
 
 	ctx = logger.ToCtx(ctx, log)
-	go m.ipCheckLoop(ctx)   // Will continuously try to get the IP
-	go m.healthChecker(ctx) // HealthChecker
+	go m.endpointCheckLoop(ctx) // Will continuously try to get the endpoint
+	go m.healthChecker(ctx)     // HealthChecker
 	go m.startPluginEnsureLoop(ctx)
-	go m.watcher.Start(ctx) // Start a watcher that will notify us if other hosts are joining or leaving this IP
+	go m.watcher.Start(ctx) // Start a watcher that will notify us if other hosts are joining or leaving this endpoint
 
 	for event := range m.eventChan {
 		err := m.stateMachine.Event(ctx, event)
@@ -108,7 +109,7 @@ func (m *EndpointManager) Status() string {
 	return m.stateMachine.Current()
 }
 
-// IP returns the ip model linked to this manager
+// Endpoint returns the endpoint model linked to this manager
 func (m *EndpointManager) Endpoint() models.Endpoint {
 	return m.endpoint
 }

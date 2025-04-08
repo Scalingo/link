@@ -12,10 +12,10 @@ import (
 
 var (
 	// ErrIsNotMaster is an error sent by Failover when the node is not currently master
-	ErrIsNotMaster = errors.New("this node is not master of this IP")
+	ErrIsNotMaster = errors.New("this node is not master of this endpoint")
 
 	// ErrNoOtherHosts is an error sent by Failover when there is no other node to fail over.
-	ErrNoOtherHosts = errors.New("no other nodes are listening for this IP")
+	ErrNoOtherHosts = errors.New("no other nodes are listening for this endpoint")
 
 	// ErrReallocationTimedOut is an error returned by waitForReallocation if the reallocation did not happen in less than KeepAliveInterval
 	ErrReallocationTimedOut = errors.New("reallocation timed out")
@@ -49,16 +49,16 @@ func (m *EndpointManager) waitForReallocation(ctx context.Context) error {
 			}
 		}
 
-		return errors.Wrap(err, "fail to wait for IP reallocation")
+		return errors.Wrap(err, "fail to wait for endpoint reallocation")
 	}
 	return nil
 }
 
-// Failover forces a change of the master. It can only be run on the current master instance for an IP.
-// If there is another node available for this IP, it steps down as a master and ensure that another node becomes master.
+// Failover forces a change of the master. It can only be run on the current master instance for an endpoint.
+// If there is another node available for this endpoint, it steps down as a master and ensure that another node becomes master.
 // This function refuses to trigger a failover if the node is not master or if there are no other nodes.
-// To trigger the failover, we unlock the IP (remove the lock key) and update the link between the host and the IP.
-// Updating the link notifies watchers on this IP and other hosts will try to get the IP.
+// To trigger the failover, we unlock the endpoint (remove the lock key) and update the link between the host and the endpoint.
+// Updating the link notifies watchers on this endpoint and other hosts will try to get the endpoint.
 func (m *EndpointManager) Failover(ctx context.Context) error {
 	isMaster, err := m.locker.IsMaster(ctx)
 	if err != nil {
@@ -69,22 +69,22 @@ func (m *EndpointManager) Failover(ctx context.Context) error {
 	}
 	hosts, err := m.storage.GetEndpointHosts(ctx, m.plugin.ElectionKey(ctx))
 	if err != nil {
-		return errors.Wrap(err, "fail to list other nodes listening for this IP")
+		return errors.Wrap(err, "fail to list other nodes listening for this endpoint")
 	}
 	if len(hosts) <= 1 {
 		return ErrNoOtherHosts
 	}
 
-	// Unlock the IP
+	// Unlock the endpoint
 	err = m.locker.Unlock(ctx)
 	if err != nil {
-		return errors.Wrap(err, "fail to unlock current IP")
+		return errors.Wrap(err, "fail to unlock current endpoint")
 	}
 
-	// Update the IP link that will trigger every other watchers on this IP
+	// Update the endpoint link that will trigger every other watchers on this endpoint
 	err = m.storage.LinkEndpointWithCurrentHost(ctx, m.plugin.ElectionKey(ctx))
 	if err != nil {
-		return errors.Wrap(err, "fail to update the IP Link")
+		return errors.Wrap(err, "fail to update the endpoint Link")
 	}
 	return nil
 }

@@ -8,7 +8,6 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 
 	"github.com/Scalingo/go-handlers"
 	"github.com/Scalingo/go-utils/errors/v2"
@@ -75,23 +74,20 @@ func main() {
 		panic(err)
 	}
 
-	scheduler := scheduler.NewIPScheduler(config, etcd, storage, leaseManager, pluginRegistry)
+	scheduler := scheduler.NewEndpointScheduler(config, etcd, storage, leaseManager, pluginRegistry)
 
-	ips, err := storage.GetEndpoints(ctx)
+	endpoints, err := storage.GetEndpoints(ctx)
 	if err != nil {
-		log.WithError(err).Error("Fail to list configured IPs")
+		log.WithError(err).Error("Fail to list configured endpoints")
 		panic(err)
 	}
 
-	if len(ips) > 0 {
-		log.Info("Restarting IP schedulers...")
-		for _, ip := range ips {
-			log := log.WithFields(logrus.Fields{
-				"id": ip.ID,
-				"ip": ip.IP,
-			})
-			log.Info("Starting an IP scheduler")
-			_, err := scheduler.Start(logger.ToCtx(ctx, log), ip)
+	if len(endpoints) > 0 {
+		log.Info("Restarting endpoint schedulers...")
+		for _, endpoint := range endpoints {
+			ctx, log := logger.WithStructToCtx(ctx, "endpoint", endpoint)
+			log.Info("Starting an endpoint scheduler")
+			_, err := scheduler.Start(ctx, endpoint)
 			if err != nil {
 				panic(err)
 			}

@@ -177,7 +177,7 @@ func (m *etcdLeaseManager) Start(ctx context.Context) error {
 
 	// Step 2: Start the lease refresher. This codes has to be running constantly to keep the lease
 	// alive. If this loop stop (or fails for a long time), the other nodes will try to get the lock
-	// and we will loose our IPs.
+	// and we will loose our endpoints.
 	go func() {
 		log := log.WithField("source", "etcd-lease-manager-refresh")
 		ctx := logger.ToCtx(ctx, log)

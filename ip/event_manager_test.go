@@ -98,7 +98,7 @@ func TestManager_TryToGetIP(t *testing.T) {
 			doneChan := make(chan bool)
 			manager.eventChan = eventChan
 			go func() {
-				manager.tryToGetIP(ctx)
+				manager.tryToGetEndpoint(ctx)
 				// Wait for the eventChan to be processed
 				time.Sleep(100 * time.Millisecond)
 				doneChan <- true

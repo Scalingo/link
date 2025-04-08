@@ -29,8 +29,8 @@ const (
 // /link/ips/IP/HOSTNAME => Link between IP and host
 
 var (
-	ErrIPAlreadyPresent = errors.New("IP already present")
-	ErrHostNotFound     = errors.New("host not found")
+	ErrEndpointAlreadyPresent = errors.New("endpoint already present")
+	ErrHostNotFound           = errors.New("host not found")
 )
 
 type EtcdStorage struct {
@@ -55,7 +55,7 @@ func (e EtcdStorage) GetEndpoints(ctx context.Context) (Endpoints, error) {
 
 	resp, err := client.Get(ctx, fmt.Sprintf("%s/hosts/%s", EtcdLinkDirectory, e.hostname), etcdv3.WithPrefix())
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to get list of IPs from etcd")
+		return nil, errors.Wrap(err, "fail to get list of endpoints from etcd")
 	}
 
 	endpoints := make(Endpoints, 0)
@@ -86,14 +86,14 @@ func (e EtcdStorage) AddEndpoint(ctx context.Context, endpoint Endpoint) (Endpoi
 
 	value, err := json.Marshal(endpoint)
 	if err != nil {
-		return endpoint, errors.Wrap(err, "fail to marshal IP")
+		return endpoint, errors.Wrap(err, "fail to marshal endpoint")
 	}
 
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	_, err = client.Put(etcdCtx, e.keyFor(endpoint), string(value))
 	if err != nil {
-		return endpoint, errors.Wrapf(err, "fail to save IP")
+		return endpoint, errors.Wrapf(err, "fail to save endpoint")
 	}
 
 	return endpoint, nil
@@ -120,13 +120,13 @@ func (e EtcdStorage) UpdateEndpoint(ctx context.Context, endpoint Endpoint) erro
 	log.WithFields(logrus.Fields{
 		"etcd_key": etcdKey,
 		"value":    string(value),
-	}).Debug("Update the IP in etcd storage")
+	}).Debug("Update the endpoint in etcd storage")
 
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	_, err = client.Put(etcdCtx, etcdKey, string(value))
 	if err != nil {
-		return errors.Wrap(err, "fail to update the IP in etcd storage")
+		return errors.Wrap(err, "fail to update the endpoint in etcd storage")
 	}
 	return nil
 }
@@ -143,7 +143,7 @@ func (e EtcdStorage) RemoveEndpoint(ctx context.Context, id string) error {
 
 	_, err = client.Delete(ctx, fmt.Sprintf("%s/hosts/%s/%s", EtcdLinkDirectory, e.hostname, id))
 	if err != nil {
-		return errors.Wrap(err, "fail to delete IP")
+		return errors.Wrap(err, "fail to delete endpoint")
 	}
 	return nil
 }
@@ -216,14 +216,14 @@ func (e EtcdStorage) LinkEndpointWithCurrentHost(ctx context.Context, lockKey st
 		UpdatedAt: time.Now(),
 	})
 	if err != nil {
-		return errors.Wrap(err, "fail to encode IP Link")
+		return errors.Wrap(err, "fail to encode endpoint Link")
 	}
 
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	_, err = client.Put(etcdCtx, key, string(payload))
 	if err != nil {
-		return errors.Wrap(err, "fail to save ip link")
+		return errors.Wrap(err, "fail to save endpoint link")
 	}
 	return nil
 }
@@ -240,7 +240,7 @@ func (e EtcdStorage) UnlinkEndpointFromCurrentHost(ctx context.Context, lockKey 
 	defer cancel()
 	_, err = client.Delete(etcdCtx, key)
 	if err != nil {
-		return errors.Wrap(err, "fail to delete IP link")
+		return errors.Wrap(err, "fail to delete endpoint link")
 	}
 	return nil
 }
