@@ -17,6 +17,8 @@ To use this plugin, register it during the initialization of your program.
 
 ```go
 rollbarplugin.Register()
+defer rollbarplugin.Close()
+
 log := logger.Default()
 ctx := logger.ToCtx(context.Background(), log)
 ```

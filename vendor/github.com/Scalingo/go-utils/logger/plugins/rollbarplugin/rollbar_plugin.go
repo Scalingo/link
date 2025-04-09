@@ -17,6 +17,11 @@ func Register() {
 	logger.Plugins().RegisterPlugin(RollbarPlugin{})
 }
 
+// Close blocks untils the queue is empty and then closes the rollbar client.
+func Close() {
+	rollbar.Close()
+}
+
 func (p RollbarPlugin) Name() string {
 	return "rollbar"
 }
