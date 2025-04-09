@@ -7,17 +7,17 @@ import (
 	"github.com/Scalingo/go-utils/logger"
 )
 
-type versionController struct {
+type VersionController struct {
 	version string
 }
 
-func NewVersionController(version string) versionController {
-	return versionController{
+func NewVersionController(version string) VersionController {
+	return VersionController{
 		version: version,
 	}
 }
 
-func (c versionController) Version(w http.ResponseWriter, r *http.Request, params map[string]string) error {
+func (c VersionController) Version(w http.ResponseWriter, r *http.Request, _ map[string]string) error {
 	log := logger.Get(r.Context())
 	w.Header().Set("Content-Type", "application/json")
 	err := json.NewEncoder(w).Encode(map[string]string{

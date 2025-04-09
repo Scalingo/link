@@ -11,14 +11,17 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.etcd.io/etcd/api/v3/mvccpb"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/etcdmock"
 )
 
+const (
+	key = "/test"
+)
+
 func TestRefresh(t *testing.T) {
-	key := "/test"
 	examples := []struct {
 		Name                      string
 		LeaseSubscriberID         string
@@ -33,12 +36,12 @@ func TestRefresh(t *testing.T) {
 			ExpectedLeaseSubscriberID: "id-1",
 			ExpectedLeaseManager: func(mock *MockEtcdLeaseManager) {
 				mock.EXPECT().SubscribeToLeaseChange(gomock.Any(), gomock.Any()).Return("id-1", nil)
-				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(12), nil)
+				mock.EXPECT().GetLease(gomock.Any()).Return(etcdv3.LeaseID(12), nil)
 			},
 			ExpectedKV: func(ctrl *gomock.Controller, mock *etcdmock.MockKV) {
 				txnMock := etcdmock.NewMockTxn(ctrl)
-				txnMock.EXPECT().If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0)).Return(txnMock)
-				txnMock.EXPECT().Then(clientv3.OpPut(key, "hostname", clientv3.WithLease(12))).Return(txnMock)
+				txnMock.EXPECT().If(etcdv3.Compare(etcdv3.CreateRevision(key), "=", 0)).Return(txnMock)
+				txnMock.EXPECT().Then(etcdv3.OpPut(key, "hostname", etcdv3.WithLease(12))).Return(txnMock)
 				txnMock.EXPECT().Commit().Return(nil, nil)
 				mock.EXPECT().Txn(gomock.Any()).Return(txnMock)
 			},
@@ -48,13 +51,13 @@ func TestRefresh(t *testing.T) {
 			LeaseSubscriberID:         "id-1",
 			ExpectedLeaseSubscriberID: "id-1",
 			ExpectedLeaseManager: func(mock *MockEtcdLeaseManager) {
-				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(12), nil)
-				mock.EXPECT().MarkLeaseAsDirty(gomock.Any(), clientv3.LeaseID(12)).Return(nil)
+				mock.EXPECT().GetLease(gomock.Any()).Return(etcdv3.LeaseID(12), nil)
+				mock.EXPECT().MarkLeaseAsDirty(gomock.Any(), etcdv3.LeaseID(12)).Return(nil)
 			},
 			ExpectedKV: func(ctrl *gomock.Controller, mock *etcdmock.MockKV) {
 				txnMock := etcdmock.NewMockTxn(ctrl)
-				txnMock.EXPECT().If(clientv3.Compare(clientv3.CreateRevision(key), "=", 0)).Return(txnMock)
-				txnMock.EXPECT().Then(clientv3.OpPut(key, "hostname", clientv3.WithLease(12))).Return(txnMock)
+				txnMock.EXPECT().If(etcdv3.Compare(etcdv3.CreateRevision(key), "=", 0)).Return(txnMock)
+				txnMock.EXPECT().Then(etcdv3.OpPut(key, "hostname", etcdv3.WithLease(12))).Return(txnMock)
 				txnMock.EXPECT().Commit().Return(nil, errors.New("NOP"))
 				mock.EXPECT().Txn(gomock.Any()).Return(txnMock)
 			},
@@ -92,11 +95,11 @@ func TestRefresh(t *testing.T) {
 			}
 
 			err := locker.Refresh(ctx)
-			if len(example.ExpectedError) != 0 {
+			if example.ExpectedError != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), example.ExpectedError)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 			}
 			assert.Equal(t, example.ExpectedLeaseSubscriberID, locker.leaseSubscriberID)
 		})
@@ -104,10 +107,9 @@ func TestRefresh(t *testing.T) {
 }
 
 func Test_IsMaster(t *testing.T) {
-
 	examples := []struct {
 		Name                 string
-		CurrentLeaseID       clientv3.LeaseID
+		CurrentLeaseID       etcdv3.LeaseID
 		MockEtcdLeaseManager func(mock *MockEtcdLeaseManager)
 		EtcdError            error
 		Expected             bool
@@ -120,21 +122,21 @@ func Test_IsMaster(t *testing.T) {
 		}, {
 			Name: "when we are not master",
 			MockEtcdLeaseManager: func(mock *MockEtcdLeaseManager) {
-				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(10), nil)
+				mock.EXPECT().GetLease(gomock.Any()).Return(etcdv3.LeaseID(10), nil)
 			},
 			CurrentLeaseID: 11,
 			Expected:       false,
 		}, {
 			Name: "when we are master",
 			MockEtcdLeaseManager: func(mock *MockEtcdLeaseManager) {
-				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(10), nil)
+				mock.EXPECT().GetLease(gomock.Any()).Return(etcdv3.LeaseID(10), nil)
 			},
 			CurrentLeaseID: 10,
 			Expected:       true,
 		}, {
 			Name: "when there was an error while getting our leaseID",
 			MockEtcdLeaseManager: func(mock *MockEtcdLeaseManager) {
-				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(0), errors.New("Nop"))
+				mock.EXPECT().GetLease(gomock.Any()).Return(etcdv3.LeaseID(0), errors.New("Nop"))
 			},
 			ExpectedError: "Nop",
 		},
@@ -154,7 +156,7 @@ func Test_IsMaster(t *testing.T) {
 			}
 
 			etcdMock := etcdmock.NewMockKV(ctrl)
-			etcdMock.EXPECT().Get(gomock.Any(), key).Return(&clientv3.GetResponse{
+			etcdMock.EXPECT().Get(gomock.Any(), key).Return(&etcdv3.GetResponse{
 				Kvs: []*mvccpb.KeyValue{
 					{Lease: int64(example.CurrentLeaseID)},
 				},
@@ -167,11 +169,11 @@ func Test_IsMaster(t *testing.T) {
 			}
 
 			value, err := locker.IsMaster(ctx)
-			if len(example.ExpectedError) > 0 {
+			if example.ExpectedError != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), example.ExpectedError)
 			} else {
-				assert.NoError(t, err)
+				require.NoError(t, err)
 				assert.Equal(t, example.Expected, value)
 			}
 		})
@@ -183,7 +185,7 @@ func Test_Unlock(t *testing.T) {
 
 	examples := []struct {
 		Name               string
-		CurrentLeaseID     clientv3.LeaseID
+		CurrentLeaseID     etcdv3.LeaseID
 		ExpectLeaseManager func(mock *MockEtcdLeaseManager)
 		ExpectKV           func(*etcdmock.MockKV)
 		ExpectedError      string
@@ -191,14 +193,14 @@ func Test_Unlock(t *testing.T) {
 		{
 			Name: "when we are not master",
 			ExpectLeaseManager: func(mock *MockEtcdLeaseManager) {
-				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(10), nil)
+				mock.EXPECT().GetLease(gomock.Any()).Return(etcdv3.LeaseID(10), nil)
 			},
 			CurrentLeaseID: 11,
 			ExpectedError:  ErrNotMaster.Error(),
 		}, {
 			Name: "when we are master and etcd is not sending any error",
 			ExpectLeaseManager: func(mock *MockEtcdLeaseManager) {
-				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(10), nil)
+				mock.EXPECT().GetLease(gomock.Any()).Return(etcdv3.LeaseID(10), nil)
 			},
 			CurrentLeaseID: 10,
 			ExpectKV: func(m *etcdmock.MockKV) {
@@ -207,13 +209,13 @@ func Test_Unlock(t *testing.T) {
 		}, {
 			Name: "when we are master and etcd is sending an error",
 			ExpectLeaseManager: func(mock *MockEtcdLeaseManager) {
-				mock.EXPECT().GetLease(gomock.Any()).Return(clientv3.LeaseID(10), nil)
+				mock.EXPECT().GetLease(gomock.Any()).Return(etcdv3.LeaseID(10), nil)
 			},
 			CurrentLeaseID: 10,
 			ExpectKV: func(m *etcdmock.MockKV) {
-				m.EXPECT().Delete(gomock.Any(), key).Return(nil, errors.New("HAHA NOPE!"))
+				m.EXPECT().Delete(gomock.Any(), key).Return(nil, errors.New("failed to delete key"))
 			},
-			ExpectedError: "HAHA NOPE!",
+			ExpectedError: "failed to delete key",
 		},
 	}
 
@@ -230,7 +232,7 @@ func Test_Unlock(t *testing.T) {
 			}
 
 			etcdMock := etcdmock.NewMockKV(ctrl)
-			etcdMock.EXPECT().Get(gomock.Any(), key).Return(&clientv3.GetResponse{
+			etcdMock.EXPECT().Get(gomock.Any(), key).Return(&etcdv3.GetResponse{
 				Kvs: []*mvccpb.KeyValue{
 					{Lease: int64(example.CurrentLeaseID)},
 				},
@@ -247,7 +249,7 @@ func Test_Unlock(t *testing.T) {
 			}
 
 			err := locker.Unlock(ctx)
-			if len(example.ExpectedError) > 0 {
+			if example.ExpectedError != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), example.ExpectedError)
 			} else {

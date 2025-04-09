@@ -3,23 +3,19 @@ package main
 import (
 	"context"
 	"fmt"
-	"net"
 	"os"
-	"strconv"
 
 	"github.com/logrusorgru/aurora/v3"
-	"github.com/pkg/errors"
-	"github.com/urfave/cli/v2"
+	"github.com/urfave/cli/v3"
 
-	"github.com/Scalingo/link/v2/api"
-	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v2/cmd/link-client/internal/endpoint"
+	"github.com/Scalingo/link/v2/cmd/link-client/internal/utils"
 )
 
 var Version = "dev"
 
 func main() {
-	app := cli.NewApp()
-
+	app := cli.Command{}
 	app.Version = Version
 
 	app.Flags = []cli.Flag{
@@ -44,183 +40,88 @@ func main() {
 
 	app.Commands = []*cli.Command{
 		{
-			Name: "list",
-			Action: func(c *cli.Context) error {
-				client := getClientFromCtx(c)
-				ips, err := client.ListIPs(context.Background())
-				if err != nil {
-					return err
-				}
-				formatIPs(ips)
-				return nil
-			},
+			Name:   "list",
+			Action: endpoint.List,
 		}, {
-			Name:      "destroy",
-			ArgsUsage: "ID",
-			Action: func(c *cli.Context) error {
-				if c.NArg() != 1 {
-					err := cli.ShowCommandHelp(c, c.Command.Name)
-					if err != nil {
-						return errors.Wrap(err, "show destroy command helper")
-					}
-					return nil
-				}
-				client := getClientFromCtx(c)
-				err := client.RemoveIP(context.Background(), c.Args().First())
-				if err != nil {
-					return err
-				}
-				fmt.Println(aurora.Green(fmt.Sprintf("IP %v deleted.", c.Args().First())))
-				return nil
-			},
-		}, {
-			Name:      "get",
-			ArgsUsage: "ID",
-			Action: func(c *cli.Context) error {
-				if c.NArg() != 1 {
-					err := cli.ShowCommandHelp(c, c.Command.Name)
-					if err != nil {
-						return errors.Wrap(err, "show get command helper")
-					}
-					return nil
-				}
-				client := getClientFromCtx(c)
-				ip, err := client.GetIP(context.Background(), c.Args().First())
-				if err != nil {
-					return err
-				}
-				formatIP(ip)
-				return nil
-			},
-		}, {
-			Name:      "failover",
-			ArgsUsage: "ID",
-			Action: func(c *cli.Context) error {
-				if c.NArg() != 1 {
-					err := cli.ShowCommandHelp(c, c.Command.Name)
-					if err != nil {
-						return errors.Wrap(err, "show failover command helper")
-					}
-					return nil
-				}
-				client := getClientFromCtx(c)
-				err := client.Failover(context.Background(), c.Args().First())
-				if err != nil {
-					return err
-				}
-				fmt.Println(aurora.Green("Request sent."))
-				return nil
-			},
-		}, {
-			Name:      "add",
-			ArgsUsage: "IP [CHECK_TYPE CHECK_ENDPOINT]...",
+			Name:    "destroy",
+			Aliases: []string{"delete"},
 			Flags: []cli.Flag{
-				&cli.IntFlag{
-					Name:  "healthcheck-interval",
-					Value: 0,
-					Usage: "Duration between healthchecks",
+				&cli.StringFlag{
+					Name:     "endpoint-id",
+					Usage:    "ID of the endpoint to destroy",
+					Aliases:  []string{"id", "endpoint"},
+					Required: true,
 				},
 			},
-			Action: func(c *cli.Context) error {
-				if c.NArg()%2 == 0 {
-					// 1 For the IP
-					// And 2 per Healthchecks
-					// So NArgs % 2 must be == 1
-					err := cli.ShowCommandHelp(c, c.Command.Name)
-					if err != nil {
-						return errors.Wrap(err, "show add command helper")
-					}
-					return nil
-				}
-				client := getClientFromCtx(c)
-				ip := c.Args().First()
-				var checks []models.Healthcheck
-				curArg := 1
-				for curArg < c.NArg() {
-					endpoint := c.Args().Get(curArg + 1)
-					host, port, err := net.SplitHostPort(endpoint)
-					if err != nil {
-						return fmt.Errorf("invalid endpoint: %s", endpoint)
-					}
-					portI, err := strconv.Atoi(port)
-					if err != nil {
-						return fmt.Errorf("invalid endpoint: %s", endpoint)
-					}
-					checks = append(checks, models.Healthcheck{
-						Type: models.HealthcheckType(c.Args().Get(curArg)),
-						Host: host,
-						Port: portI,
-					})
-					curArg += 2
-				}
-
-				params := api.AddIPParams{
-					Checks:              checks,
-					HealthcheckInterval: c.Int("healthcheck-interval"),
-				}
-				newIP, err := client.AddIP(context.Background(), ip, params)
-				if err != nil {
-					return err
-				}
-
-				fmt.Println(aurora.Green(fmt.Sprintf("IP %s (%s) successfully added", newIP.IP.IP, newIP.ID)))
-				return nil
-			},
+			Action: endpoint.Destroy,
 		}, {
-			Name:      "update-healthchecks",
-			ArgsUsage: "ID [CHECK_TYPE CHECK_ENDPOINT]...",
-			Action: func(c *cli.Context) error {
-				if c.NArg()%2 == 0 {
-					// 1 For the IP
-					// And 2 per Healthchecks
-					// So NArgs % 2 must be == 1
-					err := cli.ShowCommandHelp(c, c.Command.Name)
-					if err != nil {
-						return errors.Wrap(err, "show update-healthchecks command helper")
-					}
-					return nil
-				}
-
-				var healthchecks []models.Healthcheck
-				curArg := 1
-				for curArg < c.NArg() {
-					healthcheckType := c.Args().Get(curArg)
-					endpoint := c.Args().Get(curArg + 1)
-					host, port, err := net.SplitHostPort(endpoint)
-					if err != nil {
-						return fmt.Errorf("invalid healthcheck endpoint: %s", endpoint)
-					}
-					portI, err := strconv.Atoi(port)
-					if err != nil {
-						return fmt.Errorf("invalid healthcheck port: %s", port)
-					}
-					healthchecks = append(healthchecks, models.Healthcheck{
-						Type: models.HealthcheckType(healthcheckType),
-						Host: host,
-						Port: portI,
-					})
-					curArg += 2
-				}
-
-				linkIPId := c.Args().First()
-
-				client := getClientFromCtx(c)
-				ip, err := client.UpdateIP(context.Background(),
-					linkIPId, api.UpdateIPParams{Healthchecks: healthchecks},
-				)
-				if err != nil {
-					return errors.Wrapf(err, "fail to update the IP healthchecks '%s'", linkIPId)
-				}
-
-				fmt.Println(aurora.Green(fmt.Sprintf("Healthchecks of the IP %s (%s) successfully updated", ip.IP.IP, ip.ID)))
-				return nil
+			Name:    "show",
+			Aliases: []string{"get"},
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:     "endpoint-id",
+					Aliases:  []string{"id", "endpoint"},
+					Usage:    "ID of the endpoint to show",
+					Required: true,
+				},
 			},
+			Action: endpoint.Show,
+		}, {
+			Name: "failover",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:     "endpoint-id",
+					Aliases:  []string{"id", "endpoint"},
+					Usage:    "ID of the endpoint to failover",
+					Required: true,
+				},
+			},
+			Action: endpoint.Failover,
+		}, {
+			Name:    "create",
+			Aliases: []string{"add"},
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:     "plugin",
+					Usage:    "Name of the plugin",
+					Required: true,
+				},
+				&cli.StringFlag{
+					Name:  "ip",
+					Usage: "For ARP Plugin: IP to add",
+				},
+				&cli.IntFlag{
+					Name:  "health-check-interval",
+					Value: 0,
+					Usage: "Duration between health checks",
+				},
+				&cli.StringSliceFlag{
+					Name:  "health-check",
+					Usage: "Health checks to add format: [TYPE HOST:PORT]",
+				},
+			},
+			Action: endpoint.Create,
+		}, {
+			Name: "set-health-checks",
+			Flags: []cli.Flag{
+				&cli.StringFlag{
+					Name:     "endpoint-id",
+					Aliases:  []string{"id", "endpoint"},
+					Usage:    "ID of the endpoint to update",
+					Required: true,
+				},
+				&cli.StringSliceFlag{
+					Name:  "health-check",
+					Usage: "Health checks to add format: [TYPE HOST:PORT]",
+				},
+			},
+			Action: endpoint.UpdateChecks,
 		}, {
 			Name: "version",
-			Action: func(c *cli.Context) error {
+			Action: func(ctx context.Context, c *cli.Command) error {
 				fmt.Printf("Client version: \t%s\n", app.Version)
-				client := getClientFromCtx(c)
-				version, err := client.Version(context.Background())
+				client := utils.GetClient(c)
+				version, err := client.Version(ctx)
 				if err != nil {
 					version = aurora.Red(err.Error()).String()
 				}
@@ -230,25 +131,8 @@ func main() {
 		},
 	}
 
-	err := app.Run(os.Args)
+	err := app.Run(context.Background(), os.Args)
 	if err != nil {
-		fmt.Println(aurora.Red(fmt.Sprintf("Error: %s", err.Error())))
+		fmt.Println(aurora.Red("Error: " + err.Error()))
 	}
-}
-
-func getClientFromCtx(c *cli.Context) api.HTTPClient {
-	var opts []api.ClientOpt
-	if c.String("host") != "" {
-		opts = append(opts, api.WithURL(c.String("host")))
-	}
-
-	if c.String("user") != "" {
-		opts = append(opts, api.WithUser(c.String("user")))
-	}
-
-	if c.String("password") != "" {
-		opts = append(opts, api.WithPassword(c.String("password")))
-	}
-
-	return api.NewHTTPClient(opts...)
 }

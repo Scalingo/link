@@ -11,23 +11,23 @@ import (
 )
 
 /* Stop process:
-  1. Fetch information about other hosts registered on this IP and our state on the IP
+  1. Fetch information about other hosts registered on this endpoint and our state on the endpoint
   2. Begin the shutdown process (/!\ THIS SHOULD BE PROTECTED BY THE STOP MUTEX OR IT COULD LEAD TO INVALID STATE)
 	2.1. Set the stop flag to true, since we are in the lock it will not impact
 	the other processes yet. But it will ensure that if the process stops
-	unexpectedly, all the other goroutines will stop and we will remove the IP by
+	unexpectedly, all the other goroutines will stop and we will remove the endpoint by
 	letting it decay.
-	2.2. If we are the owner of the lock on the IP remove it
-	2.3. Remove us from the list of potential hosts for this IP (UnlinkIPFromCurrentHost). This will trigger other hosts to try to get the IP
-	2.4. Send a demoted event so that the state machine is in a state to remote the IP
+	2.2. If we are the owner of the lock on the endpoint remove it
+	2.3. Remove us from the list of potential hosts for this endpoint (UnlinkEndpointFromCurrentHost). This will trigger other hosts to try to get the endpoint
+	2.4. Send a demoted event so that the state machine is in a state to remote the endpoint
 */
 
-func (m *manager) Stop(ctx context.Context) error {
+func (m *EndpointManager) Stop(ctx context.Context) error {
 	log := logger.Get(ctx).WithField("process", "stop")
 	ctx = logger.ToCtx(ctx, log)
 
-	log.Info("Stops the IP manager")
-	hosts, err := m.storage.GetIPHosts(ctx, m.IP())
+	log.Info("Stops the endpoint manager")
+	hosts, err := m.storage.GetEndpointHosts(ctx, m.plugin.ElectionKey(ctx))
 	if err != nil {
 		return errors.Wrap(err, "fail to get new hosts")
 	}
@@ -54,22 +54,19 @@ func (m *manager) Stop(ctx context.Context) error {
 	}
 
 	log.Info("Stop the watcher")
-	err = m.watcher.Stop(ctx)
-	if err != nil {
-		log.WithError(err).Error("Fail to stop the watcher")
-	}
+	m.watcher.Stop(ctx)
 
-	log.Info("Unlink IP from the host")
-	err = m.storage.UnlinkIPFromCurrentHost(ctx, m.ip)
+	log.Info("Unlink endpoint from the host")
+	err = m.storage.UnlinkEndpointFromCurrentHost(ctx, m.plugin.ElectionKey(ctx))
 	if err != nil {
-		return errors.Wrap(err, "fail to unlink IP")
+		return errors.Wrap(err, "fail to unlink endpoint")
 	}
 
 	if isMaster && len(hosts) > 1 {
-		log.Info("We were not alone, wait for an other host to get the IP")
+		log.Info("We were not alone, wait for an other host to get the endpoint")
 		err := m.waitForReallocation(ctx)
 		if err != nil {
-			log.WithError(err).Error("Fail to reallocate IP, continuing shutdown")
+			log.WithError(err).Error("Fail to reallocate endpoint, continuing shutdown")
 		}
 	}
 
@@ -86,20 +83,20 @@ func (m *manager) Stop(ctx context.Context) error {
 	return nil
 }
 
-// ipCheckLoop tries to get the VIP at regular intervals. It is useful to get the IP if the current primary crashed.
-func (m *manager) ipCheckLoop(ctx context.Context) {
+// endpointCheckLoop tries to get the endpoint at regular intervals. It is useful to get the endpoint if the current primary crashed.
+func (m *EndpointManager) endpointCheckLoop(ctx context.Context) {
 	for {
 		if m.isStopped() {
 			return
 		}
 
-		m.tryToGetIP(ctx)
+		m.tryToGetEndpoint(ctx)
 
 		time.Sleep(m.config.KeepAliveInterval)
 	}
 }
 
-func (m *manager) tryToGetIP(ctx context.Context) {
+func (m *EndpointManager) tryToGetEndpoint(ctx context.Context) {
 	if m.Status() == FAILING {
 		return
 	}
@@ -148,10 +145,10 @@ func (m *manager) tryToGetIP(ctx context.Context) {
 }
 
 // onTopologyChange is called by the watcher. It is called in one of the 3 following cases:
-// 1. There is a node that joined the pool of nodes interested by this IP
-// 2. There is a node that left the pool of nodes interested by this IP
+// 1. There is a node that joined the pool of nodes interested by this endpoint
+// 2. There is a node that left the pool of nodes interested by this endpoint
 // 3. The current master node is trying to initiate a failover
-func (m *manager) onTopologyChange(ctx context.Context) {
+func (m *EndpointManager) onTopologyChange(ctx context.Context) {
 	log := logger.Get(ctx)
 	if m.isStopped() {
 		return
@@ -166,11 +163,11 @@ func (m *manager) onTopologyChange(ctx context.Context) {
 		return
 	}
 
-	log.Info("Network topology changed, trying to get the IP")
-	m.tryToGetIP(ctx)
+	log.Info("Network topology changed, trying to get the endpoint")
+	m.tryToGetEndpoint(ctx)
 }
 
-func (m *manager) isStopped() bool {
+func (m *EndpointManager) isStopped() bool {
 	m.stopMutex.RLock()
 	defer m.stopMutex.RUnlock()
 	return m.stopped

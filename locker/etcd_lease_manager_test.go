@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/etcdmock"
@@ -19,8 +19,8 @@ import (
 
 type updadeResults struct {
 	called     bool
-	oldLeaseID clientv3.LeaseID
-	newLeaseID clientv3.LeaseID
+	oldLeaseID etcdv3.LeaseID
+	newLeaseID etcdv3.LeaseID
 }
 
 func Test_refresh(t *testing.T) {
@@ -50,8 +50,8 @@ func Test_refresh(t *testing.T) {
 		{
 			Name: "When the lease has not been generated",
 			MockLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().Grant(gomock.Any(), int64(15)).Return(&clientv3.LeaseGrantResponse{
-					ID: clientv3.LeaseID(1234),
+				mock.EXPECT().Grant(gomock.Any(), int64(15)).Return(&etcdv3.LeaseGrantResponse{
+					ID: etcdv3.LeaseID(1234),
 				}, nil)
 			},
 			ExpectedLeaseID:           1234,
@@ -64,8 +64,8 @@ func Test_refresh(t *testing.T) {
 			InitialLeaseID:         1234,
 			InitialLastRefreshedAt: time.Now().Add(-1 * time.Hour),
 			MockLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().Grant(gomock.Any(), int64(15)).Return(&clientv3.LeaseGrantResponse{
-					ID: clientv3.LeaseID(1235),
+				mock.EXPECT().Grant(gomock.Any(), int64(15)).Return(&etcdv3.LeaseGrantResponse{
+					ID: etcdv3.LeaseID(1235),
 				}, nil)
 			},
 			ExpectedLeaseID:           1235,
@@ -78,7 +78,7 @@ func Test_refresh(t *testing.T) {
 			InitialLeaseID:         1234,
 			InitialLastRefreshedAt: time.Now(),
 			MockLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().KeepAliveOnce(gomock.Any(), clientv3.LeaseID(1234)).Return(nil, rpctypes.ErrLeaseNotFound)
+				mock.EXPECT().KeepAliveOnce(gomock.Any(), etcdv3.LeaseID(1234)).Return(nil, rpctypes.ErrLeaseNotFound)
 			},
 			ExpectedLeaseID:         1234,
 			ShouldNotifyLeaseError:  true,
@@ -89,7 +89,7 @@ func Test_refresh(t *testing.T) {
 			InitialLeaseID:         1234,
 			InitialLastRefreshedAt: time.Now(),
 			MockLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().KeepAliveOnce(gomock.Any(), clientv3.LeaseID(1234)).Return(nil, errors.New("nop"))
+				mock.EXPECT().KeepAliveOnce(gomock.Any(), etcdv3.LeaseID(1234)).Return(nil, errors.New("nop"))
 			},
 			ExpectedLeaseID: 1234,
 			ExpectedError:   "nop",
@@ -99,7 +99,7 @@ func Test_refresh(t *testing.T) {
 			InitialLeaseID:         1234,
 			InitialLastRefreshedAt: time.Now(),
 			MockLease: func(mock *etcdmock.MockLease) {
-				mock.EXPECT().KeepAliveOnce(gomock.Any(), clientv3.LeaseID(1234)).Return(nil, nil)
+				mock.EXPECT().KeepAliveOnce(gomock.Any(), etcdv3.LeaseID(1234)).Return(nil, nil)
 			},
 			ExpectedLeaseID: 1234,
 		},
@@ -121,7 +121,7 @@ func Test_refresh(t *testing.T) {
 				config: config.Config{
 					KeepAliveInterval: 3 * time.Second,
 				},
-				leaseID:            clientv3.LeaseID(example.InitialLeaseID),
+				leaseID:            etcdv3.LeaseID(example.InitialLeaseID),
 				lastRefreshedAt:    example.InitialLastRefreshedAt,
 				leaseLock:          &sync.RWMutex{},
 				callbackLock:       &sync.RWMutex{},
@@ -142,7 +142,7 @@ func Test_refresh(t *testing.T) {
 				}
 			}()
 
-			_, err := leaseManager.SubscribeToLeaseChange(ctx, func(_ context.Context, o, n clientv3.LeaseID) {
+			_, err := leaseManager.SubscribeToLeaseChange(ctx, func(_ context.Context, o, n etcdv3.LeaseID) {
 				leaseChangedChan <- updadeResults{
 					called:     true,
 					newLeaseID: n,
@@ -159,18 +159,18 @@ func Test_refresh(t *testing.T) {
 				assert.Contains(t, err.Error(), example.ExpectedError)
 			}
 
-			assert.Equal(t, clientv3.LeaseID(example.ExpectedLeaseID), leaseManager.leaseID)
+			assert.Equal(t, etcdv3.LeaseID(example.ExpectedLeaseID), leaseManager.leaseID)
 			if example.ShouldNotifyLeaseError {
 				assert.Len(t, leaseManager.leaseErrorNotifier, 1)
 			} else {
-				assert.Len(t, leaseManager.leaseErrorNotifier, 0)
+				assert.Empty(t, leaseManager.leaseErrorNotifier)
 			}
 
 			// Wait for the corountine to be called
 			result := <-leaseChangedChan
 			assert.Equal(t, example.ShouldCallLeaseSubscriber, result.called)
-			assert.Equal(t, clientv3.LeaseID(example.LeaseSubscriberNew), result.newLeaseID)
-			assert.Equal(t, clientv3.LeaseID(example.LeaseSubscriberOld), result.oldLeaseID)
+			assert.Equal(t, etcdv3.LeaseID(example.LeaseSubscriberNew), result.newLeaseID)
+			assert.Equal(t, etcdv3.LeaseID(example.LeaseSubscriberOld), result.oldLeaseID)
 			assert.Equal(t, example.ShouldForceLeaseRefresh, leaseManager.forceLeaseRefresh)
 		})
 	}

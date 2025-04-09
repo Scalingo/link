@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	scalingoerrors "github.com/Scalingo/go-utils/errors"
 	"github.com/Scalingo/go-utils/etcd"
@@ -27,6 +27,10 @@ func NewV0toV1Migration(hostname string, leaseManager locker.EtcdLeaseManager, s
 		leaseManager: leaseManager,
 		storage:      storage,
 	}
+}
+
+func (m V0toV1) Name() string {
+	return "v0 to v1"
 }
 
 func (m V0toV1) NeedsMigration(ctx context.Context) (bool, error) {
@@ -97,7 +101,7 @@ func (m V0toV1) Migrate(ctx context.Context) error {
 		}
 
 		// We link again the IP with the current host to trigger the topology change in the IP manager
-		err = m.storage.LinkIPWithCurrentHost(ctx, ipV1)
+		err = m.storage.LinkEndpointWithCurrentHost(ctx, storableIP(ipV1.IP))
 		if err != nil {
 			log.WithError(err).Error("Fail to link IP with the current host during the migration from v0 to v1")
 			continue
@@ -108,7 +112,7 @@ func (m V0toV1) Migrate(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(err, "fail to get current host to update its data version")
 	}
-	host.DataVersion = locker.DataVersion
+	host.DataVersion = 1
 
 	err = m.storage.SaveHost(ctx, host)
 	if err != nil {
@@ -119,11 +123,11 @@ func (m V0toV1) Migrate(ctx context.Context) error {
 	return nil
 }
 
-func newEtcdClient() (clientv3.KV, io.Closer, error) {
+func newEtcdClient() (etcdv3.KV, io.Closer, error) {
 	c, err := etcd.ClientFromEnv()
 	if err != nil {
 		return nil, nil, errors.Wrapf(err, "fail to get etcd client from config")
 	}
 
-	return clientv3.KV(c), c, nil
+	return etcdv3.KV(c), c, nil
 }

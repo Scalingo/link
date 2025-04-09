@@ -25,7 +25,7 @@ var arpInstance *arp
 var arpOnce sync.Once
 
 type ARP interface {
-	GratuitousArp(GratuitousArpRequest) error
+	GratuitousArp(req GratuitousArpRequest) error
 }
 
 type GratuitousArpRequest struct {
@@ -42,7 +42,7 @@ type arp struct {
 	requests chan gratuitousArpRequest
 }
 
-func GetArp() *arp {
+func GetArp() ARP {
 	arpOnce.Do(func() {
 		arpInstance = &arp{
 			requests: make(chan gratuitousArpRequest),
@@ -53,7 +53,7 @@ func GetArp() *arp {
 	return arpInstance
 }
 
-func (a *arp) GratuitousArpRequest(request GratuitousArpRequest) error {
+func (a *arp) GratuitousArp(request GratuitousArpRequest) error {
 	errChan := make(chan error)
 	a.requests <- gratuitousArpRequest{
 		request:  request,

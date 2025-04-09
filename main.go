@@ -8,16 +8,19 @@ import (
 	"os"
 
 	"github.com/gorilla/mux"
-	"github.com/sirupsen/logrus"
 
 	"github.com/Scalingo/go-handlers"
+	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/etcd"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/go-utils/logger/plugins/rollbarplugin"
 	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v2/endpoint"
 	"github.com/Scalingo/link/v2/locker"
 	"github.com/Scalingo/link/v2/migrations"
 	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v2/plugin"
+	"github.com/Scalingo/link/v2/plugin/arp"
 	"github.com/Scalingo/link/v2/scheduler"
 	"github.com/Scalingo/link/v2/web"
 )
@@ -30,7 +33,7 @@ func main() {
 	log := logger.Default()
 	ctx := logger.ToCtx(context.Background(), log)
 
-	config, err := config.Build()
+	config, err := config.Build(ctx)
 	if err != nil {
 		log.WithError(err).Error("Fail to init config")
 		panic(err)
@@ -45,12 +48,25 @@ func main() {
 	storage := models.NewEtcdStorage(config)
 	leaseManager := locker.NewEtcdLeaseManager(ctx, config, storage, etcd)
 
-	// We need to check if it is needed to migrate data from v0 to v1 before the lease manager is started so that we are sure that the host data version is still the one from the previous LinK execution.
-	migrationV0toV1 := migrations.NewV0toV1Migration(config.Hostname, leaseManager, storage)
-	needsMigrationV0toV1, err := migrationV0toV1.NeedsMigration(ctx)
+	pluginRegistry := plugin.NewRegistry()
+	err = initPlugins(ctx, pluginRegistry)
 	if err != nil {
+		log.WithError(err).Error("Fail to init plugins")
 		panic(err)
 	}
+
+	migrationRunner := migrations.NewMigrationRunner(config, storage, leaseManager)
+
+	// We run the migration in a goroutine. Because the migrations can take a long time and locks might expires.
+	// This could cause unwanted failover.
+	// All major versions of LinK should be compatible with the previous and next major data version.
+	go func(ctx context.Context) {
+		err := migrationRunner.Run(ctx)
+		if err != nil {
+			log.WithError(err).Error("Fail to run migrations")
+			return
+		}
+	}(ctx)
 
 	err = leaseManager.Start(ctx)
 	if err != nil {
@@ -58,43 +74,32 @@ func main() {
 		panic(err)
 	}
 
-	// v0 to v1 migration needs to be executed after the lease manager is started as we generate the host lease ID in this method.
-	if needsMigrationV0toV1 {
-		go func(ctx context.Context) {
-			err := migrationV0toV1.Migrate(ctx)
-			if err != nil {
-				log.WithError(err).Error("Fail to migrate data from v0 to v1")
-				return
-			}
-		}(ctx)
-	}
+	scheduler := scheduler.NewEndpointScheduler(config, etcd, storage, leaseManager, pluginRegistry)
 
-	scheduler := scheduler.NewIPScheduler(config, etcd, storage, leaseManager)
-
-	ips, err := storage.GetIPs(ctx)
+	endpoints, err := storage.GetEndpoints(ctx)
 	if err != nil {
-		log.WithError(err).Error("Fail to list configured IPs")
+		log.WithError(err).Error("Fail to list configured endpoints")
 		panic(err)
 	}
 
-	if len(ips) > 0 {
-		log.Info("Restarting IP schedulers...")
-		for _, ip := range ips {
-			log := log.WithFields(logrus.Fields{
-				"id": ip.ID,
-				"ip": ip.IP,
-			})
-			log.Info("Starting an IP scheduler")
-			_, err := scheduler.Start(logger.ToCtx(ctx, log), ip)
+	if len(endpoints) > 0 {
+		log.Info("Restarting endpoint schedulers...")
+		for _, endpoint := range endpoints {
+			ctx, log := logger.WithStructToCtx(ctx, "endpoint", endpoint)
+			log.Info("Starting an endpoint scheduler")
+			_, err := scheduler.Start(ctx, endpoint)
 			if err != nil {
 				panic(err)
 			}
 		}
 	}
 
-	ipController := web.NewIPController(scheduler)
+	endpointCreator := endpoint.NewCreator(storage, scheduler, pluginRegistry)
+	ipController := web.NewIPController(scheduler, storage, endpointCreator)
+	endpointController := web.NewEndpointController(scheduler, storage, endpointCreator)
 	versionController := web.NewVersionController(Version)
 	r := handlers.NewRouter(log)
+	r.Use(handlers.ErrorMiddleware)
 
 	if config.User != "" || config.Password != "" {
 		r.Use(handlers.AuthMiddleware(func(user, password string) bool {
@@ -103,12 +108,24 @@ func main() {
 	}
 
 	r.Use(handlers.ErrorMiddleware)
+
+	// Retro compatibility with v2 API.
+	// This will be removed in a future version.
 	r.HandleFunc("/ips", ipController.List).Methods("GET")
 	r.HandleFunc("/ips", ipController.Create).Methods("POST")
-	r.HandleFunc("/ips/{id}", ipController.Destroy).Methods("DELETE")
+	r.HandleFunc("/ips/{id}", endpointController.Update).Methods("DELETE")
 	r.HandleFunc("/ips/{id}", ipController.Get).Methods("GET")
-	r.HandleFunc("/ips/{id}", ipController.Patch).Methods("PUT", "PATCH")
-	r.HandleFunc("/ips/{id}/failover", ipController.Failover).Methods("POST")
+	r.HandleFunc("/ips/{id}", endpointController.Update).Methods("PUT", "PATCH")
+	r.HandleFunc("/ips/{id}/failover", endpointController.Failover).Methods("POST")
+
+	r.HandleFunc("/endpoints", endpointController.List).Methods("GET")
+	r.HandleFunc("/endpoints", endpointController.Create).Methods("POST")
+	r.HandleFunc("/endpoints/{id}", endpointController.Delete).Methods("DELETE")
+	r.HandleFunc("/endpoints/{id}", endpointController.Get).Methods("GET")
+	r.HandleFunc("/endpoints/{id}", endpointController.Update).Methods("PUT", "PATCH")
+	r.HandleFunc("/endpoints/{id}/failover", endpointController.Failover).Methods("POST")
+	r.HandleFunc("/endpoints/{id}/hosts", endpointController.GetHosts).Methods("GET")
+
 	r.HandleFunc("/version", versionController.Version).Methods("GET")
 
 	globalRouter := mux.NewRouter()
@@ -137,4 +154,12 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func initPlugins(ctx context.Context, registry plugin.Registry) error {
+	err := arp.Register(ctx, registry)
+	if err != nil {
+		return errors.Wrap(ctx, err, "register arp plugin")
+	}
+	return nil
 }

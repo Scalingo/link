@@ -10,6 +10,7 @@ import (
 
 	"github.com/Scalingo/go-philae/v4/prober"
 	"github.com/Scalingo/go-philae/v4/sampleprobe"
+	"github.com/Scalingo/link/v2/api"
 	"github.com/Scalingo/link/v2/config"
 	"github.com/Scalingo/link/v2/models"
 )
@@ -17,18 +18,18 @@ import (
 func TestFromChecks(t *testing.T) {
 	examples := []struct {
 		Name           string
-		Checks         []models.Healthcheck
+		Checks         []models.HealthCheck
 		ExpectedChecks []string
 	}{
 		{
 			Name:           "With no checks",
-			Checks:         []models.Healthcheck{},
+			Checks:         []models.HealthCheck{},
 			ExpectedChecks: []string{},
 		}, {
 			Name: "With a tcp check",
-			Checks: []models.Healthcheck{
+			Checks: []models.HealthCheck{
 				{
-					Type: models.TCPHealthCheck,
+					Type: api.TCPHealthCheck,
 				},
 			},
 			ExpectedChecks: []string{"tcp"},
@@ -39,7 +40,7 @@ func TestFromChecks(t *testing.T) {
 		t.Run(example.Name, func(t *testing.T) {
 			ctx := context.Background()
 			c := config.Config{
-				HealthcheckTimeout: 10 * time.Millisecond,
+				HealthCheckTimeout: 10 * time.Millisecond,
 			}
 			checker := FromChecks(c, example.Checks)
 			probes := checker.prober.Check(ctx).Probes
@@ -98,7 +99,7 @@ func TestIsHealthy(t *testing.T) {
 				prober.AddProbe(probe)
 			}
 
-			checker := checker{
+			checker := HeathChecker{
 				prober: prober,
 			}
 

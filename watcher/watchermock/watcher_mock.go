@@ -35,11 +35,9 @@ func (m *MockWatcher) EXPECT() *MockWatcherMockRecorder {
 }
 
 // Start mocks base method.
-func (m *MockWatcher) Start(arg0 context.Context) error {
+func (m *MockWatcher) Start(arg0 context.Context) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	m.ctrl.Call(m, "Start", arg0)
 }
 
 // Start indicates an expected call of Start.
@@ -49,11 +47,9 @@ func (mr *MockWatcherMockRecorder) Start(arg0 interface{}) *gomock.Call {
 }
 
 // Stop mocks base method.
-func (m *MockWatcher) Stop(arg0 context.Context) error {
+func (m *MockWatcher) Stop(arg0 context.Context) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Stop", arg0)
-	ret0, _ := ret[0].(error)
-	return ret0
+	m.ctrl.Call(m, "Stop", arg0)
 }
 
 // Stop indicates an expected call of Stop.

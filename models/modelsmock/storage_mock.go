@@ -8,9 +8,8 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
-
 	models "github.com/Scalingo/link/v2/models"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockStorage is a mock of Storage interface.
@@ -36,19 +35,19 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 	return m.recorder
 }
 
-// AddIP mocks base method.
-func (m *MockStorage) AddIP(arg0 context.Context, arg1 models.IP) (models.IP, error) {
+// AddEndpoint mocks base method.
+func (m *MockStorage) AddEndpoint(arg0 context.Context, arg1 models.Endpoint) (models.Endpoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddIP", arg0, arg1)
-	ret0, _ := ret[0].(models.IP)
+	ret := m.ctrl.Call(m, "AddEndpoint", arg0, arg1)
+	ret0, _ := ret[0].(models.Endpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// AddIP indicates an expected call of AddIP.
-func (mr *MockStorageMockRecorder) AddIP(arg0, arg1 interface{}) *gomock.Call {
+// AddEndpoint indicates an expected call of AddEndpoint.
+func (mr *MockStorageMockRecorder) AddEndpoint(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddIP", reflect.TypeOf((*MockStorage)(nil).AddIP), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEndpoint", reflect.TypeOf((*MockStorage)(nil).AddEndpoint), arg0, arg1)
 }
 
 // GetCurrentHost mocks base method.
@@ -66,62 +65,62 @@ func (mr *MockStorageMockRecorder) GetCurrentHost(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentHost", reflect.TypeOf((*MockStorage)(nil).GetCurrentHost), arg0)
 }
 
-// GetIPHosts mocks base method.
-func (m *MockStorage) GetIPHosts(arg0 context.Context, arg1 models.IP) ([]string, error) {
+// GetEndpointHosts mocks base method.
+func (m *MockStorage) GetEndpointHosts(arg0 context.Context, arg1 string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetIPHosts", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetEndpointHosts", arg0, arg1)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetIPHosts indicates an expected call of GetIPHosts.
-func (mr *MockStorageMockRecorder) GetIPHosts(arg0, arg1 interface{}) *gomock.Call {
+// GetEndpointHosts indicates an expected call of GetEndpointHosts.
+func (mr *MockStorageMockRecorder) GetEndpointHosts(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIPHosts", reflect.TypeOf((*MockStorage)(nil).GetIPHosts), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpointHosts", reflect.TypeOf((*MockStorage)(nil).GetEndpointHosts), arg0, arg1)
 }
 
-// GetIPs mocks base method.
-func (m *MockStorage) GetIPs(arg0 context.Context) ([]models.IP, error) {
+// GetEndpoints mocks base method.
+func (m *MockStorage) GetEndpoints(arg0 context.Context) (models.Endpoints, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetIPs", arg0)
-	ret0, _ := ret[0].([]models.IP)
+	ret := m.ctrl.Call(m, "GetEndpoints", arg0)
+	ret0, _ := ret[0].(models.Endpoints)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetIPs indicates an expected call of GetIPs.
-func (mr *MockStorageMockRecorder) GetIPs(arg0 interface{}) *gomock.Call {
+// GetEndpoints indicates an expected call of GetEndpoints.
+func (mr *MockStorageMockRecorder) GetEndpoints(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetIPs", reflect.TypeOf((*MockStorage)(nil).GetIPs), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpoints", reflect.TypeOf((*MockStorage)(nil).GetEndpoints), arg0)
 }
 
-// LinkIPWithCurrentHost mocks base method.
-func (m *MockStorage) LinkIPWithCurrentHost(arg0 context.Context, arg1 models.IP) error {
+// LinkEndpointWithCurrentHost mocks base method.
+func (m *MockStorage) LinkEndpointWithCurrentHost(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LinkIPWithCurrentHost", arg0, arg1)
+	ret := m.ctrl.Call(m, "LinkEndpointWithCurrentHost", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// LinkIPWithCurrentHost indicates an expected call of LinkIPWithCurrentHost.
-func (mr *MockStorageMockRecorder) LinkIPWithCurrentHost(arg0, arg1 interface{}) *gomock.Call {
+// LinkEndpointWithCurrentHost indicates an expected call of LinkEndpointWithCurrentHost.
+func (mr *MockStorageMockRecorder) LinkEndpointWithCurrentHost(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkIPWithCurrentHost", reflect.TypeOf((*MockStorage)(nil).LinkIPWithCurrentHost), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkEndpointWithCurrentHost", reflect.TypeOf((*MockStorage)(nil).LinkEndpointWithCurrentHost), arg0, arg1)
 }
 
-// RemoveIP mocks base method.
-func (m *MockStorage) RemoveIP(arg0 context.Context, arg1 string) error {
+// RemoveEndpoint mocks base method.
+func (m *MockStorage) RemoveEndpoint(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveIP", arg0, arg1)
+	ret := m.ctrl.Call(m, "RemoveEndpoint", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// RemoveIP indicates an expected call of RemoveIP.
-func (mr *MockStorageMockRecorder) RemoveIP(arg0, arg1 interface{}) *gomock.Call {
+// RemoveEndpoint indicates an expected call of RemoveEndpoint.
+func (mr *MockStorageMockRecorder) RemoveEndpoint(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveIP", reflect.TypeOf((*MockStorage)(nil).RemoveIP), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveEndpoint", reflect.TypeOf((*MockStorage)(nil).RemoveEndpoint), arg0, arg1)
 }
 
 // SaveHost mocks base method.
@@ -138,30 +137,30 @@ func (mr *MockStorageMockRecorder) SaveHost(arg0, arg1 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveHost", reflect.TypeOf((*MockStorage)(nil).SaveHost), arg0, arg1)
 }
 
-// UnlinkIPFromCurrentHost mocks base method.
-func (m *MockStorage) UnlinkIPFromCurrentHost(arg0 context.Context, arg1 models.IP) error {
+// UnlinkEndpointFromCurrentHost mocks base method.
+func (m *MockStorage) UnlinkEndpointFromCurrentHost(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UnlinkIPFromCurrentHost", arg0, arg1)
+	ret := m.ctrl.Call(m, "UnlinkEndpointFromCurrentHost", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UnlinkIPFromCurrentHost indicates an expected call of UnlinkIPFromCurrentHost.
-func (mr *MockStorageMockRecorder) UnlinkIPFromCurrentHost(arg0, arg1 interface{}) *gomock.Call {
+// UnlinkEndpointFromCurrentHost indicates an expected call of UnlinkEndpointFromCurrentHost.
+func (mr *MockStorageMockRecorder) UnlinkEndpointFromCurrentHost(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnlinkIPFromCurrentHost", reflect.TypeOf((*MockStorage)(nil).UnlinkIPFromCurrentHost), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnlinkEndpointFromCurrentHost", reflect.TypeOf((*MockStorage)(nil).UnlinkEndpointFromCurrentHost), arg0, arg1)
 }
 
-// UpdateIP mocks base method.
-func (m *MockStorage) UpdateIP(arg0 context.Context, arg1 models.IP) error {
+// UpdateEndpoint mocks base method.
+func (m *MockStorage) UpdateEndpoint(arg0 context.Context, arg1 models.Endpoint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateIP", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateEndpoint", arg0, arg1)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateIP indicates an expected call of UpdateIP.
-func (mr *MockStorageMockRecorder) UpdateIP(arg0, arg1 interface{}) *gomock.Call {
+// UpdateEndpoint indicates an expected call of UpdateEndpoint.
+func (mr *MockStorageMockRecorder) UpdateEndpoint(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateIP", reflect.TypeOf((*MockStorage)(nil).UpdateIP), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEndpoint", reflect.TypeOf((*MockStorage)(nil).UpdateEndpoint), arg0, arg1)
 }

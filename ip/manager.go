@@ -7,9 +7,7 @@ import (
 	"time"
 
 	"github.com/looplab/fsm"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
-	clientv3 "go.etcd.io/etcd/client/v3"
+	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/go-utils/retry"
@@ -17,23 +15,23 @@ import (
 	"github.com/Scalingo/link/v2/healthcheck"
 	"github.com/Scalingo/link/v2/locker"
 	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/network"
+	"github.com/Scalingo/link/v2/plugin"
 	"github.com/Scalingo/link/v2/watcher"
 )
 
 type Manager interface {
-	Start(context.Context)
-	Stop(context.Context) error
-	Failover(context.Context) error
+	Start(ctx context.Context)
+	Stop(ctx context.Context) error
+	Failover(ctx context.Context) error
 	Status() string
-	IP() models.IP
-	SetHealthchecks(context.Context, config.Config, []models.Healthcheck)
+	Endpoint() models.Endpoint
+	ElectionKey(ctx context.Context) string
+	SetHealthChecks(ctx context.Context, config config.Config, checks []models.HealthCheck)
 }
 
-type manager struct {
-	networkInterface        network.NetworkInterface
+type EndpointManager struct {
 	stateMachine            *fsm.FSM
-	ip                      models.IP
+	endpoint                models.Endpoint
 	stopMutex               sync.RWMutex
 	locker                  locker.Locker
 	checker                 healthcheck.Checker
@@ -42,36 +40,30 @@ type manager struct {
 	storage                 models.Storage
 	watcher                 watcher.Watcher
 	retry                   retry.Retry
+	plugin                  plugin.Plugin
 	eventChan               chan string
 	keepaliveRetry          int
-	healthcheckFailingCount int
+	healthCheckFailingCount int
 	stopped                 bool
 }
 
-func NewManager(ctx context.Context, cfg config.Config, ip models.IP, client *clientv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager) (*manager, error) {
-	i, err := network.NewNetworkInterfaceFromName(cfg.Interface)
-	if err != nil {
-		return nil, errors.Wrap(err, "fail to instantiate network interface")
-	}
+func NewManager(ctx context.Context, cfg config.Config, endpoint models.Endpoint, client *etcdv3.Client, storage models.Storage, leaseManager locker.EtcdLeaseManager, plugin plugin.Plugin) (*EndpointManager, error) {
+	ctx, _ = logger.WithStructToCtx(ctx, "endpoint", endpoint)
 
-	log := logger.Get(ctx).WithFields(logrus.Fields{
-		"ip": ip.IP,
-	})
-	ctx = logger.ToCtx(ctx, log)
-
-	m := &manager{
-		networkInterface:        i,
-		ip:                      ip,
-		locker:                  locker.NewEtcdLocker(cfg, client, leaseManager, ip),
-		checker:                 healthcheck.FromChecks(cfg, ip.Checks),
+	m := &EndpointManager{
+		endpoint:                endpoint,
+		locker:                  locker.NewEtcdLocker(cfg, client, leaseManager, endpoint, plugin.ElectionKey(ctx)),
+		checker:                 healthcheck.FromChecks(cfg, endpoint.Checks),
 		config:                  cfg,
 		storage:                 storage,
 		eventChan:               make(chan string),
-		healthcheckFailingCount: 0,
+		healthCheckFailingCount: 0,
 		retry:                   retry.New(retry.WithWaitDuration(10*time.Second), retry.WithMaxAttempts(5)),
+		plugin:                  plugin,
 	}
 
-	prefix := fmt.Sprintf("%s/ips/%s", models.EtcdLinkDirectory, ip.StorableIP())
+	// We need to keep the `/ips/` prefix in the watcher in order to keep backward compatibility.
+	prefix := fmt.Sprintf("%s/ips/%s", models.EtcdLinkDirectory, plugin.ElectionKey(ctx))
 	m.watcher = watcher.NewWatcher(client, prefix, m.onTopologyChange)
 
 	m.stateMachine = NewStateMachine(ctx, NewStateMachineOpts{
@@ -82,22 +74,22 @@ func NewManager(ctx context.Context, cfg config.Config, ip models.IP, client *cl
 	return m, nil
 }
 
-func (m *manager) Start(ctx context.Context) {
-	log := logger.Get(ctx).WithFields(m.ip.ToLogrusFields())
+func (m *EndpointManager) Start(ctx context.Context) {
+	ctx, log := logger.WithStructToCtx(ctx, "endpoint", m.endpoint)
 	log.Info("Starting manager")
 
 	err := m.retry.Do(ctx, func(ctx context.Context) error {
-		return m.storage.LinkIPWithCurrentHost(ctx, m.ip)
+		return m.storage.LinkEndpointWithCurrentHost(ctx, m.plugin.ElectionKey(ctx))
 	})
 	if err != nil {
-		log.WithError(err).Error("Fail to link IP")
+		log.WithError(err).Error("Fail to link endpoint")
 	}
 
 	ctx = logger.ToCtx(ctx, log)
-	go m.ipCheckLoop(ctx)    // Will continuously try to get the IP
-	go m.healthChecker(ctx)  // Healthchecker
-	go m.startArpEnsure(ctx) // ARP Gratuitous announces
-	go m.watcher.Start(ctx)  // Start a watcher that will notify us if other hosts are joining or leaving this IP
+	go m.endpointCheckLoop(ctx) // Will continuously try to get the endpoint
+	go m.healthChecker(ctx)     // HealthChecker
+	go m.startPluginEnsureLoop(ctx)
+	go m.watcher.Start(ctx) // Start a watcher that will notify us if other hosts are joining or leaving this endpoint
 
 	for event := range m.eventChan {
 		err := m.stateMachine.Event(ctx, event)
@@ -113,29 +105,33 @@ func (m *manager) Start(ctx context.Context) {
 }
 
 // Status returns the current state of the state machine
-func (m *manager) Status() string {
+func (m *EndpointManager) Status() string {
 	return m.stateMachine.Current()
 }
 
-// IP returns the ip model linked to this manager
-func (m *manager) IP() models.IP {
-	return m.ip
+// Endpoint returns the endpoint model linked to this manager
+func (m *EndpointManager) Endpoint() models.Endpoint {
+	return m.endpoint
+}
+
+func (m *EndpointManager) ElectionKey(ctx context.Context) string {
+	return m.plugin.ElectionKey(ctx)
 }
 
 // sendEvent sends an event to the state machine
-func (m *manager) sendEvent(status string) {
+func (m *EndpointManager) sendEvent(status string) {
 	if m.isStopped() {
 		return
 	}
 	m.eventChan <- status
 }
 
-func (m *manager) SetHealthchecks(ctx context.Context, cfg config.Config, healthchecks []models.Healthcheck) {
+func (m *EndpointManager) SetHealthChecks(ctx context.Context, cfg config.Config, healthChecks []models.HealthCheck) {
 	log := logger.Get(ctx)
-	log.WithField("healtchchecks", healthchecks).Debug("Set new healthchecks")
+	log.WithField("health_checks", healthChecks).Debug("Set new health checks")
 
-	m.ip.Checks = healthchecks
+	m.endpoint.Checks = healthChecks
 	m.checkerMutex.Lock()
-	m.checker = healthcheck.FromChecks(cfg, healthchecks)
+	m.checker = healthcheck.FromChecks(cfg, healthChecks)
 	m.checkerMutex.Unlock()
 }

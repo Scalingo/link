@@ -11,7 +11,7 @@
          "src_package": "network"
       },
       {
-         "interface": "NetworkInterface",
+         "interface": "Interface",
          "src_package": "network"
       },
       {
@@ -38,6 +38,18 @@
          "interface": "EtcdLeaseManager",
          "mock_file": "locker/etcd_lease_manager_mock.go",
          "src_package": "locker"
+      },
+      {
+         "interface": "Plugin",
+         "src_package": "plugin"
+      },
+      {
+         "interface": "Registry",
+         "src_package": "plugin"
+      },
+      {
+         "interface": "Creator",
+         "src_package": "endpoint"
       },
       {
          "external": true,

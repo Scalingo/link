@@ -4,17 +4,20 @@
 
 > Link is not Keepalived
 
-LinK is a networking agent that will let multiple hosts share a virtual IP. It
-chooses which host must bind this IP and inform other members of the
-network of the host owning this IP.
+LinK is a networking agent that will let multiple hosts compete to get a lock on a shared resource.
+This is usually a virtual IP.
 
-The IP owner election is performed using etcd lease system and other hosts on
-this network is informed of the current IP owner using gratuitous ARP
+LinK will perform an election between all the hosts that are sharing the same election key and then notify the winner and losers of that elections.
+Depending on the Output plugin used this can then be translated to multiple actions.
+The most usual action is to manage failover between hosts by moving a virtual IP or DNS domains.
+
+The election is performed using etcd lease system and other hosts on.
+
+When using the ARP plugin, this network is informed of the current IP owner using gratuitous ARP
 requests (see [How do we bind IPs?](#how-do-we-bind-the-ips)).
 
 To ease the cluster administration, LinK comes with it's
 [own CLI](https://github.com/Scalingo/link/tree/master/cmd/link-client/).
-
 
 ## Demo
 
@@ -25,8 +28,8 @@ To ease the cluster administration, LinK comes with it's
 1. KISS: our goal is to follow the UNIX philosophy: "Do one thing and do it
    well". This component is only responsible of the IP attribution part. It
    will not manage load balancing or other higher level stuff.
-1. If an IP is registered on the cluster there must always be *at least one*
-   server that binds the IP
+1. At any given time on the cluster there must always be _at least one_
+   server where the endpoint associated to the same election key is activated.
 
 ## Architecture
 
@@ -54,18 +57,18 @@ on the [release pages](https://github.com/Scalingo/link/releases).
 
 Each LinK agent can be in any of these three states:
 
-- `ACTIVATED`: This machine owns the virtual IP
-- `STANDBY`: This machine does not own the virtual IP but is available for election
+- `ACTIVATED`: This machine is the one holding the election key
+- `STANDBY`: This machine does not own the election key but is available for election
 - `FAILING`: Health checks for this host failed, this machine is not available for election
 - `BOOTING`: The VIP just started to join the cluster and is waiting for an election
 
 At any point five types of events can happen:
-- `fault`: There was some error when coordinating with other nodes.
-- `elected`: This machine was elected to own the virtual IP.
-- `demoted`: This machine just lost ownership of the virtual IP.
-- `health_check_fail`: The health checks configured with this IP failed.
-- `health_check_success`: The health checks configured with this IP succeeded.
 
+- `fault`: There was some error when coordinating with other nodes.
+- `elected`: This machine was elected to own the election key.
+- `demoted`: This machine just lost ownership of the election key.
+- `health_check_fail`: The health checks configured with this endpoint failed.
+- `health_check_success`: The health checks configured with this endpoint succeeded.
 
 This is what the state machine looks like:
 
@@ -75,7 +78,6 @@ This is what the state machine looks like:
 
 LinK configuration is entirely done by setting environment variables.
 
-- `INTERFACE`: Name of the interface where LinK should add and remove IPs.
 - `HOSTNAME`: Name of the host.
 - `USER`: Username used for basic auth
 - `PASSWORD`: Password used for basic auth
@@ -85,12 +87,17 @@ LinK configuration is entirely done by setting environment variables.
 - `HEALTH_CHECK_INTERVAL`: Interval between two health check queries.
 - `HEALTH_CHECK_TIMEOUT`: Max duration of a health check.
 - `FAIL_COUNT_BEFORE_FAILOVER`: Number of failed health checks needed before failing over.
-- `ARP_GRATUITOUS_INTERVAL`: Time between two gratuitous ARP packets.
-- `ARP_GRATUITOUS_COUNT`: Number of gratuitous ARP packets sent when an IP becomes ACTIVATED.
 - `ETCD_HOSTS`: The different endpoints of etcd members
 - `ETCD_TLS_CERT`: Path to the TLS X.509 certificate
 - `ETCD_TLS_KEY`: Path to the private key authenticating the certificate
 - `ETCD_CACERT`: Path to the CA cert signing the etcd member certificates
+- `PLUGIN_ENSURE_INTERVAL`: When an endpoint is ACTIVATED, time between two run of the plugin control loop.
+- `ARP_GRATUITOUS_INTERVAL`: (DEPRECATED: Use PLUGIN_ENSURE_INTERVAL)
+
+### ARP Plugin Configuration
+
+- `INTERFACE`: Name of the interface where LinK should add and remove IPs.
+- `ARP_GRATUITOUS_COUNT`: Number of gratuitous ARP packets sent when an IP becomes ACTIVATED.
 
 ## Endpoints
 
@@ -100,7 +107,9 @@ LinK configuration is entirely done by setting environment variables.
 - `DELETE /ips/:id`: Remove an IP
 - `POST /ips/:id/failover`: Trigger a failover on this IP (can only be launched on the master)
 
-## How do we bind the IPs?
+## ARP Plugin
+
+### How do we bind the IPs?
 
 To add an interface, LinK adds the IP to the configured interface and send an
 unsolicited ARP request on the network (see [Gratuitous

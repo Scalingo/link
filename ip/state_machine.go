@@ -27,7 +27,7 @@ type NewStateMachineOpts struct {
 	FailingCallback   func(ctx context.Context, e *fsm.Event)
 }
 
-func NewStateMachine(ctx context.Context, opts NewStateMachineOpts) *fsm.FSM {
+func NewStateMachine(_ context.Context, opts NewStateMachineOpts) *fsm.FSM {
 	callbacks := fsm.Callbacks{}
 
 	if opts.ActivatedCallback != nil {

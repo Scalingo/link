@@ -7,36 +7,36 @@ import (
 	"github.com/vishvananda/netlink"
 )
 
-type NetworkInterface interface {
-	EnsureIP(string) error
-	RemoveIP(string) error
+type Interface interface {
+	EnsureIP(ip string) error
+	RemoveIP(ip string) error
 }
 
-type networkInterface struct {
+type NetInterface struct {
 	card *net.Interface
 	link netlink.Link
-	arp  *arp
+	arp  ARP
 }
 
-func NewNetworkInterfaceFromName(name string) (networkInterface, error) {
+func NewNetworkInterfaceFromName(name string) (NetInterface, error) {
 	link, err := netlink.LinkByName(name)
 	if err != nil {
-		return networkInterface{}, errors.Wrapf(err, "fail to open interface %s", name)
+		return NetInterface{}, errors.Wrapf(err, "fail to open interface %s", name)
 	}
 
 	card, err := net.InterfaceByName(name)
 	if err != nil {
-		return networkInterface{}, errors.Wrapf(err, "fail to find interface %s", name)
+		return NetInterface{}, errors.Wrapf(err, "fail to find interface %s", name)
 	}
 
-	return networkInterface{
+	return NetInterface{
 		card: card,
 		link: link,
 		arp:  GetArp(),
 	}, nil
 }
 
-func (i networkInterface) hasIP(addr *netlink.Addr) (bool, error) {
+func (i NetInterface) hasIP(addr *netlink.Addr) (bool, error) {
 	addrs, err := netlink.AddrList(i.link, netlink.FAMILY_ALL)
 	if err != nil {
 		return false, errors.Wrap(err, "fail to list interface IPs")
@@ -50,7 +50,7 @@ func (i networkInterface) hasIP(addr *netlink.Addr) (bool, error) {
 	return false, nil
 }
 
-func (i networkInterface) EnsureIP(ip string) error {
+func (i NetInterface) EnsureIP(ip string) error {
 	addr, err := netlink.ParseAddr(ip)
 	if err != nil {
 		return errors.Wrapf(err, "invalid IP: %s", ip)
@@ -70,7 +70,7 @@ func (i networkInterface) EnsureIP(ip string) error {
 		}
 	}
 	// Send the gratuitous ARP request (it wont hurt anyone)
-	err = i.arp.GratuitousArpRequest(GratuitousArpRequest{
+	err = i.arp.GratuitousArp(GratuitousArpRequest{
 		IP:        addr.IP,
 		Interface: i.card,
 	})
@@ -80,7 +80,7 @@ func (i networkInterface) EnsureIP(ip string) error {
 	return nil
 }
 
-func (i networkInterface) addIP(addr *netlink.Addr) error {
+func (i NetInterface) addIP(addr *netlink.Addr) error {
 	err := netlink.AddrAdd(i.link, addr)
 	if err != nil {
 		return errors.Wrap(err, "fail to add address to the interface")
@@ -89,7 +89,7 @@ func (i networkInterface) addIP(addr *netlink.Addr) error {
 	return nil
 }
 
-func (i networkInterface) RemoveIP(ip string) error {
+func (i NetInterface) RemoveIP(ip string) error {
 	addr, err := netlink.ParseAddr(ip)
 	if err != nil {
 		return errors.Wrapf(err, "invalid IP: %s", ip)

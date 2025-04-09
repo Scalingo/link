@@ -7,10 +7,10 @@ import (
 	"github.com/Scalingo/go-utils/logger"
 )
 
-func (m *manager) healthChecker(ctx context.Context) {
-	interval := time.Duration(m.IP().HealthcheckInterval) * time.Second
+func (m *EndpointManager) healthChecker(ctx context.Context) {
+	interval := time.Duration(m.Endpoint().HealthCheckInterval) * time.Second
 	if interval == 0 {
-		interval = m.config.HealthcheckInterval
+		interval = m.config.HealthCheckInterval
 	}
 
 	for {
@@ -24,31 +24,31 @@ func (m *manager) healthChecker(ctx context.Context) {
 			return
 		}
 
-		m.sendHealthcheckResults(ctx, healthy, err)
+		m.sendHealthCheckResults(ctx, healthy, err)
 
 		time.Sleep(interval)
 	}
 }
 
-func (m *manager) sendHealthcheckResults(ctx context.Context, healthy bool, err error) {
+func (m *EndpointManager) sendHealthCheckResults(ctx context.Context, healthy bool, err error) {
 	log := logger.Get(ctx)
 	if healthy {
-		if m.healthcheckFailingCount > 0 {
-			log.Infof("Healthcheck healthy after %v retries", m.healthcheckFailingCount)
-			m.healthcheckFailingCount = 0
+		if m.healthCheckFailingCount > 0 {
+			log.Infof("Health check healthy after %v retries", m.healthCheckFailingCount)
+			m.healthCheckFailingCount = 0
 		}
 		m.sendEvent(HealthCheckSuccessEvent)
 		return
 	}
 
-	m.healthcheckFailingCount++
-	if m.healthcheckFailingCount < m.config.FailCountBeforeFailover {
-		log.WithField("failing_count", m.healthcheckFailingCount).WithError(err).Info("Healthcheck failed (will be retried)")
+	m.healthCheckFailingCount++
+	if m.healthCheckFailingCount < m.config.FailCountBeforeFailover {
+		log.WithField("failing_count", m.healthCheckFailingCount).WithError(err).Info("Health check failed (will be retried)")
 		return
 	}
 
-	if m.healthcheckFailingCount == m.config.FailCountBeforeFailover {
-		log.WithError(err).Error("Healthcheck failed")
+	if m.healthCheckFailingCount == m.config.FailCountBeforeFailover {
+		log.WithError(err).Error("Health check failed")
 	}
 
 	m.sendEvent(HealthCheckFailEvent)
