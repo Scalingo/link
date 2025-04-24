@@ -113,7 +113,7 @@ func main() {
 	// This will be removed in a future version.
 	r.HandleFunc("/ips", ipController.List).Methods("GET")
 	r.HandleFunc("/ips", ipController.Create).Methods("POST")
-	r.HandleFunc("/ips/{id}", endpointController.Update).Methods("DELETE")
+	r.HandleFunc("/ips/{id}", endpointController.Delete).Methods("DELETE")
 	r.HandleFunc("/ips/{id}", ipController.Get).Methods("GET")
 	r.HandleFunc("/ips/{id}", endpointController.Update).Methods("PUT", "PATCH")
 	r.HandleFunc("/ips/{id}/failover", endpointController.Failover).Methods("POST")
