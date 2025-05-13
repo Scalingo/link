@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
-	"github.com/pkg/errors"
 
+	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/logger"
 )
 
@@ -26,6 +26,8 @@ type Config struct {
 
 	ARPGratuitousInterval   time.Duration `envconfig:"ARP_GRATUITOUS_INTERVAL" default:"1s"` // Deprecated: Use PluginEnsureInterval
 	FailCountBeforeFailover int           `envconfig:"FAIL_COUNT_BEFORE_FAILOVER" default:"3"`
+
+	SecretStorageEncryptionKey string `envconfig:"SECRET_STORAGE_ENCRYPTION_KEY" default:""`
 }
 
 // LeaseTime is 5 * the global keepalive interval
@@ -44,7 +46,7 @@ func Build(ctx context.Context) (Config, error) {
 	var config Config
 	err := envconfig.Process("", &config)
 	if err != nil {
-		return config, errors.Wrap(err, "fail to parse environment")
+		return config, errors.Wrap(ctx, err, "fail to parse environment")
 	}
 
 	if _, ok := os.LookupEnv("ARP_GRATUITOUS_INTERVAL"); ok {
