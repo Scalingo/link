@@ -94,11 +94,6 @@ LinK configuration is entirely done by setting environment variables.
 - `PLUGIN_ENSURE_INTERVAL`: When an endpoint is ACTIVATED, time between two run of the plugin control loop.
 - `ARP_GRATUITOUS_INTERVAL`: (DEPRECATED: Use PLUGIN_ENSURE_INTERVAL)
 
-### ARP Plugin Configuration
-
-- `INTERFACE`: Name of the interface where LinK should add and remove IPs.
-- `ARP_GRATUITOUS_COUNT`: Number of gratuitous ARP packets sent when an IP becomes ACTIVATED.
-
 ## Endpoints
 
 - `GET /ips`: List all currently configured IPs
@@ -107,28 +102,10 @@ LinK configuration is entirely done by setting environment variables.
 - `DELETE /ips/:id`: Remove an IP
 - `POST /ips/:id/failover`: Trigger a failover on this IP (can only be launched on the master)
 
-## ARP Plugin
+## Plugins
 
-### How do we bind the IPs?
-
-To add an interface, LinK adds the IP to the configured interface and send an
-unsolicited ARP request on the network (see [Gratuitous
-ARP](https://wiki.wireshark.org/Gratuitous_ARP)).
-
-This is the equivalent of:
-
-```shell
-ip addr add MY_IP dev MY_INTERFACE
-arping -B -S MY_IP -I MY_INTERFACE
-```
-
-To unbind an IP, LinK removes it from the interface.
-
-This is the equivalent of:
-
-```shell
-ip addr del MY_IP dev MY_INTERFACE
-```
+- [ARP Plugin](plugin/arp/README.md): This plugin manages IPs and announces them on the local network using ARP.
+- [Outscale Public IP Plugin](plugin/outscale_public_ip/README.md): This plugin manages the Outscale Public IPs.
 
 ## Development environment
 
