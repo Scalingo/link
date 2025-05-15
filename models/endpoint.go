@@ -11,14 +11,14 @@ import (
 
 // Endpoint stores the configuration of an endpoint for one host
 type Endpoint struct {
-	ID string `json:"id"` // ID of this endpoint (strarting with vip-)
+	ID string `json:"id"` // ID of this endpoint (starting with vip-)
 
 	// Full IP with mask (i.e. 10.0.0.1/32)
 	// Deprecated: The IP is now stored in the ARP Plugin config. This field is kept for backward compatibility
 	IP string `json:"ip"`
 
-	Checks              HealthChecks `json:"checks,omitempty"`     // Healthcheck configured with this Endpoint
-	HealthCheckInterval int          `json:"healthcheck_interval"` // HealthcheckIntevals for this Endpoint
+	Checks              HealthChecks `json:"checks,omitempty"`     // Health check configured with this Endpoint
+	HealthCheckInterval int          `json:"healthcheck_interval"` // Health check Intervals for this Endpoint
 
 	Plugin       string          `json:"plugin,omitempty"`        // Plugin to use for this Endpoint
 	PluginConfig json.RawMessage `json:"plugin_config,omitempty"` // Plugin configuration

@@ -86,9 +86,31 @@ func main() {
 					Usage:    "Name of the plugin",
 					Required: true,
 				},
+				// ARP Plugin
 				&cli.StringFlag{
 					Name:  "ip",
 					Usage: "For ARP Plugin: IP to add",
+				},
+				// Outscale Public IP Plugin
+				&cli.StringFlag{
+					Name:  "public-ip-id",
+					Usage: "For Outscale Public IP Plugin: ID of the public IP to add",
+				},
+				&cli.StringFlag{
+					Name:  "nic-id",
+					Usage: "For Outscale Public IP Plugin: ID of the NIC to add the public IP to",
+				},
+				&cli.StringFlag{
+					Name:  "region",
+					Usage: "For Outscale Public IP Plugin: Region of the public IP",
+				},
+				&cli.StringFlag{
+					Name:  "access-key",
+					Usage: "For Outscale Public IP Plugin: Access key for the Outscale API",
+				},
+				&cli.StringFlag{
+					Name:  "secret-key",
+					Usage: "For Outscale Public IP Plugin: Secret key for the Outscale API",
 				},
 				&cli.IntFlag{
 					Name:  "health-check-interval",

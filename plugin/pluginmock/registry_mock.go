@@ -6,6 +6,7 @@ package pluginmock
 
 import (
 	context "context"
+	json "encoding/json"
 	reflect "reflect"
 
 	models "github.com/Scalingo/link/v2/models"
@@ -49,6 +50,21 @@ func (m *MockRegistry) Create(arg0 context.Context, arg1 models.Endpoint) (plugi
 func (mr *MockRegistryMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRegistry)(nil).Create), arg0, arg1)
+}
+
+// Mutate mocks base method.
+func (m *MockRegistry) Mutate(arg0 context.Context, arg1 models.Endpoint) (json.RawMessage, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Mutate", arg0, arg1)
+	ret0, _ := ret[0].(json.RawMessage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Mutate indicates an expected call of Mutate.
+func (mr *MockRegistryMockRecorder) Mutate(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Mutate", reflect.TypeOf((*MockRegistry)(nil).Mutate), arg0, arg1)
 }
 
 // Register mocks base method.
