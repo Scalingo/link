@@ -2,6 +2,7 @@ package plugin
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/link/v2/models"
@@ -14,10 +15,17 @@ type Factory interface {
 	Create(ctx context.Context, endpoint models.Endpoint) (Plugin, error)
 }
 
+type MutableFactory interface {
+	Validate(ctx context.Context, endpoint models.Endpoint) error
+	Create(ctx context.Context, endpoint models.Endpoint) (Plugin, error)
+	Mutate(ctx context.Context, endpoint models.Endpoint) (json.RawMessage, error)
+}
+
 type Registry interface {
 	Register(ctx context.Context, pluginName string, factory Factory)
 	Create(ctx context.Context, endpoint models.Endpoint) (Plugin, error)
 	Validate(ctx context.Context, endpoint models.Endpoint) error
+	Mutate(ctx context.Context, endpoint models.Endpoint) (json.RawMessage, error)
 }
 
 type registry struct {
@@ -62,4 +70,21 @@ func (r *registry) Validate(ctx context.Context, endpoint models.Endpoint) error
 		return errors.Wrap(ctx, err, "validate plugin")
 	}
 	return nil
+}
+
+func (r *registry) Mutate(ctx context.Context, endpoint models.Endpoint) (json.RawMessage, error) {
+	factory, ok := r.plugins[endpoint.Plugin]
+	if !ok {
+		return nil, ErrPluginNotFound
+	}
+	mutableFactory, ok := factory.(MutableFactory)
+	if !ok {
+		return endpoint.PluginConfig, nil
+	}
+
+	res, err := mutableFactory.Mutate(ctx, endpoint)
+	if err != nil {
+		return nil, errors.Wrap(ctx, err, "mutate plugin")
+	}
+	return res, nil
 }
