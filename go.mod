@@ -28,8 +28,14 @@ require (
 )
 
 require (
+	github.com/aws/aws-sdk-go v1.44.103 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
+	golang.org/x/oauth2 v0.29.0 // indirect
+)
+
+require (
 	github.com/Scalingo/errgo-rollbar v0.2.1 // indirect
-	github.com/Scalingo/go-utils/crypto v1.0.0 // indirect
+	github.com/Scalingo/go-utils/crypto v1.0.0
 	github.com/Scalingo/go-utils/security v1.0.0 // indirect
 	github.com/Scalingo/logrus-rollbar v1.4.2 // indirect
 	github.com/coreos/go-semver v0.3.1 // indirect
@@ -38,6 +44,7 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/outscale/osc-sdk-go/v2 v2.26.0
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/rollbar/rollbar-go v1.4.7 // indirect

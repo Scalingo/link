@@ -21,6 +21,7 @@ import (
 	"github.com/Scalingo/link/v2/models"
 	"github.com/Scalingo/link/v2/plugin"
 	"github.com/Scalingo/link/v2/plugin/arp"
+	outscalepublicip "github.com/Scalingo/link/v2/plugin/outscale_public_ip"
 	"github.com/Scalingo/link/v2/scheduler"
 	"github.com/Scalingo/link/v2/web"
 )
@@ -47,9 +48,14 @@ func main() {
 
 	storage := models.NewEtcdStorage(config)
 	leaseManager := locker.NewEtcdLeaseManager(ctx, config, storage, etcd)
+	encryptedStorage, err := models.NewEncryptedStorage(ctx, config)
+	if err != nil {
+		log.WithError(err).Error("Fail to init encrypted storage")
+		panic(err)
+	}
 
 	pluginRegistry := plugin.NewRegistry()
-	err = initPlugins(ctx, pluginRegistry)
+	err = initPlugins(ctx, pluginRegistry, encryptedStorage)
 	if err != nil {
 		log.WithError(err).Error("Fail to init plugins")
 		panic(err)
@@ -156,10 +162,16 @@ func main() {
 	}
 }
 
-func initPlugins(ctx context.Context, registry plugin.Registry) error {
+func initPlugins(ctx context.Context, registry plugin.Registry, encryptedStorage models.EncryptedStorage) error {
 	err := arp.Register(ctx, registry)
 	if err != nil {
 		return errors.Wrap(ctx, err, "register arp plugin")
 	}
+
+	err = outscalepublicip.Register(ctx, registry, encryptedStorage)
+	if err != nil {
+		return errors.Wrap(ctx, err, "register outscale public ip plugin")
+	}
+
 	return nil
 }
