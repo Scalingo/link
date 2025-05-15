@@ -63,40 +63,31 @@ func Test_EncryptedStorage_Decrypt(t *testing.T) {
 	storage, err := NewEncryptedStorage(ctx, config)
 	require.NoError(t, err)
 
-	t.Run("with an invalid nonce", func(t *testing.T) {
+	t.Run("with an invalid type", func(t *testing.T) {
 		err := storage.Decrypt(ctx, EncryptedData{
-			Nonce: "invalid-nonce",
-			Data:  "invalid-data",
+			Type: "invalid-type",
+			Data: "invalid-data",
 		}, nil)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "decode nonce")
+		assert.Contains(t, err.Error(), "unsupported encryption type")
 	})
 
 	t.Run("With an invalid data", func(t *testing.T) {
 		err := storage.Decrypt(ctx, EncryptedData{
-			Nonce: "000000000000000000000000",
-			Data:  "invalid-data",
+			Type: EncryptedDataTypeAESCFB,
+			Data: "invalid-data",
 		}, nil)
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "decode cipher text")
 	})
 
-	t.Run("With a nonce of the wrong size", func(t *testing.T) {
-		err := storage.Decrypt(ctx, EncryptedData{
-			Nonce: "deadbeef",
-			Data:  "deadbeef",
-		}, nil)
-		require.Error(t, err)
-		assert.Contains(t, err.Error(), "nonce size is incorrect")
-	})
-
 	t.Run("With a cipher text that is invalid", func(t *testing.T) {
 		err := storage.Decrypt(ctx, EncryptedData{
-			Nonce: "000000000000000000000000",
-			Data:  "deadbeef",
+			Type: EncryptedDataTypeAESCFB,
+			Data: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 		}, nil)
 		require.Error(t, err)
-		assert.Contains(t, err.Error(), "message authentication failed")
+		assert.Contains(t, err.Error(), "invalid character")
 	})
 
 	t.Run("With a valid cipher text", func(t *testing.T) {

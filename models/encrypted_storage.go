@@ -2,22 +2,23 @@ package models
 
 import (
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"io"
 
+	"github.com/Scalingo/go-utils/crypto"
 	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/link/v2/config"
 )
 
 type EncryptedData struct {
-	Nonce string `json:"nonce"`
-	Data  string `json:"data"`
+	Type string `json:"type"`
+	Data string `json:"data"`
 }
+
+const (
+	EncryptedDataTypeAESCFB = "aes-cfb"
+)
 
 type EncryptedStorage interface {
 	Encrypt(ctx context.Context, data any) (EncryptedData, error)
@@ -50,34 +51,20 @@ func (s *encryptedStorage) Encrypt(ctx context.Context, data any) (EncryptedData
 		return EncryptedData{}, errors.Wrap(ctx, err, "marshal data to JSON")
 	}
 
-	gcmInstance, err := s.initializeAESGCMCipher(ctx)
+	result, err := crypto.Encrypt(s.secretKey, dataBytes)
 	if err != nil {
-		return EncryptedData{}, errors.Wrap(ctx, err, "initialize AES GCM cipher")
+		return EncryptedData{}, errors.Wrap(ctx, err, "encrypt data")
 	}
 
-	// Generate a random nonce
-	nonce := make([]byte, gcmInstance.NonceSize())
-	_, err = io.ReadFull(rand.Reader, nonce)
-	if err != nil {
-		return EncryptedData{}, errors.Wrap(ctx, err, "generate nonce")
-	}
-
-	result := gcmInstance.Seal(nil, nonce, dataBytes, nil)
 	return EncryptedData{
-		Nonce: hex.EncodeToString(nonce),
-		Data:  hex.EncodeToString(result),
+		Data: hex.EncodeToString(result),
+		Type: EncryptedDataTypeAESCFB,
 	}, nil
 }
 
 func (s *encryptedStorage) Decrypt(ctx context.Context, data EncryptedData, v any) error {
-	gcmInstance, err := s.initializeAESGCMCipher(ctx)
-	if err != nil {
-		return errors.Wrap(ctx, err, "initialize AES GCM cipher")
-	}
-
-	nonce, err := hex.DecodeString(data.Nonce)
-	if err != nil {
-		return errors.Wrap(ctx, err, "decode nonce")
+	if data.Type != EncryptedDataTypeAESCFB {
+		return errors.New(ctx, "unsupported encryption type: "+data.Type)
 	}
 
 	cipherText, err := hex.DecodeString(data.Data)
@@ -85,11 +72,7 @@ func (s *encryptedStorage) Decrypt(ctx context.Context, data EncryptedData, v an
 		return errors.Wrap(ctx, err, "decode cipher text")
 	}
 
-	if len(nonce) != gcmInstance.NonceSize() {
-		return errors.New(ctx, "nonce size is incorrect")
-	}
-
-	plaintext, err := gcmInstance.Open(nil, nonce, cipherText, nil)
+	plaintext, err := crypto.Decrypt(s.secretKey, cipherText)
 	if err != nil {
 		return errors.Wrap(ctx, err, "decrypt data")
 	}
@@ -100,21 +83,4 @@ func (s *encryptedStorage) Decrypt(ctx context.Context, data EncryptedData, v an
 	}
 
 	return nil
-}
-
-func (s *encryptedStorage) initializeAESGCMCipher(ctx context.Context) (cipher.AEAD, error) {
-	if len(s.secretKey) != 32 {
-		return nil, errors.New(ctx, "secret key must be 32 bytes long")
-	}
-
-	block, err := aes.NewCipher(s.secretKey)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err, "create AES cipher")
-	}
-	gcmInstance, err := cipher.NewGCM(block)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err, "create GCM instance")
-	}
-
-	return gcmInstance, nil
 }
