@@ -287,7 +287,7 @@ func (c HTTPClient) getRequest(ctx context.Context, method, path string, body io
 
 func getErrorFromBody(ctx context.Context, statusCode int, body io.Reader) error {
 	if statusCode/100 != 5 && statusCode/100 != 4 {
-		return fmt.Errorf("Unexpected status code: %v", statusCode)
+		return fmt.Errorf("unexpected status code: %v", statusCode)
 	}
 	response, err := io.ReadAll(body)
 	if err != nil {

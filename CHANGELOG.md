@@ -3,8 +3,7 @@
 ## To be released (v3)
 
 This is the first v3 release of LinK. The main goal of the V3 release is to introduce a plugin systems for the actions taken by LinK when it gets or loose the control of an endpoint.
-This release only backport the current behavior (ARP with gratuitous announcements).
-However it paves the way for other output plugins to be developed easily.
+The previous behavior continue to live via the `arp` plugin. However other plugins can be developed to manage other types of endpoints.
 
 This version is fully retro-compatibility and can be used at the same time than the v2 release.
 However this retro-compatibility will be later dropped in the v3 branch.
@@ -22,6 +21,7 @@ There's also a retro-compatibility layer on the HTTP API. V2 clients should work
 - refactor(global): Fix all linter offenses in the project
 - refactor(CLI): Create internal packages to handle commands instead of a single big file
 - feature(storage): Add a way to store sensitive data via an encrypted JSON
+- feature(plugins) Add Outscale Public IP Plugin
 
 ## [2024-10-14] v2.0.7
 

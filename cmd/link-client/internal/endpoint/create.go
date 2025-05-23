@@ -11,21 +11,26 @@ import (
 	"github.com/Scalingo/link/v2/api"
 	"github.com/Scalingo/link/v2/cmd/link-client/internal/utils"
 	"github.com/Scalingo/link/v2/plugin/arp"
+	outscalepublicip "github.com/Scalingo/link/v2/plugin/outscale_public_ip"
 )
 
 func Create(ctx context.Context, c *cli.Command) error {
 	params := api.AddEndpointParams{
-		HealthCheckInterval: int(c.Int("health-check-interval")),
+		HealthCheckInterval: c.Int("health-check-interval"),
 		Plugin:              c.String("plugin"),
 	}
 
 	var pluginConfig any
 	var err error
 
-	if params.Plugin != arp.Name {
-		return cli.Exit(fmt.Sprintf("Plugin %s does not exist", params.Plugin), 1)
+	switch params.Plugin {
+	case arp.Name:
+		pluginConfig, err = getArpPluginConfig(ctx, c)
+	case outscalepublicip.Name:
+		pluginConfig, err = getOutscalePublicIPPluginConfig(ctx, c)
+	default:
+		err = fmt.Errorf("plugin %s not supported", params.Plugin)
 	}
-	pluginConfig, err = getArpPluginConfig(ctx, c)
 	if err != nil {
 		return cli.Exit(errors.Wrap(ctx, err, "invalid plugin config").Error(), 1)
 	}
@@ -56,5 +61,37 @@ func getArpPluginConfig(ctx context.Context, c *cli.Command) (arp.PluginConfig, 
 
 	return arp.PluginConfig{
 		IP: value,
+	}, nil
+}
+
+func getOutscalePublicIPPluginConfig(ctx context.Context, c *cli.Command) (outscalepublicip.PluginConfig, error) {
+	publicIPID := c.String("public-ip-id")
+	if publicIPID == "" {
+		return outscalepublicip.PluginConfig{}, errors.New(ctx, "public-ip-id is required for outscale public ip plugin")
+	}
+
+	nicID := c.String("nic-id")
+	if nicID == "" {
+		return outscalepublicip.PluginConfig{}, errors.New(ctx, "nic-id is required for outscale public ip plugin")
+	}
+	region := c.String("region")
+	if region == "" {
+		return outscalepublicip.PluginConfig{}, errors.New(ctx, "region is required for outscale public ip plugin")
+	}
+	accessKey := c.String("access-key")
+	if accessKey == "" {
+		return outscalepublicip.PluginConfig{}, errors.New(ctx, "access-key is required for outscale public ip plugin")
+	}
+	secretKey := c.String("secret-key")
+	if secretKey == "" {
+		return outscalepublicip.PluginConfig{}, errors.New(ctx, "secret-key is required for outscale public ip plugin")
+	}
+
+	return outscalepublicip.PluginConfig{
+		PublicIPID: publicIPID,
+		NICID:      nicID,
+		Region:     region,
+		AccessKey:  accessKey,
+		SecretKey:  secretKey,
 	}, nil
 }

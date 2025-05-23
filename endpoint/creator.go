@@ -61,6 +61,12 @@ func (c *creator) CreateEndpoint(ctx context.Context, params CreateEndpointParam
 		return endpoint, errors.Wrap(ctx, err, "validate plugin")
 	}
 
+	pluginConfig, err := c.registry.Mutate(ctx, endpoint)
+	if err != nil {
+		return endpoint, errors.Wrap(ctx, err, "mutate plugin")
+	}
+	endpoint.PluginConfig = pluginConfig
+
 	log.Info("Creating endpoint in database")
 
 	endpoint, err = c.storage.AddEndpoint(ctx, endpoint)
