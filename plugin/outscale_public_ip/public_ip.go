@@ -10,17 +10,13 @@ import (
 
 	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/logger"
+	"github.com/Scalingo/link/v2/services/outscale"
 )
 
 type Plugin struct {
-	oscClient *osc.APIClient
+	oscClient outscale.PublicIPClient
 
 	refreshEvery time.Duration
-
-	// Client Configuration
-	accessKey string
-	secretKey string
-	region    string
 
 	// Public IP Configuration
 	publicIPID string // ID of the public IP to move
@@ -35,11 +31,12 @@ func (p *Plugin) Activate(ctx context.Context) error {
 	ctx, log := logger.WithStructToCtx(ctx, "plugin", p)
 
 	log.Info("Linking public IP to NIC")
-	resp, _, err := p.oscClient.PublicIpApi.LinkPublicIp(p.authenticatedContext(ctx)).LinkPublicIpRequest(osc.LinkPublicIpRequest{
+	resp, err := p.oscClient.LinkPublicIP(ctx, osc.LinkPublicIpRequest{
 		PublicIpId:  &p.publicIPID,
 		NicId:       &p.nicID,
 		AllowRelink: osc.PtrBool(true),
-	}).Execute()
+	})
+
 	if err != nil {
 		return errors.Wrap(ctx, err, "link public IP")
 	}
@@ -59,9 +56,9 @@ func (p *Plugin) Deactivate(ctx context.Context) error {
 
 	log.WithField("link_public_ip_id", p.linkPublicIPID).Info("Unlinking public IP from NIC")
 
-	_, _, err := p.oscClient.PublicIpApi.UnlinkPublicIp(p.authenticatedContext(ctx)).UnlinkPublicIpRequest(osc.UnlinkPublicIpRequest{
+	_, err := p.oscClient.UnlinkPublicIP(ctx, osc.UnlinkPublicIpRequest{
 		LinkPublicIpId: &p.linkPublicIPID,
-	}).Execute()
+	})
 	if err != nil {
 		return errors.Wrap(ctx, err, "unlink public IP")
 	}
@@ -79,25 +76,10 @@ func (p *Plugin) Ensure(ctx context.Context) error {
 		return nil
 	}
 
-	resp, _, err := p.oscClient.PublicIpApi.ReadPublicIps(p.authenticatedContext(ctx)).ReadPublicIpsRequest(osc.ReadPublicIpsRequest{
-		Filters: &osc.FiltersPublicIp{
-			PublicIpIds: &[]string{p.publicIPID},
-		},
-	}).Execute()
+	publicIP, err := p.oscClient.ReadPublicIP(ctx, p.publicIPID)
 	if err != nil {
 		return errors.Wrap(ctx, err, "read public IP")
 	}
-
-	// Check if the PublicIP response is sane
-	if len(resp.GetPublicIps()) == 0 {
-		return errors.New(ctx, "public IP not found")
-	}
-
-	if len(resp.GetPublicIps()) > 1 {
-		return errors.New(ctx, "multiple public IPs found")
-	}
-
-	publicIP := resp.GetPublicIps()[0]
 
 	// If the public IP is not linked to the NIC, we need to link it
 	if publicIP.GetNicId() != p.nicID {
@@ -122,19 +104,6 @@ func (p *Plugin) Ensure(ctx context.Context) error {
 
 func (p *Plugin) ElectionKey(_ context.Context) string {
 	return fmt.Sprintf("%s/%s", Name, p.publicIPID)
-}
-
-func (p *Plugin) authenticatedContext(ctx context.Context) context.Context {
-	ctx = context.WithValue(ctx, osc.ContextAWSv4, osc.AWSv4{
-		AccessKey: p.accessKey,
-		SecretKey: p.secretKey,
-	})
-
-	ctx = context.WithValue(ctx, osc.ContextServerIndex, 0)
-	ctx = context.WithValue(ctx, osc.ContextServerVariables, map[string]string{
-		"region": p.region,
-	})
-	return ctx
 }
 
 func (p *Plugin) LogFields() logrus.Fields {

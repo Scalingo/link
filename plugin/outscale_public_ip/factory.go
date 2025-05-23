@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"time"
 
-	osc "github.com/outscale/osc-sdk-go/v2"
-
 	"github.com/kelseyhightower/envconfig"
 
 	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/link/v2/models"
 	"github.com/Scalingo/link/v2/plugin"
+	"github.com/Scalingo/link/v2/services/outscale"
 )
 
 const Name = "outscale_public_ip"
@@ -41,32 +40,29 @@ type Factory struct {
 }
 
 func (f Factory) Create(ctx context.Context, endpoint models.Endpoint) (plugin.Plugin, error) {
-	oscClient := osc.NewAPIClient(osc.NewConfiguration())
-
 	var cfg StorablePluginConfig
 	err := json.Unmarshal(endpoint.PluginConfig, &cfg)
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "unmarshal plugin config")
 	}
 
-	plugin := &Plugin{
-		oscClient:    oscClient,
-		refreshEvery: f.config.RefreshEvery,
-		region:       cfg.Region,
-		publicIPID:   cfg.PublicIPID,
-		nicID:        cfg.NICID,
-	}
-
-	err = f.encryptedStorage.Decrypt(ctx, cfg.AccessKey, &plugin.accessKey)
+	var accessKey, secretKey string
+	err = f.encryptedStorage.Decrypt(ctx, cfg.AccessKey, &accessKey)
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "decrypt access key")
 	}
-	err = f.encryptedStorage.Decrypt(ctx, cfg.SecretKey, &plugin.secretKey)
+	err = f.encryptedStorage.Decrypt(ctx, cfg.SecretKey, &secretKey)
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "decrypt secret key")
 	}
+	oscClient := outscale.NewClient(accessKey, secretKey, cfg.Region)
 
-	return plugin, nil
+	return &Plugin{
+		oscClient:    oscClient,
+		refreshEvery: f.config.RefreshEvery,
+		publicIPID:   cfg.PublicIPID,
+		nicID:        cfg.NICID,
+	}, nil
 }
 
 type PluginConfig struct {
