@@ -11,11 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/locker/lockermock"
-	"github.com/Scalingo/link/v2/models/modelsmock"
-	"github.com/Scalingo/link/v2/plugin/pluginmock"
-	"github.com/Scalingo/link/v2/watcher/watchermock"
+	"github.com/Scalingo/link/v3/config"
+	"github.com/Scalingo/link/v3/locker/lockermock"
+	"github.com/Scalingo/link/v3/models/modelsmock"
+	"github.com/Scalingo/link/v3/plugin/pluginmock"
+	"github.com/Scalingo/link/v3/watcher/watchermock"
 )
 
 func TestManager_TryToGetIP(t *testing.T) {

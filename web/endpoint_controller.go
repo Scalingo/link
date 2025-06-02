@@ -5,10 +5,10 @@ import (
 	"net/http"
 
 	"github.com/Scalingo/go-utils/errors/v2"
-	"github.com/Scalingo/link/v2/api"
-	"github.com/Scalingo/link/v2/endpoint"
-	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/scheduler"
+	"github.com/Scalingo/link/v3/api"
+	"github.com/Scalingo/link/v3/endpoint"
+	"github.com/Scalingo/link/v3/models"
+	"github.com/Scalingo/link/v3/scheduler"
 )
 
 type EndpointController struct {

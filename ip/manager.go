@@ -11,12 +11,12 @@ import (
 
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/go-utils/retry"
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/healthcheck"
-	"github.com/Scalingo/link/v2/locker"
-	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/plugin"
-	"github.com/Scalingo/link/v2/watcher"
+	"github.com/Scalingo/link/v3/config"
+	"github.com/Scalingo/link/v3/healthcheck"
+	"github.com/Scalingo/link/v3/locker"
+	"github.com/Scalingo/link/v3/models"
+	"github.com/Scalingo/link/v3/plugin"
+	"github.com/Scalingo/link/v3/watcher"
 )
 
 type Manager interface {

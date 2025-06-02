@@ -9,8 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/models/modelsmock"
+	"github.com/Scalingo/link/v3/models"
+	"github.com/Scalingo/link/v3/models/modelsmock"
 )
 
 func TestFactory_Mutate_Success(t *testing.T) {

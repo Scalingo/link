@@ -2,6 +2,8 @@
 
 ## To be released
 
+- fix(namespace): Fix v3 release to use the `github.com/Scalingo/link/v3` instead of `github.com/Scalingo/link/v2`
+
 ## [2025-05-28] v3.0.0
 
 This is the first v3 release of LinK. The main goal of the V3 release is to introduce a plugin systems for the actions taken by LinK when it gets or loose the control of an endpoint.

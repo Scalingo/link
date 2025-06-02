@@ -10,7 +10,7 @@ import (
 
 	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/services/outscale"
+	"github.com/Scalingo/link/v3/services/outscale"
 )
 
 type Plugin struct {

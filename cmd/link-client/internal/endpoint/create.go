@@ -8,10 +8,10 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/Scalingo/go-utils/errors/v2"
-	"github.com/Scalingo/link/v2/api"
-	"github.com/Scalingo/link/v2/cmd/link-client/internal/utils"
-	"github.com/Scalingo/link/v2/plugin/arp"
-	outscalepublicip "github.com/Scalingo/link/v2/plugin/outscale_public_ip"
+	"github.com/Scalingo/link/v3/api"
+	"github.com/Scalingo/link/v3/cmd/link-client/internal/utils"
+	"github.com/Scalingo/link/v3/plugin/arp"
+	outscalepublicip "github.com/Scalingo/link/v3/plugin/outscale_public_ip"
 )
 
 func Create(ctx context.Context, c *cli.Command) error {

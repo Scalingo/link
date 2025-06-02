@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 
 	"github.com/Scalingo/go-utils/errors/v2"
-	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v3/models"
 )
 
 var ErrPluginNotFound = errors.New(context.Background(), "plugin not found")

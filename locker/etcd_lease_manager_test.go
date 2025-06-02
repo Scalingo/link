@@ -13,8 +13,8 @@ import (
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	etcdv3 "go.etcd.io/etcd/client/v3"
 
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/etcdmock"
+	"github.com/Scalingo/link/v3/config"
+	"github.com/Scalingo/link/v3/etcdmock"
 )
 
 type updadeResults struct {

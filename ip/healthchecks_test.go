@@ -10,8 +10,8 @@ import (
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/healthcheck/healthcheckmock"
+	"github.com/Scalingo/link/v3/config"
+	"github.com/Scalingo/link/v3/healthcheck/healthcheckmock"
 )
 
 func TestManager_HealthChecker(t *testing.T) {

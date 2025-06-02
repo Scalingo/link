@@ -11,8 +11,8 @@ import (
 	scalingoerrors "github.com/Scalingo/go-utils/errors"
 	"github.com/Scalingo/go-utils/etcd"
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/locker"
-	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v3/locker"
+	"github.com/Scalingo/link/v3/models"
 )
 
 type V0toV1 struct {

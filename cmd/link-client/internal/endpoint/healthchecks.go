@@ -9,7 +9,7 @@ import (
 	"github.com/urfave/cli/v3"
 
 	"github.com/Scalingo/go-utils/errors/v2"
-	"github.com/Scalingo/link/v2/api"
+	"github.com/Scalingo/link/v3/api"
 )
 
 func parseHealthChecks(ctx context.Context, c *cli.Command) ([]api.HealthCheck, error) {

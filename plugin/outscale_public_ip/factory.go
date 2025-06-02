@@ -8,9 +8,9 @@ import (
 	"github.com/kelseyhightower/envconfig"
 
 	"github.com/Scalingo/go-utils/errors/v2"
-	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/plugin"
-	"github.com/Scalingo/link/v2/services/outscale"
+	"github.com/Scalingo/link/v3/models"
+	"github.com/Scalingo/link/v3/plugin"
+	"github.com/Scalingo/link/v3/services/outscale"
 )
 
 const Name = "outscale_public_ip"

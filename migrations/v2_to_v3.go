@@ -6,8 +6,8 @@ import (
 
 	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/plugin/arp"
+	"github.com/Scalingo/link/v3/models"
+	"github.com/Scalingo/link/v3/plugin/arp"
 )
 
 type V2toV3 struct {

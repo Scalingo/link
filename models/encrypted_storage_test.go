@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v3/config"
 )
 
 func Test_EncryptedStorageEndToEnd(t *testing.T) {

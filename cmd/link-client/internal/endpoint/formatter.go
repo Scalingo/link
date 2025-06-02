@@ -3,7 +3,7 @@ package endpoint
 import (
 	"github.com/logrusorgru/aurora/v3"
 
-	"github.com/Scalingo/link/v2/api"
+	"github.com/Scalingo/link/v3/api"
 )
 
 func FormatStatus(endpoint api.Endpoint) string {

@@ -7,7 +7,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/locker"
+	"github.com/Scalingo/link/v3/locker"
 )
 
 /* Stop process:

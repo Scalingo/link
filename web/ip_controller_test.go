@@ -12,9 +12,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Scalingo/link/v2/endpoint"
-	"github.com/Scalingo/link/v2/endpoint/endpointmock"
-	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v3/endpoint"
+	"github.com/Scalingo/link/v3/endpoint/endpointmock"
+	"github.com/Scalingo/link/v3/models"
 )
 
 func TestIPController_Create(t *testing.T) {

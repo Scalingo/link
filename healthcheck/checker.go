@@ -5,9 +5,9 @@ import (
 
 	"github.com/Scalingo/go-philae/v4/prober"
 	"github.com/Scalingo/go-philae/v4/tcpprobe"
-	"github.com/Scalingo/link/v2/api"
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v3/api"
+	"github.com/Scalingo/link/v3/config"
+	"github.com/Scalingo/link/v3/models"
 )
 
 type Checker interface {

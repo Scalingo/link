@@ -10,7 +10,7 @@ import (
 	"github.com/pkg/errors"
 	etcdv3 "go.etcd.io/etcd/client/v3"
 
-	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v3/models"
 )
 
 // v0IP represents an virtual IP as stored in the v0 data version. The main difference as compared to v1 is the LeaseID.

@@ -8,8 +8,8 @@ import (
 	"github.com/logrusorgru/aurora/v3"
 	"github.com/urfave/cli/v3"
 
-	"github.com/Scalingo/link/v2/cmd/link-client/internal/endpoint"
-	"github.com/Scalingo/link/v2/cmd/link-client/internal/utils"
+	"github.com/Scalingo/link/v3/cmd/link-client/internal/endpoint"
+	"github.com/Scalingo/link/v3/cmd/link-client/internal/utils"
 )
 
 var Version = "dev"
