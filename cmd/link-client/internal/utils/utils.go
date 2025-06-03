@@ -3,7 +3,7 @@ package utils
 import (
 	"github.com/urfave/cli/v3"
 
-	"github.com/Scalingo/link/v2/api"
+	"github.com/Scalingo/link/v3/api"
 )
 
 func GetClient(c *cli.Command) api.HTTPClient {

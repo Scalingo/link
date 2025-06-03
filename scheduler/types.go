@@ -1,8 +1,8 @@
 package scheduler
 
 import (
-	"github.com/Scalingo/link/v2/api"
-	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v3/api"
+	"github.com/Scalingo/link/v3/models"
 )
 
 type EndpointWithStatus struct {

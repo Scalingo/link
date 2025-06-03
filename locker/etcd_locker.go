@@ -10,8 +10,8 @@ import (
 	etcdv3 "go.etcd.io/etcd/client/v3"
 
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/models"
+	"github.com/Scalingo/link/v3/config"
+	"github.com/Scalingo/link/v3/models"
 )
 
 var (

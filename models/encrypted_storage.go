@@ -8,7 +8,7 @@ import (
 
 	"github.com/Scalingo/go-utils/crypto"
 	"github.com/Scalingo/go-utils/errors/v2"
-	"github.com/Scalingo/link/v2/config"
+	"github.com/Scalingo/link/v3/config"
 )
 
 type EncryptedData struct {

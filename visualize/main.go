@@ -6,7 +6,7 @@ import (
 
 	"github.com/looplab/fsm"
 
-	"github.com/Scalingo/link/v2/ip"
+	"github.com/Scalingo/link/v3/ip"
 )
 
 func main() {

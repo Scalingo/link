@@ -9,9 +9,9 @@ import (
 
 	"github.com/Scalingo/go-utils/errors/v2"
 
-	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/network"
-	"github.com/Scalingo/link/v2/plugin"
+	"github.com/Scalingo/link/v3/models"
+	"github.com/Scalingo/link/v3/network"
+	"github.com/Scalingo/link/v3/plugin"
 )
 
 const Name = "arp"

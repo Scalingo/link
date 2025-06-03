@@ -10,11 +10,11 @@ import (
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/Scalingo/link/v2/api"
-	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/models/modelsmock"
-	"github.com/Scalingo/link/v2/plugin/pluginmock"
-	"github.com/Scalingo/link/v2/scheduler/schedulermock"
+	"github.com/Scalingo/link/v3/api"
+	"github.com/Scalingo/link/v3/models"
+	"github.com/Scalingo/link/v3/models/modelsmock"
+	"github.com/Scalingo/link/v3/plugin/pluginmock"
+	"github.com/Scalingo/link/v3/scheduler/schedulermock"
 )
 
 func Test_Creator_CreateEndpoint(t *testing.T) {

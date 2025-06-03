@@ -1,4 +1,4 @@
-module github.com/Scalingo/link/v2
+module github.com/Scalingo/link/v3
 
 go 1.23.5
 

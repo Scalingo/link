@@ -7,8 +7,8 @@ import (
 	"github.com/looplab/fsm"
 
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/config"
-	"github.com/Scalingo/link/v2/locker"
+	"github.com/Scalingo/link/v3/config"
+	"github.com/Scalingo/link/v3/locker"
 )
 
 func (m *EndpointManager) setActivated(ctx context.Context, _ *fsm.Event) {

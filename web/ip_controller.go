@@ -6,11 +6,11 @@ import (
 
 	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/logger"
-	"github.com/Scalingo/link/v2/api"
-	"github.com/Scalingo/link/v2/endpoint"
-	"github.com/Scalingo/link/v2/models"
-	"github.com/Scalingo/link/v2/plugin/arp"
-	"github.com/Scalingo/link/v2/scheduler"
+	"github.com/Scalingo/link/v3/api"
+	"github.com/Scalingo/link/v3/endpoint"
+	"github.com/Scalingo/link/v3/models"
+	"github.com/Scalingo/link/v3/plugin/arp"
+	"github.com/Scalingo/link/v3/scheduler"
 )
 
 // Legacy types. Those should be removed later in the v3 branch

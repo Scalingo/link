@@ -6,7 +6,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/Scalingo/link/v2/api"
+	"github.com/Scalingo/link/v3/api"
 )
 
 // Endpoint stores the configuration of an endpoint for one host
