@@ -2,6 +2,8 @@
 
 ## To be released
 
+## [2025-06-03] v3.0.1
+
 - fix(namespace): Fix v3 release to use the `github.com/Scalingo/link/v3` instead of `github.com/Scalingo/link/v2`
 
 ## [2025-05-28] v3.0.0
