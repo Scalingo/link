@@ -27,7 +27,7 @@ func List(ctx context.Context, c *cli.Command) error {
 		return nil
 	}
 	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"ID", "Election Key", "Status", "Plugin", "CHECKS"})
+	table.Header([]string{"ID", "Election Key", "Status", "Plugin", "CHECKS"})
 
 	for _, endpoint := range endpoints {
 		status := FormatStatus(endpoint)

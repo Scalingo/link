@@ -2,6 +2,10 @@
 
 ## To be Released
 
+## v1.2.0
+
+* chore(go): upgrade to Go 1.24
+
 ## v1.1.2
 
 * Various dependencies updates
