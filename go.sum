@@ -12,8 +12,8 @@ github.com/Scalingo/go-utils/errors/v2 v2.5.0 h1:aBQF3st7gBS9UbXa8RxkhO1qZb+6e/Z
 github.com/Scalingo/go-utils/errors/v2 v2.5.0/go.mod h1:aY5TjRfIlqlsKTJGpxuk7AnporNVjn0LdcquXenLwjg=
 github.com/Scalingo/go-utils/etcd v1.2.0 h1:Enu7cvRY7kpDSTGT2xQtCG5wyemAKT5Forlb+lwuHuM=
 github.com/Scalingo/go-utils/etcd v1.2.0/go.mod h1:sCyoCLfZyWolLTPb+p18SQcCgXgpAWV1KVmHfXKmEc8=
-github.com/Scalingo/go-utils/logger v1.9.0 h1:djr3YaA7LourAjsZmkgQebtMHQLnHwJz8M1vj9+/8R4=
-github.com/Scalingo/go-utils/logger v1.9.0/go.mod h1:2wzJAC2aOGzpEtKs+PcWhecSe/wVJua8wguDajbk0j0=
+github.com/Scalingo/go-utils/logger v1.6.0 h1:YyorhN7NNN0zsIYFtfgfY0pTSPek2pgppX500O0I7H8=
+github.com/Scalingo/go-utils/logger v1.6.0/go.mod h1:2wzJAC2aOGzpEtKs+PcWhecSe/wVJua8wguDajbk0j0=
 github.com/Scalingo/go-utils/retry v1.2.0 h1:Moc8eSKOWF59FUEkNl8wyRksXLkEFH8W/QC4SgCm2Ek=
 github.com/Scalingo/go-utils/retry v1.2.0/go.mod h1:YFGDWS6CUfgHwIJJ54istrtkxNuw3Ug1CTXYtZVq2ic=
 github.com/Scalingo/go-utils/security v1.1.0 h1:+YdMYJTMX2DfEdBm71QC2y3ETQw/HOIBPgJf9IGogrw=

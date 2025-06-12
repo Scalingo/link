@@ -21,7 +21,7 @@ github.com/Scalingo/go-utils/errors/v2
 # github.com/Scalingo/go-utils/etcd v1.2.0
 ## explicit; go 1.24.3
 github.com/Scalingo/go-utils/etcd
-# github.com/Scalingo/go-utils/logger v1.9.0
+# github.com/Scalingo/go-utils/logger v1.6.0
 ## explicit; go 1.24.3
 github.com/Scalingo/go-utils/logger
 github.com/Scalingo/go-utils/logger/plugins/rollbarplugin
