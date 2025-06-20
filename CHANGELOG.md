@@ -2,8 +2,10 @@
 
 ## To be released
 
-- build(go): use go 1.24
+## [2025-06-20] v3.0.1
+
 - fix(namespace): Fix v3 release to use the `github.com/Scalingo/link/v3` instead of `github.com/Scalingo/link/v2`
+- build(go): use go 1.24
 
 ## [2025-05-28] v3.0.0
 
