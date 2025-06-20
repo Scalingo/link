@@ -9,46 +9,46 @@ jobs:
     env:
       GOX_ARCHITECTURES: amd64 386
     steps:
-    # Currently there is no possibility to get a tag name. Hence we filter the GITHUB_REF variable which contains something like "refs/tags/v2.0.0" if the tag is "v2.0.0". The value can be used with "steps.tag_name.outputs.TAG_NAME"
-    - name: Get tag name
-      if: startsWith(github.ref, 'refs/tags/')
-      id: tag_name
-      run: |
-        echo "::set-output name=TAG_NAME::${GITHUB_REF#refs/tags/}"
-        echo "$TAG_NAME"
+      # Currently there is no possibility to get a tag name. Hence we filter the GITHUB_REF variable which contains something like "refs/tags/v2.0.0" if the tag is "v2.0.0". The value can be used with "steps.tag_name.outputs.TAG_NAME"
+      - name: Get tag name
+        if: startsWith(github.ref, 'refs/tags/')
+        id: tag_name
+        run: |
+          echo "::set-output name=TAG_NAME::${GITHUB_REF#refs/tags/}"
+          echo "$TAG_NAME"
 
-    - name: Checkout the code
-      uses: actions/checkout@v4
+      - name: Checkout the code
+        uses: actions/checkout@v4
 
-    - name: Setup Go environment
-      uses: actions/setup-go@v5
-      with:
-        go-version-file: "go.mod"
-        check-latest: true
-    - run: go version
+      - name: Setup Go environment
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: "go.mod"
+          check-latest: true
+      - run: go version
 
-    - name: Execute the tests
-      run: go test -race -p=1 ./...
+      - name: Execute the tests
+        run: go test -race -p=1 ./...
 
-    - name: Build the binaries
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        go install github.com/mitchellh/gox@latest
-        CGO_ENABLED=0 gox -os="linux" -arch="${{ env.GOX_ARCHITECTURES }}" -output="dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-{{.OS}}-{{.Arch}}/{{.Dir}}" -ldflags="-X main.Version=${{ steps.tag_name.outputs.TAG_NAME }}" . ./cmd/...
+      - name: Build the binaries
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          go install github.com/mitchellh/gox@latest
+          CGO_ENABLED=0 gox -os="linux" -arch="${{ env.GOX_ARCHITECTURES }}" -output="dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-{{.OS}}-{{.Arch}}/{{.Dir}}" -ldflags="-X main.Version=${{ steps.tag_name.outputs.TAG_NAME }}" . ./cmd/...
 
-    - name: Archive the built binaries
-      if: startsWith(github.ref, 'refs/tags/')
-      run: |
-        for gox_archi in $GOX_ARCHITECTURES; do
-          echo "Archive release targetted to $gox_archi"
-          # Gox compiles link-client and an executable named "v2" instead of "link"..
-          mv dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}/v2 dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}/link
-          tar --directory=dist -czvf "dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}.tar.gz" "link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}"
-        done
+      - name: Archive the built binaries
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          for gox_archi in $GOX_ARCHITECTURES; do
+            echo "Archive release targetted to $gox_archi"
+            # Gox compiles link-client and an executable named "v3" instead of "link"..
+            mv dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}/v3 dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}/link
+            tar --directory=dist -czvf "dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}.tar.gz" "link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}"
+          done
 
-    - name: Release the new version
-      if: startsWith(github.ref, 'refs/tags/')
-      uses: softprops/action-gh-release@v2
-      with:
-        generate_release_notes: true
-        files: dist/*.tar.gz
+      - name: Release the new version
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: dist/*.tar.gz
