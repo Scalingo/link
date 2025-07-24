@@ -88,9 +88,14 @@ func (c EndpointController) Create(w http.ResponseWriter, r *http.Request, _ map
 		return errors.Wrap(ctx, err, "create endpoint")
 	}
 
+	endpointWithStatus := c.scheduler.GetEndpoint(ctx, endpoint.ID)
+	if endpointWithStatus == nil {
+		return errors.New(ctx, "endpoint not found after creation")
+	}
+
 	w.WriteHeader(http.StatusCreated)
 	err = json.NewEncoder(w).Encode(api.EndpointGetResponse{
-		Endpoint: endpoint.ToAPIType(),
+		Endpoint: endpointWithStatus.ToAPIType(),
 	})
 	if err != nil {
 		return errors.Wrap(ctx, err, "encode endpoint")
