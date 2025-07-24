@@ -21,8 +21,8 @@ github.com/Scalingo/go-utils/errors/v2
 # github.com/Scalingo/go-utils/etcd v1.2.1
 ## explicit; go 1.24
 github.com/Scalingo/go-utils/etcd
-# github.com/Scalingo/go-utils/logger v1.9.0
-## explicit; go 1.24.3
+# github.com/Scalingo/go-utils/logger v1.9.1
+## explicit; go 1.24
 github.com/Scalingo/go-utils/logger
 github.com/Scalingo/go-utils/logger/plugins/rollbarplugin
 # github.com/Scalingo/go-utils/retry v1.2.1
@@ -211,7 +211,7 @@ golang.org/x/net/trace
 ## explicit; go 1.23.0
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.33.0
+# golang.org/x/sys v0.34.0
 ## explicit; go 1.23.0
 golang.org/x/sys/unix
 golang.org/x/sys/windows

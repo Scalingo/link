@@ -2,6 +2,9 @@
 
 ## To be released
 
+- fix(client) Wrong type in AddEndpoint HTTP Client when parsing controller answer
+- feature(add_endpoint) Return endpoint election key when creating a new endpoint
+
 ## [2025-06-20] v3.0.1
 
 - fix(releases): Fix the release bot to publish v3 binaries

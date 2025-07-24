@@ -12,8 +12,8 @@ github.com/Scalingo/go-utils/errors/v2 v2.5.1 h1:1tfJW6/ZxTgrRmFTlKQCOtArQquOW0/
 github.com/Scalingo/go-utils/errors/v2 v2.5.1/go.mod h1:SbR1JuMtfAl+gpM7ahUW/c3Jm5MMzMAwJBk1pEHkVd8=
 github.com/Scalingo/go-utils/etcd v1.2.1 h1:3cNNLYLxUTGdP1c+XA5VNH052uaCjRwN9Y1NkIgwYkk=
 github.com/Scalingo/go-utils/etcd v1.2.1/go.mod h1:mrwfLv05Ddy1ssNPweCPhnygsHacQD3aBiP7y9LuaFQ=
-github.com/Scalingo/go-utils/logger v1.9.0 h1:djr3YaA7LourAjsZmkgQebtMHQLnHwJz8M1vj9+/8R4=
-github.com/Scalingo/go-utils/logger v1.9.0/go.mod h1:2wzJAC2aOGzpEtKs+PcWhecSe/wVJua8wguDajbk0j0=
+github.com/Scalingo/go-utils/logger v1.9.1 h1:AjVCdWcIAQXzrrFdLTJVBhrAqMX27mSgXcUK53PSKQs=
+github.com/Scalingo/go-utils/logger v1.9.1/go.mod h1:A6oLYDkLaYaTAx1JJBBASYEwyEpayCfeAsnAdK0+TQw=
 github.com/Scalingo/go-utils/retry v1.2.1 h1:uGMWO3S1EkzrxcEmpSk69aHQSLgxXpVJ4odmdJJ2mr8=
 github.com/Scalingo/go-utils/retry v1.2.1/go.mod h1:8Odav01G/Gfhoc/H7uIHTeRWkTAnKBC3QC4PZOCuWkA=
 github.com/Scalingo/go-utils/security v1.1.1 h1:vkKYotWqLKfJ/ONVHgXdIDF/Jprzn89Dglk9OmZojng=
@@ -173,8 +173,8 @@ golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.2.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.6.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.10.0/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.33.0 h1:q3i8TbbEz+JRD9ywIRlyRAQbM0qF7hu24q3teo2hbuw=
-golang.org/x/sys v0.33.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=
+golang.org/x/sys v0.34.0 h1:H5Y5sJ2L2JRdyv7ROF1he/lPdvFsd0mJHFw2ThKHxLA=
+golang.org/x/sys v0.34.0/go.mod h1:BJP2sWEmIv4KK5OTEluFJCKSidICx8ciO85XgH3Ak8k=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.3/go.mod h1:5Zoc/QRtKVWzQhOtBMvqHzDpF6irO9z98xDceosuGiQ=

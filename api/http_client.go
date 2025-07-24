@@ -174,14 +174,14 @@ func (c HTTPClient) AddEndpoint(ctx context.Context, params AddEndpointParams) (
 		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
 
-	res := Endpoint{}
+	res := EndpointGetResponse{}
 
 	err = json.NewDecoder(resp.Body).Decode(&res)
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "read endpoint JSON")
 	}
 
-	return res, nil
+	return res.Endpoint, nil
 }
 
 func (c HTTPClient) UpdateEndpoint(ctx context.Context, id string, params UpdateEndpointParams) (Endpoint, error) {
