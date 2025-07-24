@@ -2,6 +2,8 @@
 
 ## To be released
 
+## [2025-07-24] v3.0.2
+
 - fix(client) Wrong type in AddEndpoint HTTP Client when parsing controller answer
 - feature(add_endpoint) Return endpoint election key when creating a new endpoint
 
