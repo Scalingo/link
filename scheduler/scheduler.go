@@ -33,6 +33,7 @@ type Scheduler interface {
 	Status(id string) string
 	ConfiguredEndpoints(ctx context.Context) EndpointsWithStatus
 	GetEndpoint(ctx context.Context, id string) *EndpointWithStatus
+	EndpointCount() int
 	UpdateEndpoint(ctx context.Context, endpoint models.Endpoint) error
 }
 
@@ -195,4 +196,10 @@ func (s *EndpointScheduler) UpdateEndpoint(ctx context.Context, endpoint models.
 	manager.SetHealthChecks(ctx, s.config, endpoint.Checks)
 
 	return nil
+}
+
+func (s *EndpointScheduler) EndpointCount() int {
+	s.mapMutex.RLock()
+	defer s.mapMutex.RUnlock()
+	return len(s.endpointManagers)
 }

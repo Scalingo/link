@@ -106,7 +106,7 @@ func main() {
 		}
 	}
 
-	endpointCreator := endpoint.NewCreator(storage, scheduler, pluginRegistry)
+	endpointCreator := endpoint.NewCreator(config, storage, scheduler, pluginRegistry)
 	ipController := web.NewIPController(scheduler, storage, endpointCreator)
 	endpointController := web.NewEndpointController(scheduler, storage, endpointCreator, encryptedStorage)
 	encryptedStorageController := web.NewEncryptedStorageController(encryptedStorage)

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/!scalingo/link/v2/models/modelsmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -18,12 +19,13 @@ import (
 
 func Test_Creator_CreateEndpoint(t *testing.T) {
 	specs := []struct {
-		Name          string
-		Params        CreateEndpointParams
-		Storage       func(t *testing.T, mock *models.MockStorage)
-		Registry      func(mock *pluginmock.MockRegistry)
-		Scheduler     func(mock *schedulermock.MockScheduler)
-		ExpectedError string
+		Name                 string
+		Params               CreateEndpointParams
+		Storage              func(t *testing.T, mock *models.MockStorage)
+		Registry             func(mock *pluginmock.MockRegistry)
+		Scheduler            func(mock *schedulermock.MockScheduler)
+		ExpectedError        string
+		maxNumberOfEndpoints int
 	}{
 		{
 			Name: "Invalid health check",
@@ -33,6 +35,9 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 						Type: "INVALID",
 					},
 				},
+			},
+			Scheduler: func(mock *schedulermock.MockScheduler) {
+				mock.EXPECT().EndpointCount().Return(0)
 			},
 			ExpectedError: "Health check type is not supported",
 		}, {
@@ -52,6 +57,9 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 			Registry: func(mock *pluginmock.MockRegistry) {
 				mock.EXPECT().Validate(gomock.Any(), gomock.Any()).Return(errors.New("plugin validation error"))
 			},
+			Scheduler: func(mock *schedulermock.MockScheduler) {
+				mock.EXPECT().EndpointCount().Return(0)
+			},
 			ExpectedError: "plugin validation error",
 		}, {
 			Name: "Storage error",
@@ -61,6 +69,9 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 			},
 			Storage: func(_ *testing.T, mock *models.MockStorage) {
 				mock.EXPECT().AddEndpoint(gomock.Any(), gomock.Any()).Return(models.Endpoint{}, errors.New("storage error"))
+			},
+			Scheduler: func(mock *schedulermock.MockScheduler) {
+				mock.EXPECT().EndpointCount().Return(0)
 			},
 			ExpectedError: "storage error",
 		}, {
@@ -75,6 +86,7 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 			},
 			Scheduler: func(mock *schedulermock.MockScheduler) {
 				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.Endpoint{}, errors.New("scheduler error"))
+				mock.EXPECT().EndpointCount().Return(0)
 			},
 			ExpectedError: "scheduler error",
 		}, {
@@ -88,6 +100,7 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 			},
 			Scheduler: func(mock *schedulermock.MockScheduler) {
 				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.Endpoint{ID: "test-id"}, nil)
+				mock.EXPECT().EndpointCount().Return(0)
 			},
 			ExpectedError: "",
 		}, {
@@ -103,8 +116,30 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 			},
 			Scheduler: func(mock *schedulermock.MockScheduler) {
 				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.Endpoint{ID: "test-id"}, nil)
+				mock.EXPECT().EndpointCount().Return(0)
 			},
 			ExpectedError: "",
+		}, {
+			Name: "Too many endpoints configured",
+			Scheduler: func(mock *schedulermock.MockScheduler) {
+				mock.EXPECT().EndpointCount().Return(1001)
+			},
+			ExpectedError: "Too many endpoints configured: 1001, max allowed: 1000",
+		}, {
+			Name: "Too many endpoints check disabled",
+			Registry: func(mock *pluginmock.MockRegistry) {
+				mock.EXPECT().Validate(gomock.Any(), gomock.Any()).Return(nil)
+				mock.EXPECT().Mutate(gomock.Any(), gomock.Any()).Return(nil, nil)
+			},
+			Storage: func(_ *testing.T, mock *modelsmock.MockStorage) {
+				mock.EXPECT().AddEndpoint(gomock.Any(), gomock.Any()).Return(models.Endpoint{ID: "test-id"}, nil)
+			},
+			Scheduler: func(mock *schedulermock.MockScheduler) {
+				mock.EXPECT().Start(gomock.Any(), gomock.Any()).Return(models.Endpoint{ID: "test-id"}, nil)
+				mock.EXPECT().EndpointCount().Return(1001)
+			},
+			maxNumberOfEndpoints: -1,
+			ExpectedError:        "",
 		},
 	}
 
@@ -129,11 +164,16 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 				spec.Scheduler(mockScheduler)
 			}
 
+			if spec.maxNumberOfEndpoints == 0 {
+				spec.maxNumberOfEndpoints = 1000
+			}
+
 			// Call the function under test
 			creator := creator{
-				storage:   mockStorage,
-				registry:  mockRegistry,
-				scheduler: mockScheduler,
+				storage:              mockStorage,
+				registry:             mockRegistry,
+				scheduler:            mockScheduler,
+				maxNumberOfEndpoints: spec.maxNumberOfEndpoints,
 			}
 			_, err := creator.CreateEndpoint(ctx, spec.Params)
 
