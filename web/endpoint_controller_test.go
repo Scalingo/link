@@ -22,14 +22,20 @@ import (
 
 func TestEndpointCreator_Update(t *testing.T) {
 	ctx := context.Background()
-	linkIPId := "my-id"
+	linkIPId := "vip-11111111-1111-1111-1111-111111111111"
 	tests := map[string]struct {
 		body               string
 		expectScheduler    func(*schedulermock.MockScheduler)
 		expectedStatusCode int
 		expectedBody       string
 		expectedError      string
+		linkIPId           string
 	}{
+		"With an invalid ID": {
+			linkIPId:           "invalid-id",
+			expectedError:      "Invalid endpoint ID",
+			expectedStatusCode: http.StatusBadRequest,
+		},
 		"With an unknown IP": {
 			expectScheduler: func(m *schedulermock.MockScheduler) {
 				m.EXPECT().GetEndpoint(gomock.Any(), linkIPId).Return(nil)
@@ -108,9 +114,13 @@ func TestEndpointCreator_Update(t *testing.T) {
 			req := httptest.NewRequest("POST", "/ips", bytes.NewBufferString(test.body))
 			res := httptest.NewRecorder()
 
+			if test.linkIPId == "" {
+				test.linkIPId = linkIPId
+			}
+
 			err := EndpointController{
 				scheduler: scheduler,
-			}.Update(res, req, map[string]string{"id": linkIPId})
+			}.Update(res, req, map[string]string{"id": test.linkIPId})
 			if test.expectedError != "" {
 				require.Error(t, err)
 				assert.Contains(t, err.Error(), test.expectedError)

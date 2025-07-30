@@ -3,6 +3,9 @@ package outscalepublicip
 import (
 	"context"
 	"encoding/json"
+	"regexp"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/kelseyhightower/envconfig"
@@ -14,6 +17,18 @@ import (
 )
 
 const Name = "outscale_public_ip"
+
+var outscaleRegions = []string{
+	"ap-northeast-1",
+	"cloudgouv-eu-west-1",
+	"eu-west-2",
+	"us-east-2",
+	"us-west-1",
+}
+
+var tokenRegex = regexp.MustCompile(`^[A-Z0-9]{3,64}$`)
+
+var outscaleIDRegex = regexp.MustCompile(`^[a-z]+-[a-f0-9]{3,64}$`)
 
 type Config struct {
 	RefreshEvery time.Duration `envconfig:"OUTSCALE_PUBLIC_IP_REFRESH_INTERVAL" default:"1m"`
@@ -86,17 +101,36 @@ func (f Factory) Validate(_ context.Context, endpoint models.Endpoint) error {
 	if req.AccessKey == "" {
 		validations.Set("plugin_config.access_key", "missing access key")
 	}
+	if req.AccessKey != "" && !tokenRegex.MatchString(req.AccessKey) {
+		validations.Set("plugin_config.access_key", "invalid access key format")
+	}
+
 	if req.SecretKey == "" {
 		validations.Set("plugin_config.secret_key", "missing secret key")
 	}
+	if req.SecretKey != "" && !tokenRegex.MatchString(req.SecretKey) {
+		validations.Set("plugin_config.secret_key", "invalid secret key format")
+	}
+
 	if req.Region == "" {
 		validations.Set("plugin_config.region", "missing region")
 	}
+	if req.Region != "" && !slices.Contains(outscaleRegions, strings.ToLower(req.Region)) {
+		validations.Set("plugin_config.region", "invalid region: "+req.Region)
+	}
+
 	if req.PublicIPID == "" {
 		validations.Set("plugin_config.public_ip_id", "missing public IP ID")
 	}
+	if req.PublicIPID != "" && !outscaleIDRegex.MatchString(req.PublicIPID) {
+		validations.Set("plugin_config.public_ip_id", "invalid public IP ID format")
+	}
+
 	if req.NICID == "" {
 		validations.Set("plugin_config.nic_id", "missing NIC ID")
+	}
+	if req.NICID != "" && !outscaleIDRegex.MatchString(req.NICID) {
+		validations.Set("plugin_config.nic_id", "invalid NIC ID format")
 	}
 
 	validationErr := validations.Build()
