@@ -15,10 +15,11 @@ import (
 var _ Client = HTTPClient{}
 
 type HTTPClient struct {
-	url      string
-	username string
-	password string
-	timeout  time.Duration
+	url       string
+	username  string
+	password  string
+	timeout   time.Duration
+	userAgent string
 }
 
 type ClientOpt func(HTTPClient) HTTPClient
@@ -54,6 +55,13 @@ func WithPassword(pass string) ClientOpt {
 func WithTimeout(timeout time.Duration) ClientOpt {
 	return func(c HTTPClient) HTTPClient {
 		c.timeout = timeout
+		return c
+	}
+}
+
+func WithUserAgent(userAgent string) ClientOpt {
+	return func(c HTTPClient) HTTPClient {
+		c.userAgent = userAgent
 		return c
 	}
 }
@@ -280,6 +288,10 @@ func (c HTTPClient) getRequest(ctx context.Context, method, path string, body io
 
 	if c.username != "" || c.password != "" {
 		req.SetBasicAuth(c.username, c.password)
+	}
+
+	if c.userAgent != "" {
+		req.Header.Set("User-Agent", c.userAgent)
 	}
 
 	return req, nil
