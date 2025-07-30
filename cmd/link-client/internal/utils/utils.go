@@ -20,5 +20,7 @@ func GetClient(c *cli.Command) api.HTTPClient {
 		opts = append(opts, api.WithPassword(c.String("password")))
 	}
 
+	opts = append(opts, api.WithUserAgent("link-cli/"+c.Root().Version))
+
 	return api.NewHTTPClient(opts...)
 }

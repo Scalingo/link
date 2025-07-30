@@ -2,6 +2,9 @@
 
 ## To be released
 
+- feature(client) Add an option to customize the User-Agent
+- feature(cli) Specify the CLI version in the User-Agent
+
 ## [2025-07-24] v3.0.2
 
 - fix(client) Wrong type in AddEndpoint HTTP Client when parsing controller answer
