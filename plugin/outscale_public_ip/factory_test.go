@@ -174,11 +174,11 @@ func TestFactory_Mutate_Success(t *testing.T) {
 	endpoint := models.Endpoint{PluginConfig: raw}
 
 	mockStorage := modelsmock.NewMockEncryptedStorage(ctrl)
-	mockStorage.EXPECT().Encrypt(ctx, "my-access").Return(models.EncryptedData{
+	mockStorage.EXPECT().Encrypt(ctx, "my-access").Return(models.EncryptedDataLink{
 		Type: models.EncryptedDataTypeAESCFB,
 		Data: "enc_my-access",
 	}, nil)
-	mockStorage.EXPECT().Encrypt(ctx, "my-secret").Return(models.EncryptedData{
+	mockStorage.EXPECT().Encrypt(ctx, "my-secret").Return(models.EncryptedDataLink{
 		Type: models.EncryptedDataTypeAESCFB,
 		Data: "enc_my-secret",
 	}, nil)

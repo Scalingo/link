@@ -4,8 +4,8 @@
   "github.com/Scalingo/link/healthcheck.Checker": "68 49 fe 4d a3 bb 44 44 63 fd 68 46 63 a1 ac c4 f9 5b 51 3e",
   "github.com/Scalingo/link/locker.EtcdLeaseManager": "7b a3 86 21 66 c9 17 13 a4 83 30 b2 1e ec ff 1d 3f 2e e4 53",
   "github.com/Scalingo/link/locker.Locker": "a5 24 96 0f 1b f5 df b8 d8 dd 15 83 a1 d2 b2 d3 53 fa 25 0d",
-  "github.com/Scalingo/link/models.EncryptedStorage": "0b 06 fa 4d e3 78 97 34 1c 01 ed 34 2e 22 93 b9 04 23 d4 00",
-  "github.com/Scalingo/link/models.Storage": "f3 97 4e b6 3d 0e ea 04 2b 42 cb fe 4d 01 55 26 ba a6 aa 9a",
+  "github.com/Scalingo/link/models.EncryptedStorage": "c1 d3 44 b1 82 d4 65 45 15 2f 2d 10 06 a0 26 c2 ed 24 27 7f",
+  "github.com/Scalingo/link/models.Storage": "32 07 34 f0 ac d0 c3 94 e9 65 4b ae b5 18 85 8d ae 7c 47 61",
   "github.com/Scalingo/link/network.ARP": "20 bb b8 da 57 d8 84 21 24 36 cc 40 34 be f6 c3 e6 e9 f9 78",
   "github.com/Scalingo/link/network.Interface": "02 61 47 58 85 b3 ce f2 ee 69 f8 58 4b ca cd eb 5b ed f9 3c",
   "github.com/Scalingo/link/plugin.Plugin": "b6 82 98 3a d8 a5 17 e8 f0 df b6 20 6e 0f 4a 08 e6 b8 19 e5",
@@ -14,6 +14,6 @@
   "github.com/Scalingo/link/services/outscale.PublicIPClient": "80 44 4e d0 66 f4 14 f0 91 dd 55 ca a9 fa 17 8e 41 24 5f ea",
   "github.com/Scalingo/link/watcher.Watcher": "ec 8d f6 d4 6d 64 c7 76 87 fd 72 43 c6 ed d9 89 0e a6 9a 71",
   "go.etcd.io/etcd/client/v3.KV": "b5 dc 10 4e dc 95 f2 cf 0a 6c e7 c5 ac 0a 47 5f 60 44 31 40",
-  "go.etcd.io/etcd/client/v3.Lease": "97 3a 98 b9 88 68 67 d0 d8 3e 4e a5 be 0b 0a a1 72 a1 43 8b",
+  "go.etcd.io/etcd/client/v3.Lease": "30 e3 84 00 73 5e ca 02 82 04 c5 ca 20 8b de 27 cd d4 29 a6",
   "go.etcd.io/etcd/client/v3.Txn": "2b d8 86 0c 62 87 e9 d4 e5 71 78 81 ef 89 ec 5a e8 30 43 e1"
 }

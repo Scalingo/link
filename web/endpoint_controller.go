@@ -165,11 +165,17 @@ func (c EndpointController) Delete(w http.ResponseWriter, r *http.Request, param
 
 	err := c.storage.RemoveEndpoint(ctx, id)
 	if err != nil {
-		return errors.Wrap(ctx, err, "fail to remove endpoint from storage")
+		return errors.Wrap(ctx, err, "remove endpoint from storage")
 	}
+
+	err = c.storage.RemoveEncryptedDataForEndpoint(ctx, id)
+	if err != nil {
+		return errors.Wrap(ctx, err, "remove encrypted data for endpoint")
+	}
+
 	err = c.scheduler.Stop(ctx, id)
 	if err != nil {
-		return errors.Wrap(ctx, err, "fail to stop endpoint manager")
+		return errors.Wrap(ctx, err, "stop endpoint manager")
 	}
 	w.WriteHeader(http.StatusNoContent)
 

@@ -64,7 +64,7 @@ func Test_EncryptedStorage_Decrypt(t *testing.T) {
 	require.NoError(t, err)
 
 	t.Run("with an invalid type", func(t *testing.T) {
-		err := storage.Decrypt(ctx, EncryptedData{
+		err := storage.Decrypt(ctx, EncryptedDataLink{
 			Type: "invalid-type",
 			Data: "invalid-data",
 		}, nil)
@@ -73,7 +73,7 @@ func Test_EncryptedStorage_Decrypt(t *testing.T) {
 	})
 
 	t.Run("With an invalid data", func(t *testing.T) {
-		err := storage.Decrypt(ctx, EncryptedData{
+		err := storage.Decrypt(ctx, EncryptedDataLink{
 			Type: EncryptedDataTypeAESCFB,
 			Data: "invalid-data",
 		}, nil)
@@ -82,7 +82,7 @@ func Test_EncryptedStorage_Decrypt(t *testing.T) {
 	})
 
 	t.Run("With a cipher text that is invalid", func(t *testing.T) {
-		err := storage.Decrypt(ctx, EncryptedData{
+		err := storage.Decrypt(ctx, EncryptedDataLink{
 			Type: EncryptedDataTypeAESCFB,
 			Data: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef",
 		}, nil)

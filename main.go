@@ -48,7 +48,7 @@ func main() {
 
 	storage := models.NewEtcdStorage(config)
 	leaseManager := locker.NewEtcdLeaseManager(ctx, config, storage, etcd)
-	encryptedStorage, err := models.NewEncryptedStorage(ctx, config)
+	encryptedStorage, err := models.NewEncryptedStorage(ctx, config, storage)
 	if err != nil {
 		log.WithError(err).Error("Fail to init encrypted storage")
 		panic(err)
@@ -61,7 +61,11 @@ func main() {
 		panic(err)
 	}
 
-	migrationRunner := migrations.NewMigrationRunner(config, storage, leaseManager)
+	migrationRunner, err := migrations.NewMigrationRunner(ctx, config, storage, leaseManager)
+	if err != nil {
+		log.WithError(err).Error("Fail to init migration runner")
+		panic(err)
+	}
 
 	// We run the migration in a goroutine. Because the migrations can take a long time and locks might expires.
 	// This could cause unwanted failover.

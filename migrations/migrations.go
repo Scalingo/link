@@ -20,15 +20,21 @@ type MigrationRunner struct {
 	migrations []Migration
 }
 
-func NewMigrationRunner(cfg config.Config, storage models.Storage, leaseManager locker.EtcdLeaseManager) MigrationRunner {
+func NewMigrationRunner(ctx context.Context, cfg config.Config, storage models.Storage, leaseManager locker.EtcdLeaseManager) (MigrationRunner, error) {
+
+	v3tov4, err := NewV3toV4Migration(ctx, cfg, storage)
+	if err != nil {
+		return MigrationRunner{}, errors.Wrap(ctx, err, "init v3 to v4 migration")
+	}
 	migrations := []Migration{
 		NewV0toV1Migration(cfg.Hostname, leaseManager, storage),
 		NewV2toV3Migration(cfg.Hostname, storage),
+		v3tov4,
 	}
 
 	return MigrationRunner{
 		migrations: migrations,
-	}
+	}, nil
 }
 
 func (m MigrationRunner) Run(ctx context.Context) error {

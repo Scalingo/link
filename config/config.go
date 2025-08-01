@@ -27,7 +27,8 @@ type Config struct {
 	ARPGratuitousInterval   time.Duration `envconfig:"ARP_GRATUITOUS_INTERVAL" default:"1s"` // Deprecated: Use PluginEnsureInterval
 	FailCountBeforeFailover int           `envconfig:"FAIL_COUNT_BEFORE_FAILOVER" default:"3"`
 
-	SecretStorageEncryptionKey string `envconfig:"SECRET_STORAGE_ENCRYPTION_KEY" default:""`
+	SecretStorageEncryptionKey string   `envconfig:"SECRET_STORAGE_ENCRYPTION_KEY" default:""`
+	SecretStorageAlternateKeys []string `envconfig:"SECRET_STORAGE_ALTERNATE_KEYS" default:""`
 }
 
 // LeaseTime is 5 * the global keepalive interval

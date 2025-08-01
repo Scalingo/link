@@ -65,6 +65,21 @@ func (mr *MockStorageMockRecorder) GetCurrentHost(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentHost", reflect.TypeOf((*MockStorage)(nil).GetCurrentHost), arg0)
 }
 
+// GetEncryptedData mocks base method.
+func (m *MockStorage) GetEncryptedData(arg0 context.Context, arg1, arg2 string) (models.EncryptedData, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetEncryptedData", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.EncryptedData)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetEncryptedData indicates an expected call of GetEncryptedData.
+func (mr *MockStorageMockRecorder) GetEncryptedData(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEncryptedData", reflect.TypeOf((*MockStorage)(nil).GetEncryptedData), arg0, arg1, arg2)
+}
+
 // GetEndpointHosts mocks base method.
 func (m *MockStorage) GetEndpointHosts(arg0 context.Context, arg1 string) ([]string, error) {
 	m.ctrl.T.Helper()
@@ -107,6 +122,35 @@ func (m *MockStorage) LinkEndpointWithCurrentHost(arg0 context.Context, arg1 str
 func (mr *MockStorageMockRecorder) LinkEndpointWithCurrentHost(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkEndpointWithCurrentHost", reflect.TypeOf((*MockStorage)(nil).LinkEndpointWithCurrentHost), arg0, arg1)
+}
+
+// ListEncryptedDataForHost mocks base method.
+func (m *MockStorage) ListEncryptedDataForHost(arg0 context.Context) ([]models.EncryptedDataLink, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListEncryptedDataForHost", arg0)
+	ret0, _ := ret[0].([]models.EncryptedDataLink)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListEncryptedDataForHost indicates an expected call of ListEncryptedDataForHost.
+func (mr *MockStorageMockRecorder) ListEncryptedDataForHost(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEncryptedDataForHost", reflect.TypeOf((*MockStorage)(nil).ListEncryptedDataForHost), arg0)
+}
+
+// RemoveEncryptedDataForEndpoint mocks base method.
+func (m *MockStorage) RemoveEncryptedDataForEndpoint(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveEncryptedDataForEndpoint", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveEncryptedDataForEndpoint indicates an expected call of RemoveEncryptedDataForEndpoint.
+func (mr *MockStorageMockRecorder) RemoveEncryptedDataForEndpoint(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveEncryptedDataForEndpoint", reflect.TypeOf((*MockStorage)(nil).RemoveEncryptedDataForEndpoint), arg0, arg1)
 }
 
 // RemoveEndpoint mocks base method.
@@ -163,4 +207,19 @@ func (m *MockStorage) UpdateEndpoint(arg0 context.Context, arg1 models.Endpoint)
 func (mr *MockStorageMockRecorder) UpdateEndpoint(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEndpoint", reflect.TypeOf((*MockStorage)(nil).UpdateEndpoint), arg0, arg1)
+}
+
+// UpsertEncryptedData mocks base method.
+func (m *MockStorage) UpsertEncryptedData(arg0 context.Context, arg1 string, arg2 models.EncryptedData) (models.EncryptedDataLink, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpsertEncryptedData", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.EncryptedDataLink)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UpsertEncryptedData indicates an expected call of UpsertEncryptedData.
+func (mr *MockStorageMockRecorder) UpsertEncryptedData(arg0, arg1, arg2 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertEncryptedData", reflect.TypeOf((*MockStorage)(nil).UpsertEncryptedData), arg0, arg1, arg2)
 }

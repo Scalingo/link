@@ -10,6 +10,8 @@ github.com/Scalingo/go-utils/errors v1.1.1 h1:G7zypaDBj0O6QFvX0xL5dMDXbiBgq+3KKu
 github.com/Scalingo/go-utils/errors v1.1.1/go.mod h1:gsnGOMma5x3CSgPb8i5eMuHcKi3RvTJ9dWPNRev161c=
 github.com/Scalingo/go-utils/errors/v2 v2.5.1 h1:1tfJW6/ZxTgrRmFTlKQCOtArQquOW0/XdZQzx8wMHoM=
 github.com/Scalingo/go-utils/errors/v2 v2.5.1/go.mod h1:SbR1JuMtfAl+gpM7ahUW/c3Jm5MMzMAwJBk1pEHkVd8=
+github.com/Scalingo/go-utils/errors/v3 v3.0.0 h1:ss54AOJDR8LU3tjSA1Gf320ikY0WkgGsm7reeGYt7p0=
+github.com/Scalingo/go-utils/errors/v3 v3.0.0/go.mod h1:+yY6dLBGI7N7gv7FHDO2iq0nYjkD3U4j7riko/a/y6Q=
 github.com/Scalingo/go-utils/etcd v1.2.1 h1:3cNNLYLxUTGdP1c+XA5VNH052uaCjRwN9Y1NkIgwYkk=
 github.com/Scalingo/go-utils/etcd v1.2.1/go.mod h1:mrwfLv05Ddy1ssNPweCPhnygsHacQD3aBiP7y9LuaFQ=
 github.com/Scalingo/go-utils/logger v1.9.1 h1:AjVCdWcIAQXzrrFdLTJVBhrAqMX27mSgXcUK53PSKQs=

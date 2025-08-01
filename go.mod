@@ -28,6 +28,7 @@ require (
 )
 
 require (
+	github.com/Scalingo/go-utils/errors/v3 v3.0.0 // indirect
 	github.com/aws/aws-sdk-go v1.55.8 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 // indirect

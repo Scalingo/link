@@ -35,8 +35,22 @@ func (m *MockEncryptedStorage) EXPECT() *MockEncryptedStorageMockRecorder {
 	return m.recorder
 }
 
+// Cleanup mocks base method.
+func (m *MockEncryptedStorage) Cleanup(arg0 context.Context, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Cleanup", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Cleanup indicates an expected call of Cleanup.
+func (mr *MockEncryptedStorageMockRecorder) Cleanup(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cleanup", reflect.TypeOf((*MockEncryptedStorage)(nil).Cleanup), arg0, arg1)
+}
+
 // Decrypt mocks base method.
-func (m *MockEncryptedStorage) Decrypt(arg0 context.Context, arg1 models.EncryptedData, arg2 interface{}) error {
+func (m *MockEncryptedStorage) Decrypt(arg0 context.Context, arg1 models.EncryptedDataLink, arg2 interface{}) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Decrypt", arg0, arg1, arg2)
 	ret0, _ := ret[0].(error)
@@ -50,16 +64,16 @@ func (mr *MockEncryptedStorageMockRecorder) Decrypt(arg0, arg1, arg2 interface{}
 }
 
 // Encrypt mocks base method.
-func (m *MockEncryptedStorage) Encrypt(arg0 context.Context, arg1 interface{}) (models.EncryptedData, error) {
+func (m *MockEncryptedStorage) Encrypt(arg0 context.Context, arg1 string, arg2 interface{}) (models.EncryptedDataLink, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Encrypt", arg0, arg1)
-	ret0, _ := ret[0].(models.EncryptedData)
+	ret := m.ctrl.Call(m, "Encrypt", arg0, arg1, arg2)
+	ret0, _ := ret[0].(models.EncryptedDataLink)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Encrypt indicates an expected call of Encrypt.
-func (mr *MockEncryptedStorageMockRecorder) Encrypt(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockEncryptedStorageMockRecorder) Encrypt(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encrypt", reflect.TypeOf((*MockEncryptedStorage)(nil).Encrypt), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encrypt", reflect.TypeOf((*MockEncryptedStorage)(nil).Encrypt), arg0, arg1, arg2)
 }

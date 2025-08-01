@@ -155,11 +155,11 @@ func (f Factory) Mutate(ctx context.Context, endpoint models.Endpoint) (json.Raw
 		NICID:      req.NICID,
 	}
 
-	cfg.AccessKey, err = f.encryptedStorage.Encrypt(ctx, req.AccessKey)
+	cfg.AccessKey, err = f.encryptedStorage.Encrypt(ctx, endpoint.ID, req.AccessKey)
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "encrypt access key")
 	}
-	cfg.SecretKey, err = f.encryptedStorage.Encrypt(ctx, req.SecretKey)
+	cfg.SecretKey, err = f.encryptedStorage.Encrypt(ctx, endpoint.ID, req.SecretKey)
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "encrypt secret key")
 	}
@@ -170,9 +170,9 @@ func (f Factory) Mutate(ctx context.Context, endpoint models.Endpoint) (json.Raw
 }
 
 type StorablePluginConfig struct {
-	AccessKey models.EncryptedData `json:"access_key"`
-	SecretKey models.EncryptedData `json:"secret_key"`
-	Region    string               `json:"region"`
+	AccessKey models.EncryptedDataLink `json:"access_key"`
+	SecretKey models.EncryptedDataLink `json:"secret_key"`
+	Region    string                   `json:"region"`
 
 	PublicIPID string `json:"public_ip_id"`
 	NICID      string `json:"nic_id"`
