@@ -345,7 +345,7 @@ func (e EtcdStorage) RemoveEncryptedDataForEndpoint(ctx context.Context, endpoin
 	return nil
 }
 
-func (e EtcdStorage) ListEncryptedDataForHost(ctx context.Context) ([]EncryptedDataLink, error) {
+func (e EtcdStorage) ListEncryptedDataForHost(ctx context.Context) ([]EncryptedData, error) {
 	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -360,17 +360,15 @@ func (e EtcdStorage) ListEncryptedDataForHost(ctx context.Context) ([]EncryptedD
 		return nil, errors.Wrap(err, "list encrypted data")
 	}
 
-	results := make([]EncryptedDataLink, 0, resp.Count)
+	results := make([]EncryptedData, 0, resp.Count)
 	for _, kv := range resp.Kvs {
 		var encryptedData EncryptedData
 		err = json.Unmarshal(kv.Value, &encryptedData)
 		if err != nil {
 			return nil, errors.Wrapf(err, "invalid json for %s", kv.Key)
 		}
-		results = append(results, EncryptedDataLink{
-			ID:         encryptedData.ID,
-			EndpointID: encryptedData.EndpointID,
-		})
+
+		results = append(results, encryptedData)
 	}
 	return results, nil
 }

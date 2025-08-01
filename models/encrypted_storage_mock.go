@@ -76,3 +76,17 @@ func (mr *MockEncryptedStorageMockRecorder) Encrypt(arg0, arg1, arg2 interface{}
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encrypt", reflect.TypeOf((*MockEncryptedStorage)(nil).Encrypt), arg0, arg1, arg2)
 }
+
+// RotateEncryptionKey mocks base method.
+func (m *MockEncryptedStorage) RotateEncryptionKey(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RotateEncryptionKey", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RotateEncryptionKey indicates an expected call of RotateEncryptionKey.
+func (mr *MockEncryptedStorageMockRecorder) RotateEncryptionKey(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RotateEncryptionKey", reflect.TypeOf((*MockEncryptedStorage)(nil).RotateEncryptionKey), arg0)
+}

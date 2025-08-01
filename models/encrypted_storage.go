@@ -9,6 +9,7 @@ import (
 
 	"github.com/Scalingo/go-utils/crypto"
 	"github.com/Scalingo/go-utils/errors/v2"
+	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v3/config"
 )
 
@@ -41,6 +42,7 @@ type EncryptedStorage interface {
 	Encrypt(ctx context.Context, endpointID string, data any) (EncryptedDataLink, error)
 	Decrypt(ctx context.Context, data EncryptedDataLink, v any) error
 	Cleanup(ctx context.Context, endpointID string) error
+	RotateEncryptionKey(ctx context.Context) error
 }
 
 // Implements a GCM AES-256 encryption/decryption
@@ -86,17 +88,9 @@ func (s *encryptedStorage) Encrypt(ctx context.Context, endpointId string, data 
 		return EncryptedDataLink{}, errors.Wrap(ctx, err, "marshal data to JSON")
 	}
 
-	result, err := crypto.Encrypt(s.secretKey, dataBytes)
+	encryptedData, err := s.encryptWithKey(ctx, dataBytes, s.secretKey)
 	if err != nil {
-		return EncryptedDataLink{}, errors.Wrap(ctx, err, "encrypt data")
-	}
-
-	hash := sha512.Sum512(dataBytes)
-
-	encryptedData := EncryptedData{
-		Data: hex.EncodeToString(result),
-		Type: EncryptedDataTypeAESCFBSha512,
-		Hash: hex.EncodeToString(hash[:]),
+		return EncryptedDataLink{}, errors.Wrap(ctx, err, "encrypt data with secret key")
 	}
 
 	link, err := s.storage.UpsertEncryptedData(ctx, endpointId, encryptedData)
@@ -179,11 +173,75 @@ func (s *encryptedStorage) decryptWithKey(ctx context.Context, data EncryptedDat
 	return plaintext, nil
 }
 
+func (s *encryptedStorage) encryptWithKey(ctx context.Context, data []byte, key []byte) (EncryptedData, error) {
+	cipherText, err := crypto.Encrypt(key, data)
+	if err != nil {
+		return EncryptedData{}, errors.Wrap(ctx, err, "encrypt data with key")
+	}
+
+	hash := sha512.Sum512(data)
+	return EncryptedData{
+		Data: hex.EncodeToString(cipherText),
+		Type: EncryptedDataTypeAESCFBSha512,
+		Hash: hex.EncodeToString(hash[:]),
+	}, nil
+}
+
 func (s *encryptedStorage) Cleanup(ctx context.Context, endpointID string) error {
 	err := s.storage.RemoveEncryptedDataForEndpoint(ctx, endpointID)
 	if err != nil {
 		return errors.Wrap(ctx, err, "remove encrypted data for endpoint")
 	}
+
+	return nil
+}
+
+func (s *encryptedStorage) RotateEncryptionKey(ctx context.Context) error {
+	log := logger.Get(ctx)
+	log.Info("Rotating encryption keys for encrypted storage")
+	if len(s.alternateKeys) == 0 {
+		return errors.New(ctx, "no alternate keys available for rotation")
+	}
+
+	secrets, err := s.storage.ListEncryptedDataForHost(ctx)
+	if err != nil {
+		return errors.Wrap(ctx, err, "list encrypted data for host")
+	}
+
+	for _, secret := range secrets {
+		ctx, log := logger.WithFieldToCtx(ctx, "encrypted_data_id", secret.ID)
+
+		log.Infof("Rotating encryption key for %s", secret.ID)
+		var plainTextData []byte
+		for _, key := range s.alternateKeys {
+			plainTextData, err = s.decryptWithKey(ctx, secret, key)
+			if err == nil {
+				break
+			}
+		}
+		if err != nil {
+			return errors.Wrap(ctx, err, "no alternate key could decrypt the data")
+		}
+		if len(plainTextData) == 0 {
+			// This should not happen, but we check it to avoid storing empty data
+			// Which could corrupt the encrypted storage
+			return errors.New(ctx, "decrypted data is empty")
+		}
+
+		encryptedData, err := s.encryptWithKey(ctx, plainTextData, s.secretKey)
+		if err != nil {
+			return errors.Wrap(ctx, err, "encrypt data with new secret key")
+		}
+		encryptedData.ID = secret.ID
+		encryptedData.EndpointID = secret.EndpointID
+
+		_, err = s.storage.UpsertEncryptedData(ctx, encryptedData.EndpointID, encryptedData)
+		if err != nil {
+			return errors.Wrap(ctx, err, "upsert encrypted data with new secret key")
+		}
+	}
+
+	log.Info("Encryption keys rotated successfully")
 
 	return nil
 }

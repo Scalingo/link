@@ -124,10 +124,10 @@ func (mr *MockStorageMockRecorder) LinkEndpointWithCurrentHost(arg0, arg1 interf
 }
 
 // ListEncryptedDataForHost mocks base method.
-func (m *MockStorage) ListEncryptedDataForHost(arg0 context.Context) ([]EncryptedDataLink, error) {
+func (m *MockStorage) ListEncryptedDataForHost(arg0 context.Context) ([]EncryptedData, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ListEncryptedDataForHost", arg0)
-	ret0, _ := ret[0].([]EncryptedDataLink)
+	ret0, _ := ret[0].([]EncryptedData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

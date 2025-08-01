@@ -160,6 +160,24 @@ func (c HTTPClient) Failover(ctx context.Context, id string) error {
 	return nil
 }
 
+func (c HTTPClient) RotateEncryptionKey(ctx context.Context) error {
+	req, err := c.getRequest(ctx, http.MethodPost, "/encrypted_storage/rotate_key", nil)
+	if err != nil {
+		return errors.Wrap(ctx, err, "create request")
+	}
+
+	resp, err := c.getClient().Do(req)
+	if err != nil {
+		return errors.Wrap(ctx, err, "do request")
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusNoContent {
+		return getErrorFromBody(ctx, resp.StatusCode, resp.Body)
+	}
+
+	return nil
+}
+
 func (c HTTPClient) AddEndpoint(ctx context.Context, params AddEndpointParams) (Endpoint, error) {
 	buffer := &bytes.Buffer{}
 	err := json.NewEncoder(buffer).Encode(params)

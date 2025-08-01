@@ -19,5 +19,5 @@ type Storage interface {
 	GetEncryptedData(ctx context.Context, endpointID string, encryptedDataId string) (EncryptedData, error)
 	UpsertEncryptedData(ctx context.Context, endpointID string, data EncryptedData) (EncryptedDataLink, error)
 	RemoveEncryptedDataForEndpoint(ctx context.Context, endpointID string) error
-	ListEncryptedDataForHost(ctx context.Context) ([]EncryptedDataLink, error)
+	ListEncryptedDataForHost(ctx context.Context) ([]EncryptedData, error)
 }

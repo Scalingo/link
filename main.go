@@ -106,7 +106,8 @@ func main() {
 
 	endpointCreator := endpoint.NewCreator(storage, scheduler, pluginRegistry)
 	ipController := web.NewIPController(scheduler, storage, endpointCreator)
-	endpointController := web.NewEndpointController(scheduler, storage, endpointCreator)
+	endpointController := web.NewEndpointController(scheduler, storage, endpointCreator, encryptedStorage)
+	encryptedStorageController := web.NewEncryptedStorageController(encryptedStorage)
 	versionController := web.NewVersionController(Version)
 	r := handlers.NewRouter(log)
 	r.Use(handlers.ErrorMiddleware)
@@ -116,8 +117,6 @@ func main() {
 			return user == config.User && password == config.Password
 		}))
 	}
-
-	r.Use(handlers.ErrorMiddleware)
 
 	// Retro compatibility with v2 API.
 	// This will be removed in a future version.
@@ -135,6 +134,8 @@ func main() {
 	r.HandleFunc("/endpoints/{id}", endpointController.Update).Methods("PUT", "PATCH")
 	r.HandleFunc("/endpoints/{id}/failover", endpointController.Failover).Methods("POST")
 	r.HandleFunc("/endpoints/{id}/hosts", endpointController.GetHosts).Methods("GET")
+
+	r.HandleFunc("/encrypted_storage/rotate_key", encryptedStorageController.RotateEncryptionKey).Methods("POST")
 
 	r.HandleFunc("/version", versionController.Version).Methods("GET")
 
