@@ -37,6 +37,18 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 			},
 			ExpectedError: "Health check type is not supported",
 		}, {
+			Name: "Invalid health check interval",
+			Params: CreateEndpointParams{
+				HealthCheckInterval: -1,
+			},
+			ExpectedError: "Health check interval must be greater than 0",
+		}, {
+			Name: "Health check interval too high",
+			Params: CreateEndpointParams{
+				HealthCheckInterval: 4000,
+			},
+			ExpectedError: "Health check interval must be less than or equal to 3600 seconds",
+		}, {
 			Name: "Plugin validation failed",
 			Registry: func(mock *pluginmock.MockRegistry) {
 				mock.EXPECT().Validate(gomock.Any(), gomock.Any()).Return(errors.New("plugin validation error"))

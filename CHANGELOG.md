@@ -4,6 +4,7 @@
 
 - feature(client) Add an option to customize the User-Agent
 - feature(cli) Specify the CLI version in the User-Agent
+- fix(validations) Add missing input validations
 
 ## [2025-07-24] v3.0.2
 

@@ -3,6 +3,7 @@ package web
 import (
 	"encoding/json"
 	"net/http"
+	"regexp"
 
 	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/link/v3/api"
@@ -10,6 +11,8 @@ import (
 	"github.com/Scalingo/link/v3/models"
 	"github.com/Scalingo/link/v3/scheduler"
 )
+
+var vipRegex = regexp.MustCompile(`^vip-[a-zA-Z0-9-]{36}$`)
 
 type EndpointController struct {
 	scheduler       scheduler.Scheduler
@@ -43,7 +46,13 @@ func (c EndpointController) List(w http.ResponseWriter, r *http.Request, _ map[s
 func (c EndpointController) Get(w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	ctx := r.Context()
 
-	endpoint := c.scheduler.GetEndpoint(r.Context(), params["id"])
+	endpointId := params["id"]
+	if !isEndpointIDValid(endpointId) {
+		w.WriteHeader(http.StatusBadRequest)
+		return errors.New(ctx, "Invalid endpoint ID")
+	}
+
+	endpoint := c.scheduler.GetEndpoint(r.Context(), endpointId)
 	if endpoint == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return errors.New(ctx, "Endpoint not found")
@@ -106,7 +115,14 @@ func (c EndpointController) Create(w http.ResponseWriter, r *http.Request, _ map
 
 func (c EndpointController) Update(w http.ResponseWriter, r *http.Request, params map[string]string) error {
 	ctx := r.Context()
-	endpoint := c.scheduler.GetEndpoint(ctx, params["id"])
+
+	endpointId := params["id"]
+	if !isEndpointIDValid(endpointId) {
+		w.WriteHeader(http.StatusBadRequest)
+		return errors.New(ctx, "Invalid endpoint ID")
+	}
+
+	endpoint := c.scheduler.GetEndpoint(ctx, endpointId)
 	if endpoint == nil {
 		w.WriteHeader(http.StatusNotFound)
 		return errors.New(ctx, "Endpoint not found")
@@ -141,6 +157,12 @@ func (c EndpointController) Delete(w http.ResponseWriter, r *http.Request, param
 	ctx := r.Context()
 
 	id := params["id"]
+
+	if !isEndpointIDValid(id) {
+		w.WriteHeader(http.StatusBadRequest)
+		return errors.New(ctx, "Invalid endpoint ID")
+	}
+
 	err := c.storage.RemoveEndpoint(ctx, id)
 	if err != nil {
 		return errors.Wrap(ctx, err, "fail to remove endpoint from storage")
@@ -159,6 +181,11 @@ func (c EndpointController) Failover(w http.ResponseWriter, r *http.Request, par
 
 	id := params["id"]
 
+	if !isEndpointIDValid(id) {
+		w.WriteHeader(http.StatusBadRequest)
+		return errors.New(ctx, "Invalid endpoint ID")
+	}
+
 	err := c.scheduler.Failover(ctx, id)
 	if err != nil {
 		return errors.Wrap(ctx, err, "fail to failover endpoint")
@@ -172,6 +199,10 @@ func (c EndpointController) GetHosts(w http.ResponseWriter, r *http.Request, par
 	ctx := r.Context()
 
 	id := params["id"]
+	if !isEndpointIDValid(id) {
+		w.WriteHeader(http.StatusBadRequest)
+		return errors.New(ctx, "Invalid endpoint ID")
+	}
 
 	endpoint := c.scheduler.GetEndpoint(ctx, id)
 	if endpoint == nil {
@@ -201,4 +232,16 @@ func (c EndpointController) GetHosts(w http.ResponseWriter, r *http.Request, par
 	}
 
 	return nil
+}
+
+func isEndpointIDValid(id string) bool {
+	if id == "" {
+		return false
+	}
+
+	if !vipRegex.MatchString(id) {
+		return false
+	}
+
+	return true
 }

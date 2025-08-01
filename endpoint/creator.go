@@ -54,6 +54,19 @@ func (c *creator) CreateEndpoint(ctx context.Context, params CreateEndpointParam
 		PluginConfig:        params.PluginConfig,
 	}
 
+	builder := errors.NewValidationErrorsBuilder()
+	if endpoint.HealthCheckInterval < 0 {
+		builder.Set("healthcheck_interval", "Health check interval must be greater than 0")
+	}
+	if endpoint.HealthCheckInterval > 3600 {
+		builder.Set("healthcheck_interval", "Health check interval must be less than or equal to 3600 seconds")
+	}
+
+	verr := builder.Build()
+	if verr != nil {
+		return endpoint, errors.Wrap(ctx, verr, "validate endpoint parameters")
+	}
+
 	log.Info("Validating plugin")
 
 	err := c.registry.Validate(ctx, endpoint)
