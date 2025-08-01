@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /> The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br /> Throttling: To protect against overloads, the number of identical requests allowed in a given time period is limited.<br /> Brute force: To protect against brute force attacks, the number of failed authentication attempts in a given time period is limited.<br /><br /> Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but there are [differences in resource names](https://docs.outscale.com/en/userguide/About-the-APIs.html) between AWS and the OUTSCALE API.<br /> You can also manage your resources using the [Cockpit](https://docs.outscale.com/en/userguide/About-Cockpit.html) web interface.<br /><br /> An OpenAPI description of the OUTSCALE API is also available in this [GitHub repository](https://github.com/outscale/osc-api).<br /> # Authentication Schemes ### Access Key/Secret Key The main way to authenticate your requests to the OUTSCALE API is to use an access key and a secret key.<br /> The mechanism behind this is based on AWS Signature Version 4, whose technical implementation details are described in [Signature of API Requests](https://docs.outscale.com/en/userguide/Signature-of-API-Requests.html).<br /><br /> In practice, the way to specify your access key and secret key depends on the tool or SDK you want to use to interact with the API.<br />  > For example, if you use OSC CLI: > 1. You need to create an **~/.osc/config.json** file to specify your access key, secret key, and the Region of your account. > 2. You then specify the `--profile` option when executing OSC CLI commands. > > For more information, see [Installing and Configuring OSC CLI](https://docs.outscale.com/en/userguide/Installing-and-Configuring-OSC-CLI.html).  See the code samples in each section of this documentation for specific examples in different programming languages.<br /> For more information about access keys, see [About Access Keys](https://docs.outscale.com/en/userguide/About-Access-Keys.html).  > If you try to sign requests with an invalid access key four times in a row, further authentication attempts will be prevented for 1 minute. This lockout time increases 1 minute every four failed attempts, for up to 10 minutes.  ### Login/Password For certain API actions, you can also use basic authentication with the login (email address) and password of your TINA account.<br /> This is useful only in special circumstances, for example if you do not know your access key/secret key and want to retrieve them programmatically.<br /> In most cases, however, you can use the Cockpit web interface to retrieve them.<br />  > For example, if you use OSC CLI: > 1. You need to create an **~/.osc/config.json** file to specify the Region of your account, but you leave the access key value and secret key value empty (`&quot;&quot;`). > 2. You then specify the `--profile`, `--authentication-method`, `--login`, and `--password` options when executing OSC CLI commands.  See the code samples in each section of this documentation for specific examples in different programming languages.  > If you try to sign requests with an invalid password four times in a row, further authentication attempts will be prevented for 1 minute. This lockout time increases 1 minute every four failed attempts, for up to 10 minutes.  ### No Authentication A few API actions do not require any authentication. They are indicated as such in this documentation.<br /> ### Other Security Mechanisms In parallel with the authentication schemes, you can add other security mechanisms to your OUTSCALE account, for example to restrict API requests by IP or other criteria.<br /> For more information, see [Managing Your API Accesses](https://docs.outscale.com/en/userguide/Managing-Your-API-Accesses.html). # Pagination Tutorial You can learn more about the pagination methods for read calls in the dedicated [pagination tutorial](https://docs.outscale.com/en/userguide/Tutorial-Paginating-an-API-Request.html). # Error Codes Reference You can learn more about errors returned by the API in the dedicated [errors page](api-errors.html).
  *
- * API version: 1.35.3
+ * API version: 1.35.4
  * Contact: support@outscale.com
  */
 
@@ -43,10 +43,13 @@ func (r ApiCreatePolicyRequest) Execute() (CreatePolicyResponse, *_nethttp.Respo
 }
 
 /*
- * CreatePolicy Method for CreatePolicy
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiCreatePolicyRequest
- */
+  - CreatePolicy Method for CreatePolicy
+  - Creates a managed policy to apply to a user.<br />
+
+This action creates a policy version and sets v1 as the default one.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiCreatePolicyRequest
+*/
 func (a *PolicyApiService) CreatePolicy(ctx _context.Context) ApiCreatePolicyRequest {
 	return ApiCreatePolicyRequest{
 		ApiService: a,
@@ -165,10 +168,13 @@ func (r ApiCreatePolicyVersionRequest) Execute() (CreatePolicyVersionResponse, *
 }
 
 /*
- * CreatePolicyVersion Method for CreatePolicyVersion
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiCreatePolicyVersionRequest
- */
+  - CreatePolicyVersion Method for CreatePolicyVersion
+  - Creates a version of a specified managed policy.<br />
+
+A managed policy can have up to five versions.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiCreatePolicyVersionRequest
+*/
 func (a *PolicyApiService) CreatePolicyVersion(ctx _context.Context) ApiCreatePolicyVersionRequest {
 	return ApiCreatePolicyVersionRequest{
 		ApiService: a,
@@ -287,10 +293,13 @@ func (r ApiDeletePolicyRequest) Execute() (DeletePolicyResponse, *_nethttp.Respo
 }
 
 /*
- * DeletePolicy Method for DeletePolicy
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiDeletePolicyRequest
- */
+  - DeletePolicy Method for DeletePolicy
+  - Deletes a managed policy.<br />
+
+Before deleting a managed policy, you must unlink all users linked to it and delete all the versions of the policy, except the default one, using the `DeletePolicyVersion` method.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiDeletePolicyRequest
+*/
 func (a *PolicyApiService) DeletePolicy(ctx _context.Context) ApiDeletePolicyRequest {
 	return ApiDeletePolicyRequest{
 		ApiService: a,
@@ -410,6 +419,7 @@ func (r ApiDeletePolicyVersionRequest) Execute() (DeletePolicyVersionResponse, *
 
 /*
  * DeletePolicyVersion Method for DeletePolicyVersion
+ * Deletes a specified version of a managed policy, if it is not set as the default one.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiDeletePolicyVersionRequest
  */
@@ -532,6 +542,7 @@ func (r ApiDeleteUserGroupPolicyRequest) Execute() (DeleteUserGroupPolicyRespons
 
 /*
  * DeleteUserGroupPolicy Method for DeleteUserGroupPolicy
+ * Deletes a specified inline policy from a specific group.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiDeleteUserGroupPolicyRequest
  */
@@ -654,6 +665,7 @@ func (r ApiDeleteUserPolicyRequest) Execute() (DeleteUserPolicyResponse, *_netht
 
 /*
  * DeleteUserPolicy Method for DeleteUserPolicy
+ * Deletes a specified inline policy from a specific user.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiDeleteUserPolicyRequest
  */
@@ -776,6 +788,7 @@ func (r ApiLinkManagedPolicyToUserGroupRequest) Execute() (LinkManagedPolicyToUs
 
 /*
  * LinkManagedPolicyToUserGroup Method for LinkManagedPolicyToUserGroup
+ * Links a managed policy to a specific group. This policy applies to all the users contained in this group.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiLinkManagedPolicyToUserGroupRequest
  */
@@ -898,6 +911,7 @@ func (r ApiLinkPolicyRequest) Execute() (LinkPolicyResponse, *_nethttp.Response,
 
 /*
  * LinkPolicy Method for LinkPolicy
+ * Links a managed policy to a specific user.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiLinkPolicyRequest
  */
@@ -1019,10 +1033,13 @@ func (r ApiPutUserGroupPolicyRequest) Execute() (PutUserGroupPolicyResponse, *_n
 }
 
 /*
- * PutUserGroupPolicy Method for PutUserGroupPolicy
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiPutUserGroupPolicyRequest
- */
+  - PutUserGroupPolicy Method for PutUserGroupPolicy
+  - Creates or updates an inline policy included in a specified group.<br />
+
+The policy is automatically applied to all the users of the group after its creation.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiPutUserGroupPolicyRequest
+*/
 func (a *PolicyApiService) PutUserGroupPolicy(ctx _context.Context) ApiPutUserGroupPolicyRequest {
 	return ApiPutUserGroupPolicyRequest{
 		ApiService: a,
@@ -1141,10 +1158,13 @@ func (r ApiPutUserPolicyRequest) Execute() (PutUserPolicyResponse, *_nethttp.Res
 }
 
 /*
- * PutUserPolicy Method for PutUserPolicy
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiPutUserPolicyRequest
- */
+  - PutUserPolicy Method for PutUserPolicy
+  - Creates or updates an inline policy included in a specified user.<br />
+
+The policy is automatically applied to the user after its creation.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiPutUserPolicyRequest
+*/
 func (a *PolicyApiService) PutUserPolicy(ctx _context.Context) ApiPutUserPolicyRequest {
 	return ApiPutUserPolicyRequest{
 		ApiService: a,
@@ -1264,6 +1284,7 @@ func (r ApiReadEntitiesLinkedToPolicyRequest) Execute() (ReadEntitiesLinkedToPol
 
 /*
  * ReadEntitiesLinkedToPolicy Method for ReadEntitiesLinkedToPolicy
+ * Lists all entities (account, users, or user groups) linked to a specific managed policy.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadEntitiesLinkedToPolicyRequest
  */
@@ -1386,6 +1407,7 @@ func (r ApiReadLinkedPoliciesRequest) Execute() (ReadLinkedPoliciesResponse, *_n
 
 /*
  * ReadLinkedPolicies Method for ReadLinkedPolicies
+ * Lists the managed policies linked to a specified user.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadLinkedPoliciesRequest
  */
@@ -1508,6 +1530,7 @@ func (r ApiReadManagedPoliciesLinkedToUserGroupRequest) Execute() (ReadManagedPo
 
 /*
  * ReadManagedPoliciesLinkedToUserGroup Method for ReadManagedPoliciesLinkedToUserGroup
+ * Lists the managed policies linked to a specified group.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadManagedPoliciesLinkedToUserGroupRequest
  */
@@ -1630,6 +1653,7 @@ func (r ApiReadPoliciesRequest) Execute() (ReadPoliciesResponse, *_nethttp.Respo
 
 /*
  * ReadPolicies Method for ReadPolicies
+ * Lists all the managed policies available for your account.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadPoliciesRequest
  */
@@ -1752,6 +1776,7 @@ func (r ApiReadPolicyRequest) Execute() (ReadPolicyResponse, *_nethttp.Response,
 
 /*
  * ReadPolicy Method for ReadPolicy
+ * Lists information about a specified managed policy.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadPolicyRequest
  */
@@ -1874,6 +1899,7 @@ func (r ApiReadPolicyVersionRequest) Execute() (ReadPolicyVersionResponse, *_net
 
 /*
  * ReadPolicyVersion Method for ReadPolicyVersion
+ * Lists information about a specified version of a managed policy.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadPolicyVersionRequest
  */
@@ -1996,6 +2022,7 @@ func (r ApiReadPolicyVersionsRequest) Execute() (ReadPolicyVersionsResponse, *_n
 
 /*
  * ReadPolicyVersions Method for ReadPolicyVersions
+ * Lists information about all the policy versions of a specified managed policy.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadPolicyVersionsRequest
  */
@@ -2118,6 +2145,7 @@ func (r ApiReadUserGroupPoliciesRequest) Execute() (ReadUserGroupPoliciesRespons
 
 /*
  * ReadUserGroupPolicies Method for ReadUserGroupPolicies
+ * Lists the names of the inline policies embedded in a specific group.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadUserGroupPoliciesRequest
  */
@@ -2240,6 +2268,7 @@ func (r ApiReadUserGroupPolicyRequest) Execute() (ReadUserGroupPolicyResponse, *
 
 /*
  * ReadUserGroupPolicy Method for ReadUserGroupPolicy
+ * Returns information about an inline policy included in a specified group.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadUserGroupPolicyRequest
  */
@@ -2362,6 +2391,7 @@ func (r ApiReadUserPoliciesRequest) Execute() (ReadUserPoliciesResponse, *_netht
 
 /*
  * ReadUserPolicies Method for ReadUserPolicies
+ * Lists the names of inline policies included in a specified user.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadUserPoliciesRequest
  */
@@ -2484,6 +2514,7 @@ func (r ApiReadUserPolicyRequest) Execute() (ReadUserPolicyResponse, *_nethttp.R
 
 /*
  * ReadUserPolicy Method for ReadUserPolicy
+ * Returns information about an inline policy included in a specified user.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadUserPolicyRequest
  */
@@ -2605,10 +2636,13 @@ func (r ApiSetDefaultPolicyVersionRequest) Execute() (SetDefaultPolicyVersionRes
 }
 
 /*
- * SetDefaultPolicyVersion Method for SetDefaultPolicyVersion
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiSetDefaultPolicyVersionRequest
- */
+  - SetDefaultPolicyVersion Method for SetDefaultPolicyVersion
+  - Sets a specified version of a managed policy as the default (operative) one.<br />
+
+You can modify the default version of a policy at any time.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiSetDefaultPolicyVersionRequest
+*/
 func (a *PolicyApiService) SetDefaultPolicyVersion(ctx _context.Context) ApiSetDefaultPolicyVersionRequest {
 	return ApiSetDefaultPolicyVersionRequest{
 		ApiService: a,
@@ -2728,6 +2762,7 @@ func (r ApiUnlinkManagedPolicyFromUserGroupRequest) Execute() (UnlinkManagedPoli
 
 /*
  * UnlinkManagedPolicyFromUserGroup Method for UnlinkManagedPolicyFromUserGroup
+ * Unlinks a managed policy from a specific group.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiUnlinkManagedPolicyFromUserGroupRequest
  */
@@ -2850,6 +2885,7 @@ func (r ApiUnlinkPolicyRequest) Execute() (UnlinkPolicyResponse, *_nethttp.Respo
 
 /*
  * UnlinkPolicy Method for UnlinkPolicy
+ * Removes a managed policy from a specific user.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiUnlinkPolicyRequest
  */
