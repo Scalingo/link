@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /> The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br /> Throttling: To protect against overloads, the number of identical requests allowed in a given time period is limited.<br /> Brute force: To protect against brute force attacks, the number of failed authentication attempts in a given time period is limited.<br /><br /> Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but there are [differences in resource names](https://docs.outscale.com/en/userguide/About-the-APIs.html) between AWS and the OUTSCALE API.<br /> You can also manage your resources using the [Cockpit](https://docs.outscale.com/en/userguide/About-Cockpit.html) web interface.<br /><br /> An OpenAPI description of the OUTSCALE API is also available in this [GitHub repository](https://github.com/outscale/osc-api).<br /> # Authentication Schemes ### Access Key/Secret Key The main way to authenticate your requests to the OUTSCALE API is to use an access key and a secret key.<br /> The mechanism behind this is based on AWS Signature Version 4, whose technical implementation details are described in [Signature of API Requests](https://docs.outscale.com/en/userguide/Signature-of-API-Requests.html).<br /><br /> In practice, the way to specify your access key and secret key depends on the tool or SDK you want to use to interact with the API.<br />  > For example, if you use OSC CLI: > 1. You need to create an **~/.osc/config.json** file to specify your access key, secret key, and the Region of your account. > 2. You then specify the `--profile` option when executing OSC CLI commands. > > For more information, see [Installing and Configuring OSC CLI](https://docs.outscale.com/en/userguide/Installing-and-Configuring-OSC-CLI.html).  See the code samples in each section of this documentation for specific examples in different programming languages.<br /> For more information about access keys, see [About Access Keys](https://docs.outscale.com/en/userguide/About-Access-Keys.html).  > If you try to sign requests with an invalid access key four times in a row, further authentication attempts will be prevented for 1 minute. This lockout time increases 1 minute every four failed attempts, for up to 10 minutes.  ### Login/Password For certain API actions, you can also use basic authentication with the login (email address) and password of your TINA account.<br /> This is useful only in special circumstances, for example if you do not know your access key/secret key and want to retrieve them programmatically.<br /> In most cases, however, you can use the Cockpit web interface to retrieve them.<br />  > For example, if you use OSC CLI: > 1. You need to create an **~/.osc/config.json** file to specify the Region of your account, but you leave the access key value and secret key value empty (`&quot;&quot;`). > 2. You then specify the `--profile`, `--authentication-method`, `--login`, and `--password` options when executing OSC CLI commands.  See the code samples in each section of this documentation for specific examples in different programming languages.  > If you try to sign requests with an invalid password four times in a row, further authentication attempts will be prevented for 1 minute. This lockout time increases 1 minute every four failed attempts, for up to 10 minutes.  ### No Authentication A few API actions do not require any authentication. They are indicated as such in this documentation.<br /> ### Other Security Mechanisms In parallel with the authentication schemes, you can add other security mechanisms to your OUTSCALE account, for example to restrict API requests by IP or other criteria.<br /> For more information, see [Managing Your API Accesses](https://docs.outscale.com/en/userguide/Managing-Your-API-Accesses.html). # Pagination Tutorial You can learn more about the pagination methods for read calls in the dedicated [pagination tutorial](https://docs.outscale.com/en/userguide/Tutorial-Paginating-an-API-Request.html). # Error Codes Reference You can learn more about errors returned by the API in the dedicated [errors page](api-errors.html).
  *
- * API version: 1.35.3
+ * API version: 1.35.4
  * Contact: support@outscale.com
  */
 
@@ -43,10 +43,14 @@ func (r ApiCreateListenerRuleRequest) Execute() (CreateListenerRuleResponse, *_n
 }
 
 /*
- * CreateListenerRule Method for CreateListenerRule
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiCreateListenerRuleRequest
- */
+  - CreateListenerRule Method for CreateListenerRule
+  - Creates a rule for traffic redirection for the specified listener. Each rule must have either the `HostNamePattern` or `PathPattern` parameter specified. Rules are treated in priority order, from the highest value to the lowest value.<br />
+
+Once the rule is created, you need to register backend VMs with it. For more information, see the [RegisterVmsInLoadBalancer](#registervmsinloadbalancer) method.<br /><br />
+For more information, see [About Load Balancers](https://docs.outscale.com/en/userguide/About-Load-Balancers.html).
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiCreateListenerRuleRequest
+*/
 func (a *ListenerApiService) CreateListenerRule(ctx _context.Context) ApiCreateListenerRuleRequest {
 	return ApiCreateListenerRuleRequest{
 		ApiService: a,
@@ -165,10 +169,13 @@ func (r ApiCreateLoadBalancerListenersRequest) Execute() (CreateLoadBalancerList
 }
 
 /*
- * CreateLoadBalancerListeners Method for CreateLoadBalancerListeners
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiCreateLoadBalancerListenersRequest
- */
+  - CreateLoadBalancerListeners Method for CreateLoadBalancerListeners
+  - Creates one or more listeners for a specified load balancer.<br /><br />
+
+For more information, see [About Load Balancers](https://docs.outscale.com/en/userguide/About-Load-Balancers.html).
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiCreateLoadBalancerListenersRequest
+*/
 func (a *ListenerApiService) CreateLoadBalancerListeners(ctx _context.Context) ApiCreateLoadBalancerListenersRequest {
 	return ApiCreateLoadBalancerListenersRequest{
 		ApiService: a,
@@ -287,10 +294,13 @@ func (r ApiDeleteListenerRuleRequest) Execute() (DeleteListenerRuleResponse, *_n
 }
 
 /*
- * DeleteListenerRule Method for DeleteListenerRule
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiDeleteListenerRuleRequest
- */
+  - DeleteListenerRule Method for DeleteListenerRule
+  - Deletes a listener rule.<br />
+
+The previously active rule is disabled after deletion.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiDeleteListenerRuleRequest
+*/
 func (a *ListenerApiService) DeleteListenerRule(ctx _context.Context) ApiDeleteListenerRuleRequest {
 	return ApiDeleteListenerRuleRequest{
 		ApiService: a,
@@ -410,6 +420,7 @@ func (r ApiDeleteLoadBalancerListenersRequest) Execute() (DeleteLoadBalancerList
 
 /*
  * DeleteLoadBalancerListeners Method for DeleteLoadBalancerListeners
+ * Deletes listeners of a specified load balancer.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiDeleteLoadBalancerListenersRequest
  */
@@ -532,6 +543,7 @@ func (r ApiReadListenerRulesRequest) Execute() (ReadListenerRulesResponse, *_net
 
 /*
  * ReadListenerRules Method for ReadListenerRules
+ * Lists one or more listener rules. By default, this action returns the full list of listener rules for the account.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadListenerRulesRequest
  */
@@ -653,10 +665,13 @@ func (r ApiUpdateListenerRuleRequest) Execute() (UpdateListenerRuleResponse, *_n
 }
 
 /*
- * UpdateListenerRule Method for UpdateListenerRule
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiUpdateListenerRuleRequest
- */
+  - UpdateListenerRule Method for UpdateListenerRule
+  - Updates the pattern of the listener rule.<br />
+
+This call updates the pattern matching algorithm for incoming traffic.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiUpdateListenerRuleRequest
+*/
 func (a *ListenerApiService) UpdateListenerRule(ctx _context.Context) ApiUpdateListenerRuleRequest {
 	return ApiUpdateListenerRuleRequest{
 		ApiService: a,

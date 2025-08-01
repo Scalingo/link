@@ -5,6 +5,10 @@ import (
 	"fmt"
 	"math"
 	"time"
+
+	"github.com/sirupsen/logrus"
+
+	"github.com/Scalingo/go-utils/logger"
 )
 
 type RetryErrorScope string
@@ -84,6 +88,23 @@ func WithErrorCallback(c ErrorCallback) RetryerOptsFunc {
 	return func(r *Retryer) {
 		r.errorCallbacks = append(r.errorCallbacks, c)
 	}
+}
+
+// WithLoggingOnAttemptError allows emitting a log message on each attempt
+// which failed.
+// The capacity to specify the severity of the log message is useful
+// to avoid flooding the logs with too many messages in case of a retry loop.
+// Most of the time it will be Debug or Info according to the type of operation.
+// Error should be chosen carefully if logger was configured to send Errors to a
+// tool like Rollbar/Sentry/...
+func WithLoggingOnAttemptError(severity logrus.Level) RetryerOptsFunc {
+	return WithErrorCallback(func(ctx context.Context, err error, currentAttempt, maxAttempts int) {
+		log := logger.Get(ctx).WithFields(logrus.Fields{
+			"current_attempt": currentAttempt,
+			"max_attempts":    maxAttempts,
+		})
+		log.WithError(err).Log(severity, "attempt failed")
+	})
 }
 
 func New(opts ...RetryerOptsFunc) Retryer {

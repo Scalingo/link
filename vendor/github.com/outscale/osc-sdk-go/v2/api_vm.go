@@ -3,7 +3,7 @@
  *
  * Welcome to the OUTSCALE API documentation.<br /> The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br /> Throttling: To protect against overloads, the number of identical requests allowed in a given time period is limited.<br /> Brute force: To protect against brute force attacks, the number of failed authentication attempts in a given time period is limited.<br /><br /> Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but there are [differences in resource names](https://docs.outscale.com/en/userguide/About-the-APIs.html) between AWS and the OUTSCALE API.<br /> You can also manage your resources using the [Cockpit](https://docs.outscale.com/en/userguide/About-Cockpit.html) web interface.<br /><br /> An OpenAPI description of the OUTSCALE API is also available in this [GitHub repository](https://github.com/outscale/osc-api).<br /> # Authentication Schemes ### Access Key/Secret Key The main way to authenticate your requests to the OUTSCALE API is to use an access key and a secret key.<br /> The mechanism behind this is based on AWS Signature Version 4, whose technical implementation details are described in [Signature of API Requests](https://docs.outscale.com/en/userguide/Signature-of-API-Requests.html).<br /><br /> In practice, the way to specify your access key and secret key depends on the tool or SDK you want to use to interact with the API.<br />  > For example, if you use OSC CLI: > 1. You need to create an **~/.osc/config.json** file to specify your access key, secret key, and the Region of your account. > 2. You then specify the `--profile` option when executing OSC CLI commands. > > For more information, see [Installing and Configuring OSC CLI](https://docs.outscale.com/en/userguide/Installing-and-Configuring-OSC-CLI.html).  See the code samples in each section of this documentation for specific examples in different programming languages.<br /> For more information about access keys, see [About Access Keys](https://docs.outscale.com/en/userguide/About-Access-Keys.html).  > If you try to sign requests with an invalid access key four times in a row, further authentication attempts will be prevented for 1 minute. This lockout time increases 1 minute every four failed attempts, for up to 10 minutes.  ### Login/Password For certain API actions, you can also use basic authentication with the login (email address) and password of your TINA account.<br /> This is useful only in special circumstances, for example if you do not know your access key/secret key and want to retrieve them programmatically.<br /> In most cases, however, you can use the Cockpit web interface to retrieve them.<br />  > For example, if you use OSC CLI: > 1. You need to create an **~/.osc/config.json** file to specify the Region of your account, but you leave the access key value and secret key value empty (`&quot;&quot;`). > 2. You then specify the `--profile`, `--authentication-method`, `--login`, and `--password` options when executing OSC CLI commands.  See the code samples in each section of this documentation for specific examples in different programming languages.  > If you try to sign requests with an invalid password four times in a row, further authentication attempts will be prevented for 1 minute. This lockout time increases 1 minute every four failed attempts, for up to 10 minutes.  ### No Authentication A few API actions do not require any authentication. They are indicated as such in this documentation.<br /> ### Other Security Mechanisms In parallel with the authentication schemes, you can add other security mechanisms to your OUTSCALE account, for example to restrict API requests by IP or other criteria.<br /> For more information, see [Managing Your API Accesses](https://docs.outscale.com/en/userguide/Managing-Your-API-Accesses.html). # Pagination Tutorial You can learn more about the pagination methods for read calls in the dedicated [pagination tutorial](https://docs.outscale.com/en/userguide/Tutorial-Paginating-an-API-Request.html). # Error Codes Reference You can learn more about errors returned by the API in the dedicated [errors page](api-errors.html).
  *
- * API version: 1.35.3
+ * API version: 1.35.4
  * Contact: support@outscale.com
  */
 
@@ -43,10 +43,18 @@ func (r ApiCreateVmsRequest) Execute() (CreateVmsResponse, *_nethttp.Response, e
 }
 
 /*
- * CreateVms Method for CreateVms
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiCreateVmsRequest
- */
+  - CreateVms Method for CreateVms
+  - Creates virtual machines (VMs), and then launches them.<br />
+
+This action enables you to create a specified number of VMs using an OUTSCALE machine image (OMI) that you are allowed to use, and then to automatically launch them.<br />
+The VMs remain in the `pending` state until they are created and ready to be used. Once automatically launched, they are in the `running` state.<br />
+To check the state of your VMs, call the [ReadVms](#readvms) method.<br />
+If not specified, the security group used by the service is the default one.<br />
+The metadata server enables you to get the public key provided when the VM is launched. Official OMIs contain a script to get this public key and put it inside the VM to provide secure access without password.<br /><br />
+For more information, see [About VMs](https://docs.outscale.com/en/userguide/About-VMs.html).
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiCreateVmsRequest
+*/
 func (a *VmApiService) CreateVms(ctx _context.Context) ApiCreateVmsRequest {
 	return ApiCreateVmsRequest{
 		ApiService: a,
@@ -194,10 +202,13 @@ func (r ApiDeleteVmsRequest) Execute() (DeleteVmsResponse, *_nethttp.Response, e
 }
 
 /*
- * DeleteVms Method for DeleteVms
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiDeleteVmsRequest
- */
+  - DeleteVms Method for DeleteVms
+  - Terminates one or more virtual machines (VMs).<br />
+
+This operation is idempotent, that means that all calls succeed if you terminate a VM more than once.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiDeleteVmsRequest
+*/
 func (a *VmApiService) DeleteVms(ctx _context.Context) ApiDeleteVmsRequest {
 	return ApiDeleteVmsRequest{
 		ApiService: a,
@@ -345,10 +356,17 @@ func (r ApiReadAdminPasswordRequest) Execute() (ReadAdminPasswordResponse, *_net
 }
 
 /*
- * ReadAdminPassword Method for ReadAdminPassword
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiReadAdminPasswordRequest
- */
+  - ReadAdminPassword Method for ReadAdminPassword
+  - Gets the administrator password for a Windows running virtual machine (VM).<br />
+
+The administrator password is encrypted using the keypair you specified when launching the VM.<br /><br />
+
+**[IMPORTANT]**<br />
+* Only RSA keypairs can decrypt the password of a Windows VM.<br />
+* The administrator password is generated only on the first boot of the Windows VM. It is not returned after the first boot.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiReadAdminPasswordRequest
+*/
 func (a *VmApiService) ReadAdminPassword(ctx _context.Context) ApiReadAdminPasswordRequest {
 	return ApiReadAdminPasswordRequest{
 		ApiService: a,
@@ -496,10 +514,14 @@ func (r ApiReadConsoleOutputRequest) Execute() (ReadConsoleOutputResponse, *_net
 }
 
 /*
- * ReadConsoleOutput Method for ReadConsoleOutput
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiReadConsoleOutputRequest
- */
+  - ReadConsoleOutput Method for ReadConsoleOutput
+  - Gets the console output for a virtual machine (VM). This console is not in real-time. It is refreshed every two seconds and provides the most recent 64 KiB output.<br /><br />
+
+**[IMPORTANT]**<br />
+On Windows VMs, the console is handled only on the first boot. It returns no output after the first boot.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiReadConsoleOutputRequest
+*/
 func (a *VmApiService) ReadConsoleOutput(ctx _context.Context) ApiReadConsoleOutputRequest {
 	return ApiReadConsoleOutputRequest{
 		ApiService: a,
@@ -648,6 +670,7 @@ func (r ApiReadVmTypesRequest) Execute() (ReadVmTypesResponse, *_nethttp.Respons
 
 /*
  * ReadVmTypes Method for ReadVmTypes
+ * Lists one or more predefined VM types.
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadVmTypesRequest
  */
@@ -755,10 +778,13 @@ func (r ApiReadVmsRequest) Execute() (ReadVmsResponse, *_nethttp.Response, error
 }
 
 /*
- * ReadVms Method for ReadVms
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiReadVmsRequest
- */
+  - ReadVms Method for ReadVms
+  - Lists one or more of your virtual machines (VMs).<br />
+
+If you provide one or more VM IDs, this action returns a description for all of these VMs. If you do not provide any VM ID, this action returns a description for all of the VMs that belong to you. If you provide an invalid VM ID, an error is returned. If you provide the ID of a VM that does not belong to you, the description of this VM is not included in the response. The refresh interval for data returned by this action is one hour, meaning that a terminated VM may appear in the response.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiReadVmsRequest
+*/
 func (a *VmApiService) ReadVms(ctx _context.Context) ApiReadVmsRequest {
 	return ApiReadVmsRequest{
 		ApiService: a,
@@ -907,6 +933,7 @@ func (r ApiReadVmsStateRequest) Execute() (ReadVmsStateResponse, *_nethttp.Respo
 
 /*
  * ReadVmsState Method for ReadVmsState
+ * Lists the status of one or more virtual machines (VMs).
  * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
  * @return ApiReadVmsStateRequest
  */
@@ -1057,10 +1084,13 @@ func (r ApiRebootVmsRequest) Execute() (RebootVmsResponse, *_nethttp.Response, e
 }
 
 /*
- * RebootVms Method for RebootVms
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiRebootVmsRequest
- */
+  - RebootVms Method for RebootVms
+  - Reboots one or more virtual machines (VMs).<br />
+
+This operation sends a reboot request to one or more specified VMs. This is an asynchronous action that queues this reboot request. This action only reboots VMs that are valid and that belong to you.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiRebootVmsRequest
+*/
 func (a *VmApiService) RebootVms(ctx _context.Context) ApiRebootVmsRequest {
 	return ApiRebootVmsRequest{
 		ApiService: a,
@@ -1208,10 +1238,13 @@ func (r ApiStartVmsRequest) Execute() (StartVmsResponse, *_nethttp.Response, err
 }
 
 /*
- * StartVms Method for StartVms
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiStartVmsRequest
- */
+  - StartVms Method for StartVms
+  - Start one or more virtual machines (VMs).<br />
+
+You can start only VMs that are valid and that belong to you.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiStartVmsRequest
+*/
 func (a *VmApiService) StartVms(ctx _context.Context) ApiStartVmsRequest {
 	return ApiStartVmsRequest{
 		ApiService: a,
@@ -1359,10 +1392,13 @@ func (r ApiStopVmsRequest) Execute() (StopVmsResponse, *_nethttp.Response, error
 }
 
 /*
- * StopVms Method for StopVms
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiStopVmsRequest
- */
+  - StopVms Method for StopVms
+  - Stops one or more running virtual machines (VMs).<br />
+
+You can stop only VMs that are valid and that belong to you. Data stored in the VM RAM is lost.
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiStopVmsRequest
+*/
 func (a *VmApiService) StopVms(ctx _context.Context) ApiStopVmsRequest {
 	return ApiStopVmsRequest{
 		ApiService: a,
@@ -1510,10 +1546,19 @@ func (r ApiUpdateVmRequest) Execute() (UpdateVmResponse, *_nethttp.Response, err
 }
 
 /*
- * UpdateVm Method for UpdateVm
- * @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
- * @return ApiUpdateVmRequest
- */
+  - UpdateVm Method for UpdateVm
+  - Modifies the specified attributes of a virtual machine (VM).<br />
+
+You must stop the VM before modifying the following attributes:<br />
+* `NestedVirtualization`<br />
+* `Performance`<br />
+* `UserData`<br />
+* `VmType`
+
+To complete the update of secure boot, you need to do a stop/start of the VM. A simple restart is not sufficient, as the update is done when the VM goes through the stopped state. For the difference between stop/start and restart, see [About VM Lifecycle](https://docs.outscale.com/en/userguide/About-VM-Lifecycle.html).
+  - @param ctx _context.Context - for authentication, logging, cancellation, deadlines, tracing, etc. Passed from http.Request or context.Background().
+  - @return ApiUpdateVmRequest
+*/
 func (a *VmApiService) UpdateVm(ctx _context.Context) ApiUpdateVmRequest {
 	return ApiUpdateVmRequest{
 		ApiService: a,
