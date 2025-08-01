@@ -10,7 +10,6 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/Scalingo/link/v3/models"
-	"github.com/Scalingo/link/v3/models/modelsmock"
 )
 
 func TestFactory_Validate(t *testing.T) {
@@ -171,16 +170,19 @@ func TestFactory_Mutate_Success(t *testing.T) {
 		NICID:      "nic-456",
 	}
 	raw, _ := json.Marshal(req)
-	endpoint := models.Endpoint{PluginConfig: raw}
+	endpoint := models.Endpoint{
+		ID:           "endpoint-id",
+		PluginConfig: raw,
+	}
 
-	mockStorage := modelsmock.NewMockEncryptedStorage(ctrl)
-	mockStorage.EXPECT().Encrypt(ctx, "my-access").Return(models.EncryptedDataLink{
-		Type: models.EncryptedDataTypeAESCFB,
-		Data: "enc_my-access",
+	mockStorage := models.NewMockEncryptedStorage(ctrl)
+	mockStorage.EXPECT().Encrypt(ctx, "endpoint-id", "my-access").Return(models.EncryptedDataLink{
+		ID:         "access-id",
+		EndpointID: "endpoint-id",
 	}, nil)
-	mockStorage.EXPECT().Encrypt(ctx, "my-secret").Return(models.EncryptedDataLink{
-		Type: models.EncryptedDataTypeAESCFB,
-		Data: "enc_my-secret",
+	mockStorage.EXPECT().Encrypt(ctx, "endpoint-id", "my-secret").Return(models.EncryptedDataLink{
+		ID:         "secret-id",
+		EndpointID: "endpoint-id",
 	}, nil)
 
 	f := Factory{encryptedStorage: mockStorage}
@@ -193,10 +195,10 @@ func TestFactory_Mutate_Success(t *testing.T) {
 	var stored StorablePluginConfig
 	err = json.Unmarshal(res, &stored)
 	require.NoError(t, err)
-	assert.Equal(t, models.EncryptedDataTypeAESCFB, stored.AccessKey.Type)
-	assert.Equal(t, models.EncryptedDataTypeAESCFB, stored.SecretKey.Type)
-	assert.Equal(t, "enc_my-access", stored.AccessKey.Data)
-	assert.Equal(t, "enc_my-secret", stored.SecretKey.Data)
+	assert.Equal(t, "access-id", stored.AccessKey.ID)
+	assert.Equal(t, "secret-id", stored.SecretKey.ID)
+	assert.Equal(t, "endpoint-id", stored.AccessKey.EndpointID)
+	assert.Equal(t, "endpoint-id", stored.SecretKey.EndpointID)
 	assert.Equal(t, req.Region, stored.Region)
 	assert.Equal(t, req.PublicIPID, stored.PublicIPID)
 	assert.Equal(t, req.NICID, stored.NICID)

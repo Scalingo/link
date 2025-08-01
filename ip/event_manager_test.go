@@ -13,7 +13,7 @@ import (
 
 	"github.com/Scalingo/link/v3/config"
 	"github.com/Scalingo/link/v3/locker/lockermock"
-	"github.com/Scalingo/link/v3/models/modelsmock"
+	"github.com/Scalingo/link/v3/models"
 	"github.com/Scalingo/link/v3/plugin/pluginmock"
 	"github.com/Scalingo/link/v3/watcher/watchermock"
 )
@@ -173,7 +173,7 @@ func TestManager_Stop(t *testing.T) {
 			ctrl := gomock.NewController(t)
 			defer ctrl.Finish()
 			lockerMock := lockermock.NewMockLocker(ctrl)
-			storageMock := modelsmock.NewMockStorage(ctrl)
+			storageMock := models.NewMockStorage(ctrl)
 			watcherMock := watchermock.NewMockWatcher(ctrl)
 			pluginMock := pluginmock.NewMockPlugin(ctrl)
 

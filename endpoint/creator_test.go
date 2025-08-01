@@ -12,7 +12,6 @@ import (
 
 	"github.com/Scalingo/link/v3/api"
 	"github.com/Scalingo/link/v3/models"
-	"github.com/Scalingo/link/v3/models/modelsmock"
 	"github.com/Scalingo/link/v3/plugin/pluginmock"
 	"github.com/Scalingo/link/v3/scheduler/schedulermock"
 )
@@ -21,7 +20,7 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 	specs := []struct {
 		Name          string
 		Params        CreateEndpointParams
-		Storage       func(t *testing.T, mock *modelsmock.MockStorage)
+		Storage       func(t *testing.T, mock *models.MockStorage)
 		Registry      func(mock *pluginmock.MockRegistry)
 		Scheduler     func(mock *schedulermock.MockScheduler)
 		ExpectedError string
@@ -60,7 +59,7 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 				mock.EXPECT().Validate(gomock.Any(), gomock.Any()).Return(nil)
 				mock.EXPECT().Mutate(gomock.Any(), gomock.Any()).Return(nil, nil)
 			},
-			Storage: func(_ *testing.T, mock *modelsmock.MockStorage) {
+			Storage: func(_ *testing.T, mock *models.MockStorage) {
 				mock.EXPECT().AddEndpoint(gomock.Any(), gomock.Any()).Return(models.Endpoint{}, errors.New("storage error"))
 			},
 			ExpectedError: "storage error",
@@ -70,7 +69,7 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 				mock.EXPECT().Validate(gomock.Any(), gomock.Any()).Return(nil)
 				mock.EXPECT().Mutate(gomock.Any(), gomock.Any()).Return(nil, nil)
 			},
-			Storage: func(_ *testing.T, mock *modelsmock.MockStorage) {
+			Storage: func(_ *testing.T, mock *models.MockStorage) {
 				mock.EXPECT().AddEndpoint(gomock.Any(), gomock.Any()).Return(models.Endpoint{ID: "test-id"}, nil)
 				mock.EXPECT().RemoveEndpoint(gomock.Any(), "test-id").Return(nil)
 			},
@@ -84,7 +83,7 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 				mock.EXPECT().Validate(gomock.Any(), gomock.Any()).Return(nil)
 				mock.EXPECT().Mutate(gomock.Any(), gomock.Any()).Return(nil, nil)
 			},
-			Storage: func(_ *testing.T, mock *modelsmock.MockStorage) {
+			Storage: func(_ *testing.T, mock *models.MockStorage) {
 				mock.EXPECT().AddEndpoint(gomock.Any(), gomock.Any()).Return(models.Endpoint{ID: "test-id"}, nil)
 			},
 			Scheduler: func(mock *schedulermock.MockScheduler) {
@@ -97,7 +96,7 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 				mock.EXPECT().Validate(gomock.Any(), gomock.Any()).Return(nil)
 				mock.EXPECT().Mutate(gomock.Any(), gomock.Any()).Return([]byte(`{"key":"value"}`), nil)
 			},
-			Storage: func(t *testing.T, mock *modelsmock.MockStorage) {
+			Storage: func(t *testing.T, mock *models.MockStorage) {
 				mock.EXPECT().AddEndpoint(gomock.Any(), gomock.Any()).Return(models.Endpoint{ID: "test-id"}, nil).Do(func(_ context.Context, endpoint models.Endpoint) {
 					assert.JSONEq(t, `{"key":"value"}`, string(endpoint.PluginConfig))
 				})
@@ -115,7 +114,7 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 			ctx := context.Background()
 
 			// Mock dependencies
-			mockStorage := modelsmock.NewMockStorage(ctrl)
+			mockStorage := models.NewMockStorage(ctrl)
 			mockRegistry := pluginmock.NewMockRegistry(ctrl)
 			mockScheduler := schedulermock.NewMockScheduler(ctrl)
 
