@@ -7,9 +7,11 @@ require (
 	github.com/Scalingo/go-philae/v4 v4.4.7
 	github.com/Scalingo/go-utils/errors v1.1.1
 	github.com/Scalingo/go-utils/errors/v2 v2.5.1
+	github.com/Scalingo/go-utils/errors/v3 v3.0.0
 	github.com/Scalingo/go-utils/etcd v1.2.1
 	github.com/Scalingo/go-utils/logger v1.9.1
 	github.com/Scalingo/go-utils/retry v1.2.2
+	github.com/Scalingo/link/v2 v2.0.7
 	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.1
@@ -28,7 +30,6 @@ require (
 )
 
 require (
-	github.com/Scalingo/go-utils/errors/v3 v3.0.0 // indirect
 	github.com/aws/aws-sdk-go v1.55.8 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 // indirect

@@ -40,6 +40,8 @@ func main() {
 		panic(err)
 	}
 
+	log.WithField("hostname", config.Hostname).Info("LinK starting")
+
 	etcd, err := etcd.ClientFromEnv()
 	if err != nil {
 		log.WithError(err).Error("Fail to get etcd client")
