@@ -90,9 +90,8 @@ services:
     volumes:
       - ./:/go/src/github.com/Scalingo/link
       - ./_dev/go-cache:/root/.cache
-    environment:
-      GO_ENV: test
-      ETCD_HOSTS: http://etcd-test:2379
+    env_file:
+      - .env.test
     stop_signal: SIGKILL
     command: "tail -F /dev/null"
 
@@ -103,6 +102,3 @@ services:
     command: etcd --name etcd-cluster --data-dir /data/etcd --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --advertise-client-urls http://172.17.0.1:32379
     ports:
       - 32379:2379
-  etcd-test:
-    image: quay.io/coreos/etcd:v3.5.17
-    command: etcd --name etcd-cluster --data-dir /data/etcd --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --advertise-client-urls http://etcd-test:2379
