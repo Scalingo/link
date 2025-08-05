@@ -134,7 +134,7 @@ func TestFactory_Validate(t *testing.T) {
 	for _, spec := range specs {
 		t.Run(spec.Name, func(t *testing.T) {
 			ctrl := gomock.NewController(t)
-			mockStorage := modelsmock.NewMockEncryptedStorage(ctrl)
+			mockStorage := models.NewMockEncryptedStorage(ctrl)
 
 			factory := Factory{
 				encryptedStorage: mockStorage,

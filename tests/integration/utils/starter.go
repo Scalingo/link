@@ -48,6 +48,7 @@ func StartLinK(t *testing.T, binaryPath string, opts ...StartLinkOpt) LinKProces
 	cmd.Env = append(cmd.Env, "INTERFACE=eth0")
 	cmd.Env = append(cmd.Env, "HOSTNAME=test-host")
 	cmd.Env = append(cmd.Env, "KEEPALIVE_INTERVAL=100ms")
+	cmd.Env = append(cmd.Env, "GO_ENV=test")
 
 	if verboseLinkLogging == nil || !*verboseLinkLogging {
 		cmd.Stdout = &stdout

@@ -41,12 +41,12 @@ func Test_SecretStorageUpgrade(t *testing.T) {
 		_, err := client.AddEndpoint(t.Context(), api.AddEndpointParams{
 			Plugin: outscalepublicip.Name,
 			PluginConfig: outscalepublicip.PluginConfig{
-				AccessKey: "test-access-key",
-				SecretKey: "test-secret-key",
-				Region:    "dev",
+				AccessKey: "TESTACCESSKEY",
+				SecretKey: "TESTSECRETKEY",
+				Region:    "test-region",
 
-				PublicIPID: "test-public-ip-id",
-				NICID:      "test-nic-id",
+				PublicIPID: "ip-abc123",
+				NICID:      "nic-abc123",
 			},
 		})
 		require.NoError(t, err)
@@ -103,7 +103,7 @@ func Test_SecretStorageUpgrade(t *testing.T) {
 		require.NoError(t, err)
 		err = encryptedStorage.Decrypt(t.Context(), pluginConfig.SecretKey, &secretKey)
 		require.NoError(t, err)
-		assert.Equal(t, "test-access-key", accessKey)
-		assert.Equal(t, "test-secret-key", secretKey)
+		assert.Equal(t, "TESTACCESSKEY", accessKey)
+		assert.Equal(t, "TESTSECRETKEY", secretKey)
 	})
 }

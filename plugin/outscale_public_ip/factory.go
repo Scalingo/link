@@ -31,6 +31,7 @@ var tokenRegex = regexp.MustCompile(`^[A-Z0-9]{3,64}$`)
 var outscaleIDRegex = regexp.MustCompile(`^[a-z]+-[a-f0-9]{3,64}$`)
 
 type Config struct {
+	GoEnv        string        `envconfig:"GO_ENV"`
 	RefreshEvery time.Duration `envconfig:"OUTSCALE_PUBLIC_IP_REFRESH_INTERVAL" default:"1m"`
 }
 
@@ -115,7 +116,13 @@ func (f Factory) Validate(_ context.Context, endpoint models.Endpoint) error {
 	if req.Region == "" {
 		validations.Set("plugin_config.region", "missing region")
 	}
-	if req.Region != "" && !slices.Contains(outscaleRegions, strings.ToLower(req.Region)) {
+
+	validRegions := outscaleRegions
+	if f.config.GoEnv == "test" {
+		validRegions = append(validRegions, "test-region")
+	}
+
+	if req.Region != "" && !slices.Contains(validRegions, strings.ToLower(req.Region)) {
 		validations.Set("plugin_config.region", "invalid region: "+req.Region)
 	}
 
