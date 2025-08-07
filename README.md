@@ -120,7 +120,7 @@ Note: This procedure only rotate the encryption key on one host, if you need to 
    - `SECRET_STORAGE_ENCRYPTION_KEY`: The new encryption key
 2. Restart LinK
 3. Run the following command: `link-client rotate-encryption-key`
-4. Remove the `SECRET_STORAGE_ENCRYPTION_KEY` environment variable.
+4. Remove the `SECRET_STORAGE_ALTERNATE_KEYS` environment variable.
 5. Restart LinK
 
 ## Development environment
