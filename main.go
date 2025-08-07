@@ -122,24 +122,24 @@ func main() {
 
 	// Retro compatibility with v2 API.
 	// This will be removed in a future version.
-	r.HandleFunc("/ips", ipController.List).Methods("GET")
-	r.HandleFunc("/ips", ipController.Create).Methods("POST")
-	r.HandleFunc("/ips/{id}", endpointController.Delete).Methods("DELETE")
-	r.HandleFunc("/ips/{id}", ipController.Get).Methods("GET")
-	r.HandleFunc("/ips/{id}", endpointController.Update).Methods("PUT", "PATCH")
-	r.HandleFunc("/ips/{id}/failover", endpointController.Failover).Methods("POST")
+	r.HandleFunc("/ips", ipController.List).Methods(http.MethodGet)
+	r.HandleFunc("/ips", ipController.Create).Methods(http.MethodPost)
+	r.HandleFunc("/ips/{id}", endpointController.Delete).Methods(http.MethodDelete)
+	r.HandleFunc("/ips/{id}", ipController.Get).Methods(http.MethodGet)
+	r.HandleFunc("/ips/{id}", endpointController.Update).Methods(http.MethodPut, http.MethodPatch)
+	r.HandleFunc("/ips/{id}/failover", endpointController.Failover).Methods(http.MethodPost)
 
-	r.HandleFunc("/endpoints", endpointController.List).Methods("GET")
-	r.HandleFunc("/endpoints", endpointController.Create).Methods("POST")
-	r.HandleFunc("/endpoints/{id}", endpointController.Delete).Methods("DELETE")
-	r.HandleFunc("/endpoints/{id}", endpointController.Get).Methods("GET")
-	r.HandleFunc("/endpoints/{id}", endpointController.Update).Methods("PUT", "PATCH")
-	r.HandleFunc("/endpoints/{id}/failover", endpointController.Failover).Methods("POST")
-	r.HandleFunc("/endpoints/{id}/hosts", endpointController.GetHosts).Methods("GET")
+	r.HandleFunc("/endpoints", endpointController.List).Methods(http.MethodGet)
+	r.HandleFunc("/endpoints", endpointController.Create).Methods(http.MethodPost)
+	r.HandleFunc("/endpoints/{id}", endpointController.Delete).Methods(http.MethodDelete)
+	r.HandleFunc("/endpoints/{id}", endpointController.Get).Methods(http.MethodGet)
+	r.HandleFunc("/endpoints/{id}", endpointController.Update).Methods(http.MethodPut, http.MethodPatch)
+	r.HandleFunc("/endpoints/{id}/failover", endpointController.Failover).Methods(http.MethodPost)
+	r.HandleFunc("/endpoints/{id}/hosts", endpointController.GetHosts).Methods(http.MethodGet)
 
-	r.HandleFunc("/encrypted_storage/rotate_key", encryptedStorageController.RotateEncryptionKey).Methods("POST")
+	r.HandleFunc("/encrypted_storage/rotate_key", encryptedStorageController.RotateEncryptionKey).Methods(http.MethodPost)
 
-	r.HandleFunc("/version", versionController.Version).Methods("GET")
+	r.HandleFunc("/version", versionController.Version).Methods(http.MethodGet)
 
 	globalRouter := mux.NewRouter()
 
