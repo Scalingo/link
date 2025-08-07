@@ -5,7 +5,6 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/!scalingo/link/v2/models/modelsmock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
@@ -137,7 +136,7 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 				mock.EXPECT().Validate(gomock.Any(), gomock.Any()).Return(nil)
 				mock.EXPECT().Mutate(gomock.Any(), gomock.Any()).Return(nil, nil)
 			},
-			Storage: func(_ *testing.T, mock *modelsmock.MockStorage) {
+			Storage: func(_ *testing.T, mock *models.MockStorage) {
 				mock.EXPECT().AddEndpoint(gomock.Any(), gomock.Any()).Return(models.Endpoint{ID: "test-id"}, nil)
 			},
 			Scheduler: func(mock *schedulermock.MockScheduler) {
