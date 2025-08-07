@@ -168,7 +168,7 @@ func RotateEncryptionKey(ctx context.Context, c *cli.Command) error {
 	fmt.Println("Rotating encryption key...")
 	err := client.RotateEncryptionKey(ctx)
 	if err != nil {
-		return fmt.Errorf("failed to rotate encryption key: %w", err)
+		return fmt.Errorf("rotate encryption key: %w", err)
 	}
 
 	fmt.Println(aurora.Green("Encryption key rotated successfully"))
