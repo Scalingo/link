@@ -137,7 +137,7 @@ func main() {
 	r.HandleFunc("/endpoints/{id}/failover", endpointController.Failover).Methods(http.MethodPost)
 	r.HandleFunc("/endpoints/{id}/hosts", endpointController.GetHosts).Methods(http.MethodGet)
 
-	r.HandleFunc("/encrypted_storage/rotate_key", encryptedStorageController.RotateEncryptionKey).Methods(http.MethodPost)
+	r.HandleFunc("/encrypted_storage/key_rotation", encryptedStorageController.RotateEncryptionKey).Methods(http.MethodPost)
 
 	r.HandleFunc("/version", versionController.Version).Methods(http.MethodGet)
 

@@ -161,7 +161,7 @@ func (c HTTPClient) Failover(ctx context.Context, id string) error {
 }
 
 func (c HTTPClient) RotateEncryptionKey(ctx context.Context) error {
-	req, err := c.getRequest(ctx, http.MethodPost, "/encrypted_storage/rotate_key", nil)
+	req, err := c.getRequest(ctx, http.MethodPost, "/encrypted_storage/key_rotation", nil)
 	if err != nil {
 		return errors.Wrap(ctx, err, "create request")
 	}
