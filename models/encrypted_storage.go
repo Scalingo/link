@@ -17,7 +17,7 @@ type EncryptedDataLink struct {
 	ID         string `json:"id"`
 	EndpointID string `json:"endpoint_id"`
 
-	// Depracated: This is here to keep compatibility with old storage method
+	// Deprecated: This is here to keep compatibility with old storage method
 	Type string `json:"type,omitempty"`
 	Data string `json:"data,omitempty"`
 	Hash string `json:"hash,omitempty"`
