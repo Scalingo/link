@@ -6,7 +6,7 @@ services:
       - ./_dev/go-cache:/root/.cache
     cap_add:
       - NET_ADMIN
-    network_mode: 'host'
+    network_mode: "host"
     env_file:
       - .env
     environment:
@@ -23,7 +23,7 @@ services:
       - ./_dev/go-cache:/root/.cache
     cap_add:
       - NET_ADMIN
-    network_mode: 'host'
+    network_mode: "host"
     env_file:
       - .env
     environment:
@@ -40,7 +40,7 @@ services:
       - ./_dev/go-cache:/root/.cache
     cap_add:
       - NET_ADMIN
-    network_mode: 'host'
+    network_mode: "host"
     env_file:
       - .env
     environment:
@@ -57,7 +57,7 @@ services:
       - ./_dev/go-cache:/root/.cache
     cap_add:
       - NET_ADMIN
-    network_mode: 'host'
+    network_mode: "host"
     env_file:
       - .env
     environment:
@@ -74,7 +74,7 @@ services:
       - ./_dev/go-cache:/root/.cache
     cap_add:
       - NET_ADMIN
-    network_mode: 'host'
+    network_mode: "host"
     env_file:
       - .env
     environment:
@@ -90,8 +90,8 @@ services:
     volumes:
       - ./:/go/src/github.com/Scalingo/link
       - ./_dev/go-cache:/root/.cache
-    environment:
-      GO_ENV: test
+    env_file:
+      - .env.test
     stop_signal: SIGKILL
     command: "tail -F /dev/null"
 

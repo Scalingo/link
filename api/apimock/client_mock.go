@@ -123,6 +123,20 @@ func (mr *MockClientMockRecorder) RemoveEndpoint(arg0, arg1 interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveEndpoint", reflect.TypeOf((*MockClient)(nil).RemoveEndpoint), arg0, arg1)
 }
 
+// RotateEncryptionKey mocks base method.
+func (m *MockClient) RotateEncryptionKey(arg0 context.Context) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RotateEncryptionKey", arg0)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RotateEncryptionKey indicates an expected call of RotateEncryptionKey.
+func (mr *MockClientMockRecorder) RotateEncryptionKey(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RotateEncryptionKey", reflect.TypeOf((*MockClient)(nil).RotateEncryptionKey), arg0)
+}
+
 // UpdateEndpoint mocks base method.
 func (m *MockClient) UpdateEndpoint(arg0 context.Context, arg1 string, arg2 api.UpdateEndpointParams) (api.Endpoint, error) {
 	m.ctrl.T.Helper()

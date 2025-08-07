@@ -8,7 +8,7 @@ import (
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"
-	v3 "go.etcd.io/etcd/client/v3"
+	clientv3 "go.etcd.io/etcd/client/v3"
 )
 
 // MockTxn is a mock of Txn interface.
@@ -35,10 +35,10 @@ func (m *MockTxn) EXPECT() *MockTxnMockRecorder {
 }
 
 // Commit mocks base method.
-func (m *MockTxn) Commit() (*v3.TxnResponse, error) {
+func (m *MockTxn) Commit() (*clientv3.TxnResponse, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Commit")
-	ret0, _ := ret[0].(*v3.TxnResponse)
+	ret0, _ := ret[0].(*clientv3.TxnResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -50,14 +50,14 @@ func (mr *MockTxnMockRecorder) Commit() *gomock.Call {
 }
 
 // Else mocks base method.
-func (m *MockTxn) Else(arg0 ...v3.Op) v3.Txn {
+func (m *MockTxn) Else(arg0 ...clientv3.Op) clientv3.Txn {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range arg0 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Else", varargs...)
-	ret0, _ := ret[0].(v3.Txn)
+	ret0, _ := ret[0].(clientv3.Txn)
 	return ret0
 }
 
@@ -68,14 +68,14 @@ func (mr *MockTxnMockRecorder) Else(arg0 ...interface{}) *gomock.Call {
 }
 
 // If mocks base method.
-func (m *MockTxn) If(arg0 ...v3.Cmp) v3.Txn {
+func (m *MockTxn) If(arg0 ...clientv3.Cmp) clientv3.Txn {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range arg0 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "If", varargs...)
-	ret0, _ := ret[0].(v3.Txn)
+	ret0, _ := ret[0].(clientv3.Txn)
 	return ret0
 }
 
@@ -86,14 +86,14 @@ func (mr *MockTxnMockRecorder) If(arg0 ...interface{}) *gomock.Call {
 }
 
 // Then mocks base method.
-func (m *MockTxn) Then(arg0 ...v3.Op) v3.Txn {
+func (m *MockTxn) Then(arg0 ...clientv3.Op) clientv3.Txn {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{}
 	for _, a := range arg0 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Then", varargs...)
-	ret0, _ := ret[0].(v3.Txn)
+	ret0, _ := ret[0].(clientv3.Txn)
 	return ret0
 }
 

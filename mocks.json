@@ -1,14 +1,16 @@
 {
    "base_directory": "github.com/Scalingo/link",
-   "base_package": "github.com/Scalingo/link/v2",
+   "base_package": "github.com/Scalingo/link/v3",
    "mocks": [
       {
          "interface": "Storage",
-         "src_package": "models"
+         "src_package": "models",
+         "mock_file": "models/storage_mock.go"
       },
       {
          "interface": "EncryptedStorage",
-         "src_package": "models"
+         "src_package": "models",
+         "mock_file": "models/encrypted_storage_mock.go"
       },
       {
          "interface": "ARP",

@@ -28,7 +28,7 @@ jobs:
       - run: go version
 
       - name: Execute the tests
-        run: go test -race -p=1 ./...
+        run: export CODE_PATH=/home/runner/work/link/link/; export $(cat .env.test); go test -race -p=1 ./...
 
       - name: Build the binaries
         if: startsWith(github.ref, 'refs/tags/')

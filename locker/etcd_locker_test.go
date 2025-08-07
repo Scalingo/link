@@ -213,9 +213,9 @@ func Test_Unlock(t *testing.T) {
 			},
 			CurrentLeaseID: 10,
 			ExpectKV: func(m *etcdmock.MockKV) {
-				m.EXPECT().Delete(gomock.Any(), key).Return(nil, errors.New("failed to delete key"))
+				m.EXPECT().Delete(gomock.Any(), key).Return(nil, errors.New("delete key"))
 			},
-			ExpectedError: "failed to delete key",
+			ExpectedError: "delete key",
 		},
 	}
 

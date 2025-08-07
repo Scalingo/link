@@ -15,16 +15,18 @@ import (
 var vipRegex = regexp.MustCompile(`^vip-[a-zA-Z0-9-]{36}$`)
 
 type EndpointController struct {
-	scheduler       scheduler.Scheduler
-	storage         models.Storage
-	endpointCreator endpoint.Creator
+	scheduler        scheduler.Scheduler
+	storage          models.Storage
+	endpointCreator  endpoint.Creator
+	encryptedStorage models.EncryptedStorage
 }
 
-func NewEndpointController(scheduler scheduler.Scheduler, storage models.Storage, endpointCreator endpoint.Creator) EndpointController {
+func NewEndpointController(scheduler scheduler.Scheduler, storage models.Storage, endpointCreator endpoint.Creator, encryptedStorage models.EncryptedStorage) EndpointController {
 	return EndpointController{
-		scheduler:       scheduler,
-		storage:         storage,
-		endpointCreator: endpointCreator,
+		scheduler:        scheduler,
+		storage:          storage,
+		endpointCreator:  endpointCreator,
+		encryptedStorage: encryptedStorage,
 	}
 }
 
@@ -165,11 +167,17 @@ func (c EndpointController) Delete(w http.ResponseWriter, r *http.Request, param
 
 	err := c.storage.RemoveEndpoint(ctx, id)
 	if err != nil {
-		return errors.Wrap(ctx, err, "fail to remove endpoint from storage")
+		return errors.Wrap(ctx, err, "remove endpoint from storage")
 	}
+
+	err = c.encryptedStorage.Cleanup(ctx, id)
+	if err != nil {
+		return errors.Wrap(ctx, err, "cleanup encrypted storage for endpoint")
+	}
+
 	err = c.scheduler.Stop(ctx, id)
 	if err != nil {
-		return errors.Wrap(ctx, err, "fail to stop endpoint manager")
+		return errors.Wrap(ctx, err, "stop endpoint manager")
 	}
 	w.WriteHeader(http.StatusNoContent)
 

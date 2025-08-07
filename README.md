@@ -107,6 +107,22 @@ LinK configuration is entirely done by setting environment variables.
 - [ARP Plugin](plugin/arp/README.md): This plugin manages IPs and announces them on the local network using ARP.
 - [Outscale Public IP Plugin](plugin/outscale_public_ip/README.md): This plugin manages the Outscale Public IPs.
 
+## Encrypted storage
+
+Some plugins can store credentials. Those credentials are stored encrypted at rest in the etcd database.
+
+If you need to rotate the credentials, proceed using the following procedure:
+
+Note: This procedure only rotate the encryption key on one host, if you need to rotate it on multiple hosts, you'll need to perform this once per host.
+
+1. Modify LinK environment variables:
+   - `SECRET_STORAGE_ALTERNATE_KEYS`: The old encryption key
+   - `SECRET_STORAGE_ENCRYPTION_KEY`: The new encryption key
+2. Restart LinK
+3. Run the following command: `link-client rotate-encryption-key`
+4. Remove the `SECRET_STORAGE_ALTERNATE_KEYS` environment variable.
+5. Restart LinK
+
 ## Development environment
 
 To make it work in dev you need to create dummy interfaces which will be

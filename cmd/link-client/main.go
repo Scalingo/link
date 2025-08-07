@@ -139,6 +139,9 @@ func main() {
 			},
 			Action: endpoint.UpdateChecks,
 		}, {
+			Name:   "rotate-encryption-key",
+			Action: RotateEncryptionKey,
+		}, {
 			Name: "version",
 			Action: func(ctx context.Context, c *cli.Command) error {
 				fmt.Printf("Client version: \t%s\n", app.Version)
@@ -157,4 +160,17 @@ func main() {
 	if err != nil {
 		fmt.Println(aurora.Red("Error: " + err.Error()))
 	}
+}
+
+func RotateEncryptionKey(ctx context.Context, c *cli.Command) error {
+	client := utils.GetClient(c)
+
+	fmt.Println("Rotating encryption key...")
+	err := client.RotateEncryptionKey(ctx)
+	if err != nil {
+		return fmt.Errorf("rotate encryption key: %w", err)
+	}
+
+	fmt.Println(aurora.Green("Encryption key rotated successfully"))
+	return nil
 }

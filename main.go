@@ -40,6 +40,8 @@ func main() {
 		panic(err)
 	}
 
+	log.WithField("hostname", config.Hostname).Info("LinK starting")
+
 	etcd, err := etcd.ClientFromEnv()
 	if err != nil {
 		log.WithError(err).Error("Fail to get etcd client")
@@ -48,7 +50,7 @@ func main() {
 
 	storage := models.NewEtcdStorage(config)
 	leaseManager := locker.NewEtcdLeaseManager(ctx, config, storage, etcd)
-	encryptedStorage, err := models.NewEncryptedStorage(ctx, config)
+	encryptedStorage, err := models.NewEncryptedStorage(ctx, config, storage)
 	if err != nil {
 		log.WithError(err).Error("Fail to init encrypted storage")
 		panic(err)
@@ -61,7 +63,11 @@ func main() {
 		panic(err)
 	}
 
-	migrationRunner := migrations.NewMigrationRunner(config, storage, leaseManager)
+	migrationRunner, err := migrations.NewMigrationRunner(ctx, config, storage, leaseManager)
+	if err != nil {
+		log.WithError(err).Error("Fail to init migration runner")
+		panic(err)
+	}
 
 	// We run the migration in a goroutine. Because the migrations can take a long time and locks might expires.
 	// This could cause unwanted failover.
@@ -102,7 +108,8 @@ func main() {
 
 	endpointCreator := endpoint.NewCreator(storage, scheduler, pluginRegistry)
 	ipController := web.NewIPController(scheduler, storage, endpointCreator)
-	endpointController := web.NewEndpointController(scheduler, storage, endpointCreator)
+	endpointController := web.NewEndpointController(scheduler, storage, endpointCreator, encryptedStorage)
+	encryptedStorageController := web.NewEncryptedStorageController(encryptedStorage)
 	versionController := web.NewVersionController(Version)
 	r := handlers.NewRouter(log)
 	r.Use(handlers.ErrorMiddleware)
@@ -113,26 +120,26 @@ func main() {
 		}))
 	}
 
-	r.Use(handlers.ErrorMiddleware)
-
 	// Retro compatibility with v2 API.
 	// This will be removed in a future version.
-	r.HandleFunc("/ips", ipController.List).Methods("GET")
-	r.HandleFunc("/ips", ipController.Create).Methods("POST")
-	r.HandleFunc("/ips/{id}", endpointController.Delete).Methods("DELETE")
-	r.HandleFunc("/ips/{id}", ipController.Get).Methods("GET")
-	r.HandleFunc("/ips/{id}", endpointController.Update).Methods("PUT", "PATCH")
-	r.HandleFunc("/ips/{id}/failover", endpointController.Failover).Methods("POST")
+	r.HandleFunc("/ips", ipController.List).Methods(http.MethodGet)
+	r.HandleFunc("/ips", ipController.Create).Methods(http.MethodPost)
+	r.HandleFunc("/ips/{id}", endpointController.Delete).Methods(http.MethodDelete)
+	r.HandleFunc("/ips/{id}", ipController.Get).Methods(http.MethodGet)
+	r.HandleFunc("/ips/{id}", endpointController.Update).Methods(http.MethodPut, http.MethodPatch)
+	r.HandleFunc("/ips/{id}/failover", endpointController.Failover).Methods(http.MethodPost)
 
-	r.HandleFunc("/endpoints", endpointController.List).Methods("GET")
-	r.HandleFunc("/endpoints", endpointController.Create).Methods("POST")
-	r.HandleFunc("/endpoints/{id}", endpointController.Delete).Methods("DELETE")
-	r.HandleFunc("/endpoints/{id}", endpointController.Get).Methods("GET")
-	r.HandleFunc("/endpoints/{id}", endpointController.Update).Methods("PUT", "PATCH")
-	r.HandleFunc("/endpoints/{id}/failover", endpointController.Failover).Methods("POST")
-	r.HandleFunc("/endpoints/{id}/hosts", endpointController.GetHosts).Methods("GET")
+	r.HandleFunc("/endpoints", endpointController.List).Methods(http.MethodGet)
+	r.HandleFunc("/endpoints", endpointController.Create).Methods(http.MethodPost)
+	r.HandleFunc("/endpoints/{id}", endpointController.Delete).Methods(http.MethodDelete)
+	r.HandleFunc("/endpoints/{id}", endpointController.Get).Methods(http.MethodGet)
+	r.HandleFunc("/endpoints/{id}", endpointController.Update).Methods(http.MethodPut, http.MethodPatch)
+	r.HandleFunc("/endpoints/{id}/failover", endpointController.Failover).Methods(http.MethodPost)
+	r.HandleFunc("/endpoints/{id}/hosts", endpointController.GetHosts).Methods(http.MethodGet)
 
-	r.HandleFunc("/version", versionController.Version).Methods("GET")
+	r.HandleFunc("/encrypted_storage/key_rotation", encryptedStorageController.RotateEncryptionKey).Methods(http.MethodPost)
+
+	r.HandleFunc("/version", versionController.Version).Methods(http.MethodGet)
 
 	globalRouter := mux.NewRouter()
 

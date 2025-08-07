@@ -12,5 +12,6 @@ type Client interface {
 	UpdateEndpoint(ctx context.Context, id string, params UpdateEndpointParams) (Endpoint, error)
 	RemoveEndpoint(ctx context.Context, id string) error
 	Failover(ctx context.Context, id string) error
+	RotateEncryptionKey(ctx context.Context) error
 	Version(ctx context.Context) (string, error)
 }

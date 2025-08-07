@@ -20,6 +20,11 @@ import (
 
 const (
 	EtcdLinkDirectory = "/link"
+
+	etcdTimeout = 5 * time.Second
+
+	encryptedDataIDPrefix = "sec-"
+	endpointIDPrefix      = "vip-"
 )
 
 // Used keys:
@@ -27,10 +32,12 @@ const (
 // /link/hosts/HOSTNAME/IP => IP config
 // /link/config/HOSTNAME => Hostname config
 // /link/ips/IP/HOSTNAME => Link between IP and host
+// /link/secrets/hosts/HOSTNAME/ENDPOINT_ID/ENCRYPTED_DATA_ID => Encrypted data for an endpoint (used by Plugins)
 
 var (
 	ErrEndpointAlreadyPresent = errors.New("endpoint already present")
 	ErrHostNotFound           = errors.New("host not found")
+	ErrEncryptedDataNotFound  = errors.New("encrypted data not found")
 )
 
 type EtcdStorage struct {
@@ -46,16 +53,16 @@ func NewEtcdStorage(config config.Config) EtcdStorage {
 func (e EtcdStorage) GetEndpoints(ctx context.Context) (Endpoints, error) {
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to get etcd client")
+		return nil, errors.Wrap(err, "get etcd client")
 	}
 	defer closer.Close()
 
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 
 	resp, err := client.Get(ctx, fmt.Sprintf("%s/hosts/%s", EtcdLinkDirectory, e.hostname), etcdv3.WithPrefix())
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to get list of endpoints from etcd")
+		return nil, errors.Wrap(err, "get list of endpoints from etcd")
 	}
 
 	endpoints := make(Endpoints, 0)
@@ -73,27 +80,27 @@ func (e EtcdStorage) GetEndpoints(ctx context.Context) (Endpoints, error) {
 func (e EtcdStorage) AddEndpoint(ctx context.Context, endpoint Endpoint) (Endpoint, error) {
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
-		return endpoint, errors.Wrap(err, "fail to get etcd client")
+		return endpoint, errors.Wrap(err, "get etcd client")
 	}
 	defer closer.Close()
 
 	id, err := uuid.NewV4()
 	if err != nil {
-		return endpoint, errors.Wrap(err, "fail to generate ID")
+		return endpoint, errors.Wrap(err, "generate ID")
 	}
 
-	endpoint.ID = "vip-" + id.String()
+	endpoint.ID = endpointIDPrefix + id.String()
 
 	value, err := json.Marshal(endpoint)
 	if err != nil {
-		return endpoint, errors.Wrap(err, "fail to marshal endpoint")
+		return endpoint, errors.Wrap(err, "marshal endpoint")
 	}
 
-	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	etcdCtx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 	_, err = client.Put(etcdCtx, e.keyFor(endpoint), string(value))
 	if err != nil {
-		return endpoint, errors.Wrapf(err, "fail to save endpoint")
+		return endpoint, errors.Wrapf(err, "save endpoint")
 	}
 
 	return endpoint, nil
@@ -107,13 +114,13 @@ func (e EtcdStorage) UpdateEndpoint(ctx context.Context, endpoint Endpoint) erro
 
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
-		return errors.Wrap(err, "fail to open client")
+		return errors.Wrap(err, "open client")
 	}
 	defer closer.Close()
 
 	value, err := json.Marshal(endpoint)
 	if err != nil {
-		return errors.Wrap(err, "fail to marshal endpoint")
+		return errors.Wrap(err, "marshal endpoint")
 	}
 
 	etcdKey := e.keyFor(endpoint)
@@ -122,11 +129,11 @@ func (e EtcdStorage) UpdateEndpoint(ctx context.Context, endpoint Endpoint) erro
 		"value":    string(value),
 	}).Debug("Update the endpoint in etcd storage")
 
-	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	etcdCtx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 	_, err = client.Put(etcdCtx, etcdKey, string(value))
 	if err != nil {
-		return errors.Wrap(err, "fail to update the endpoint in etcd storage")
+		return errors.Wrap(err, "update the endpoint in etcd storage")
 	}
 	return nil
 }
@@ -134,16 +141,16 @@ func (e EtcdStorage) UpdateEndpoint(ctx context.Context, endpoint Endpoint) erro
 func (e EtcdStorage) RemoveEndpoint(ctx context.Context, id string) error {
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
-		return errors.Wrap(err, "fail to get etcd client")
+		return errors.Wrap(err, "get etcd client")
 	}
 	defer closer.Close()
 
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 
 	_, err = client.Delete(ctx, fmt.Sprintf("%s/hosts/%s/%s", EtcdLinkDirectory, e.hostname, id))
 	if err != nil {
-		return errors.Wrap(err, "fail to delete endpoint")
+		return errors.Wrap(err, "delete endpoint")
 	}
 	return nil
 }
@@ -151,7 +158,7 @@ func (e EtcdStorage) RemoveEndpoint(ctx context.Context, id string) error {
 func (e EtcdStorage) GetCurrentHost(ctx context.Context) (Host, error) {
 	host, err := e.getHost(ctx, e.hostname)
 	if err != nil {
-		return host, errors.Wrap(err, "fail to get current host")
+		return host, errors.Wrap(err, "get current host")
 	}
 
 	return host, nil
@@ -161,16 +168,16 @@ func (e EtcdStorage) getHost(ctx context.Context, hostname string) (Host, error)
 	var host Host
 	client, clientClose, err := e.newEtcdClient()
 	if err != nil {
-		return host, errors.Wrap(err, "fail to get etcd client")
+		return host, errors.Wrap(err, "get etcd client")
 	}
 	defer clientClose.Close()
 
-	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 
 	resp, err := client.Get(ctx, e.keyForHost(hostname))
 	if err != nil {
-		return host, errors.Wrap(err, "fail to get host from etcd")
+		return host, errors.Wrap(err, "get host from etcd")
 	}
 
 	if len(resp.Kvs) == 0 {
@@ -179,7 +186,7 @@ func (e EtcdStorage) getHost(ctx context.Context, hostname string) (Host, error)
 
 	err = json.Unmarshal(resp.Kvs[0].Value, &host)
 	if err != nil {
-		return host, errors.Wrap(err, "fail to decode host config")
+		return host, errors.Wrap(err, "decode host config")
 	}
 
 	return host, nil
@@ -188,17 +195,17 @@ func (e EtcdStorage) getHost(ctx context.Context, hostname string) (Host, error)
 func (e EtcdStorage) SaveHost(ctx context.Context, host Host) error {
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
-		return errors.Wrap(err, "fail to get etcd client")
+		return errors.Wrap(err, "get etcd client")
 	}
 	defer closer.Close()
 
 	value, _ := json.Marshal(host)
 
-	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	etcdCtx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 	_, err = client.Put(etcdCtx, e.keyForHost(e.hostname), string(value))
 	if err != nil {
-		return errors.Wrapf(err, "fail to save host")
+		return errors.Wrapf(err, "save host")
 	}
 
 	return nil
@@ -208,7 +215,7 @@ func (e EtcdStorage) LinkEndpointWithCurrentHost(ctx context.Context, lockKey st
 	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, lockKey, e.hostname)
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
-		return errors.Wrap(err, "fail to get etcd client")
+		return errors.Wrap(err, "get etcd client")
 	}
 	defer closer.Close()
 
@@ -216,14 +223,14 @@ func (e EtcdStorage) LinkEndpointWithCurrentHost(ctx context.Context, lockKey st
 		UpdatedAt: time.Now(),
 	})
 	if err != nil {
-		return errors.Wrap(err, "fail to encode endpoint Link")
+		return errors.Wrap(err, "encode endpoint Link")
 	}
 
-	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	etcdCtx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 	_, err = client.Put(etcdCtx, key, string(payload))
 	if err != nil {
-		return errors.Wrap(err, "fail to save endpoint link")
+		return errors.Wrap(err, "save endpoint link")
 	}
 	return nil
 }
@@ -232,15 +239,15 @@ func (e EtcdStorage) UnlinkEndpointFromCurrentHost(ctx context.Context, lockKey 
 	key := fmt.Sprintf("%s/ips/%s/%s", EtcdLinkDirectory, lockKey, e.hostname)
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
-		return errors.Wrap(err, "fail to get etcd client")
+		return errors.Wrap(err, "get etcd client")
 	}
 	defer closer.Close()
 
-	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	etcdCtx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 	_, err = client.Delete(etcdCtx, key)
 	if err != nil {
-		return errors.Wrap(err, "fail to delete endpoint link")
+		return errors.Wrap(err, "delete endpoint link")
 	}
 	return nil
 }
@@ -250,16 +257,16 @@ func (e EtcdStorage) GetEndpointHosts(ctx context.Context, lockKey string) ([]st
 
 	client, closer, err := e.newEtcdClient()
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to get etcd client")
+		return nil, errors.Wrap(err, "get etcd client")
 	}
 	defer closer.Close()
 
-	etcdCtx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	etcdCtx, cancel := context.WithTimeout(ctx, etcdTimeout)
 	defer cancel()
 
 	resp, err := client.Get(etcdCtx, key, etcdv3.WithPrefix())
 	if err != nil {
-		return nil, errors.Wrap(err, "fail to list ip links")
+		return nil, errors.Wrap(err, "list ip links")
 	}
 
 	results := make([]string, resp.Count)
@@ -269,10 +276,112 @@ func (e EtcdStorage) GetEndpointHosts(ctx context.Context, lockKey string) ([]st
 	return results, nil
 }
 
+func (e EtcdStorage) GetEncryptedData(ctx context.Context, endpointID string, encryptedDataId string) (EncryptedData, error) {
+	client, closer, err := e.newEtcdClient()
+	if err != nil {
+		return EncryptedData{}, errors.Wrap(err, "get etcd client")
+	}
+	defer closer.Close()
+	etcdCtx, cancel := context.WithTimeout(ctx, etcdTimeout)
+	defer cancel()
+
+	resp, err := client.Get(etcdCtx, e.keyForEncryptedData(endpointID, encryptedDataId))
+	if err != nil {
+		return EncryptedData{}, errors.Wrap(err, "get encrypted data")
+	}
+	if len(resp.Kvs) == 0 {
+		return EncryptedData{}, ErrEncryptedDataNotFound
+	}
+	var encryptedData EncryptedData
+	err = json.Unmarshal(resp.Kvs[0].Value, &encryptedData)
+	if err != nil {
+		return EncryptedData{}, errors.Wrap(err, "decode encrypted data")
+	}
+	return encryptedData, nil
+}
+
+func (e EtcdStorage) UpsertEncryptedData(ctx context.Context, endpointID string, encryptedData EncryptedData) (EncryptedDataLink, error) {
+	client, closer, err := e.newEtcdClient()
+	if err != nil {
+		return EncryptedDataLink{}, errors.Wrap(err, "get etcd client")
+	}
+	defer closer.Close()
+
+	if encryptedData.ID == "" {
+		id, err := uuid.NewV4()
+		if err != nil {
+			return EncryptedDataLink{}, errors.Wrap(err, "generate ID")
+		}
+
+		encryptedData.ID = encryptedDataIDPrefix + id.String()
+	}
+	encryptedData.EndpointID = endpointID
+
+	value, err := json.Marshal(encryptedData)
+	if err != nil {
+		return EncryptedDataLink{}, errors.Wrap(err, "marshal encrypted data")
+	}
+	etcdCtx, cancel := context.WithTimeout(ctx, etcdTimeout)
+	defer cancel()
+	_, err = client.Put(etcdCtx, e.keyForEncryptedData(endpointID, encryptedData.ID), string(value))
+	if err != nil {
+		return EncryptedDataLink{}, errors.Wrap(err, "save encrypted data")
+	}
+	return EncryptedDataLink{
+		ID:         encryptedData.ID,
+		EndpointID: endpointID,
+	}, nil
+}
+
+func (e EtcdStorage) RemoveEncryptedDataForEndpoint(ctx context.Context, endpointID string) error {
+	etcdCtx, cancel := context.WithTimeout(ctx, etcdTimeout)
+	defer cancel()
+
+	client, closer, err := e.newEtcdClient()
+	if err != nil {
+		return errors.Wrap(err, "get etcd client")
+	}
+	defer closer.Close()
+
+	_, err = client.Delete(etcdCtx, fmt.Sprintf("%s/secrets/hosts/%s/%s", EtcdLinkDirectory, e.hostname, endpointID), etcdv3.WithPrefix())
+	if err != nil {
+		return errors.Wrap(err, "delete encrypted data")
+	}
+	return nil
+}
+
+func (e EtcdStorage) ListEncryptedDataForHost(ctx context.Context) ([]EncryptedData, error) {
+	etcdCtx, cancel := context.WithTimeout(ctx, etcdTimeout)
+	defer cancel()
+
+	client, closer, err := e.newEtcdClient()
+	if err != nil {
+		return nil, errors.Wrap(err, "get etcd client")
+	}
+	defer closer.Close()
+
+	resp, err := client.Get(etcdCtx, fmt.Sprintf("%s/secrets/hosts/%s", EtcdLinkDirectory, e.hostname), etcdv3.WithPrefix())
+	if err != nil {
+		return nil, errors.Wrap(err, "list encrypted data")
+	}
+
+	results := make([]EncryptedData, 0, resp.Count)
+	for _, kv := range resp.Kvs {
+		var encryptedData EncryptedData
+		err = json.Unmarshal(kv.Value, &encryptedData)
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid json for %s", kv.Key)
+		}
+
+		results = append(results, encryptedData)
+	}
+	return results, nil
+}
+
 func (e EtcdStorage) newEtcdClient() (etcdv3.KV, io.Closer, error) {
 	c, err := etcd.ClientFromEnv()
 	if err != nil {
-		return nil, nil, errors.Wrapf(err, "fail to get etcd client from config")
+		return nil, nil, errors.Wrapf(err, "get etcd client from config")
 	}
 
 	return etcdv3.KV(c), c, nil
@@ -284,4 +393,8 @@ func (e EtcdStorage) keyFor(endpoint Endpoint) string {
 
 func (e EtcdStorage) keyForHost(hostname string) string {
 	return fmt.Sprintf("%s/config/%s", EtcdLinkDirectory, hostname)
+}
+
+func (e EtcdStorage) keyForEncryptedData(endpointID, encryptedDataID string) string {
+	return fmt.Sprintf("%s/secrets/hosts/%s/%s/%s", EtcdLinkDirectory, e.hostname, endpointID, encryptedDataID)
 }

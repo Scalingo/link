@@ -15,4 +15,9 @@ type Storage interface {
 	LinkEndpointWithCurrentHost(ctx context.Context, key string) error   // Link an Endpoint to the current host
 	UnlinkEndpointFromCurrentHost(ctx context.Context, key string) error // Unlink an Endpoint from the current host
 	GetEndpointHosts(ctx context.Context, key string) ([]string, error)  // List all hosts linked to the Endpoint
+
+	GetEncryptedData(ctx context.Context, endpointID string, encryptedDataId string) (EncryptedData, error)
+	UpsertEncryptedData(ctx context.Context, endpointID string, data EncryptedData) (EncryptedDataLink, error)
+	RemoveEncryptedDataForEndpoint(ctx context.Context, endpointID string) error
+	ListEncryptedDataForHost(ctx context.Context) ([]EncryptedData, error)
 }
