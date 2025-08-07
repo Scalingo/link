@@ -5,8 +5,8 @@
 - feature(client) Add an option to customize the User-Agent
 - feature(cli) Specify the CLI version in the User-Agent
 - fix(validations) Add missing input validations
-- feature(cli) Add an command to rotate credentials
-- feature(storage) Refactor how secrets are stored
+- feature(cli) Add a command to rotate credentials
+- feature(storage) Refactor the plugin's secret storage feature to permit key rotation
 
 ## [2025-07-24] v3.0.2
 
