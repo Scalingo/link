@@ -42,12 +42,18 @@ func Test_Creator_CreateEndpoint(t *testing.T) {
 			ExpectedError: "Health check type is not supported",
 		}, {
 			Name: "Invalid health check interval",
+			Scheduler: func(mock *schedulermock.MockScheduler) {
+				mock.EXPECT().EndpointCount().Return(0)
+			},
 			Params: CreateEndpointParams{
 				HealthCheckInterval: -1,
 			},
 			ExpectedError: "Health check interval must be greater than 0",
 		}, {
 			Name: "Health check interval too high",
+			Scheduler: func(mock *schedulermock.MockScheduler) {
+				mock.EXPECT().EndpointCount().Return(0)
+			},
 			Params: CreateEndpointParams{
 				HealthCheckInterval: 4000,
 			},
