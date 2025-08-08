@@ -50,6 +50,20 @@ func (mr *MockSchedulerMockRecorder) ConfiguredEndpoints(arg0 interface{}) *gomo
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfiguredEndpoints", reflect.TypeOf((*MockScheduler)(nil).ConfiguredEndpoints), arg0)
 }
 
+// EndpointCount mocks base method.
+func (m *MockScheduler) EndpointCount() int {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "EndpointCount")
+	ret0, _ := ret[0].(int)
+	return ret0
+}
+
+// EndpointCount indicates an expected call of EndpointCount.
+func (mr *MockSchedulerMockRecorder) EndpointCount() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EndpointCount", reflect.TypeOf((*MockScheduler)(nil).EndpointCount))
+}
+
 // Failover mocks base method.
 func (m *MockScheduler) Failover(arg0 context.Context, arg1 string) error {
 	m.ctrl.T.Helper()

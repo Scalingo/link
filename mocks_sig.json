@@ -10,7 +10,7 @@
   "github.com/Scalingo/link/network.Interface": "02 61 47 58 85 b3 ce f2 ee 69 f8 58 4b ca cd eb 5b ed f9 3c",
   "github.com/Scalingo/link/plugin.Plugin": "b6 82 98 3a d8 a5 17 e8 f0 df b6 20 6e 0f 4a 08 e6 b8 19 e5",
   "github.com/Scalingo/link/plugin.Registry": "9a bb 1f 50 e2 e6 76 b9 c7 06 90 d8 9b a2 2f 04 bd 52 58 13",
-  "github.com/Scalingo/link/scheduler.Scheduler": "6d c9 01 1d 2e d4 8f ae e4 a2 6d d1 04 a7 ae 25 11 8b 36 cb",
+  "github.com/Scalingo/link/scheduler.Scheduler": "0c 0c 65 61 60 92 37 3d b8 60 48 df 59 ff 87 0d 15 14 05 41",
   "github.com/Scalingo/link/services/outscale.PublicIPClient": "80 44 4e d0 66 f4 14 f0 91 dd 55 ca a9 fa 17 8e 41 24 5f ea",
   "github.com/Scalingo/link/watcher.Watcher": "ec 8d f6 d4 6d 64 c7 76 87 fd 72 43 c6 ed d9 89 0e a6 9a 71",
   "go.etcd.io/etcd/client/v3.KV": "b5 dc 10 4e dc 95 f2 cf 0a 6c e7 c5 ac 0a 47 5f 60 44 31 40",

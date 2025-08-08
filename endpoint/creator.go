@@ -3,14 +3,25 @@ package endpoint
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v3/api"
+	"github.com/Scalingo/link/v3/config"
 	"github.com/Scalingo/link/v3/models"
 	"github.com/Scalingo/link/v3/plugin"
 	"github.com/Scalingo/link/v3/scheduler"
 )
+
+type ErrTooManyEndpoints struct {
+	currentCount int
+	maxCount     int
+}
+
+func (e ErrTooManyEndpoints) Error() string {
+	return fmt.Sprintf("Too many endpoints configured: %d, max allowed: %d", e.currentCount, e.maxCount)
+}
 
 type CreateEndpointParams struct {
 	HealthCheckInterval int               `json:"healthcheck_interval"`
@@ -24,22 +35,32 @@ type Creator interface {
 }
 
 type creator struct {
-	storage   models.Storage
-	scheduler scheduler.Scheduler
-	registry  plugin.Registry
+	storage              models.Storage
+	scheduler            scheduler.Scheduler
+	registry             plugin.Registry
+	maxNumberOfEndpoints int
 }
 
-func NewCreator(storage models.Storage, scheduler scheduler.Scheduler, registry plugin.Registry) Creator {
+func NewCreator(config config.Config, storage models.Storage, scheduler scheduler.Scheduler, registry plugin.Registry) Creator {
 	return &creator{
-		storage:   storage,
-		scheduler: scheduler,
-		registry:  registry,
+		storage:              storage,
+		scheduler:            scheduler,
+		registry:             registry,
+		maxNumberOfEndpoints: config.MaxNumberOfEndpoints,
 	}
 }
 
 func (c *creator) CreateEndpoint(ctx context.Context, params CreateEndpointParams) (models.Endpoint, error) {
 	log := logger.Get(ctx)
 	checks := models.HealthChecksFromAPIType(params.Checks)
+
+	currentEndpointCount := c.scheduler.EndpointCount()
+	if c.maxNumberOfEndpoints > 0 && currentEndpointCount >= c.maxNumberOfEndpoints {
+		return models.Endpoint{}, ErrTooManyEndpoints{
+			currentCount: currentEndpointCount,
+			maxCount:     c.maxNumberOfEndpoints,
+		}
+	}
 
 	log.Info("Validating Health checks")
 	validationErr := checks.Validate(ctx)

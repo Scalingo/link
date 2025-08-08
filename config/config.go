@@ -29,6 +29,8 @@ type Config struct {
 
 	SecretStorageEncryptionKey string   `envconfig:"SECRET_STORAGE_ENCRYPTION_KEY" default:""`
 	SecretStorageAlternateKeys []string `envconfig:"SECRET_STORAGE_ALTERNATE_KEYS" default:""`
+
+	MaxNumberOfEndpoints int `envconfig:"MAX_NUMBER_OF_ENDPOINTS" default:"1000"`
 }
 
 // LeaseTime is 5 * the global keepalive interval
