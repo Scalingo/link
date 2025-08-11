@@ -2,6 +2,8 @@
 
 ## To be released
 
+## [2025-08-11] v3.1.0
+
 - feature(client) Add an option to customize the User-Agent
 - feature(cli) Specify the CLI version in the User-Agent
 - fix(validations) Add missing input validations
