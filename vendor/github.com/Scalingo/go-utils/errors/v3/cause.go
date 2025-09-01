@@ -49,10 +49,6 @@ func UnwrapError(err error) error {
 		return nil
 	}
 
-	type causer interface {
-		Cause() error
-	}
-
 	// if err is type of `ErrCtx` unwrap it by getting errCtx.err
 	if ctxerr, ok := err.(ErrCtx); ok {
 		return ctxerr.err
@@ -66,8 +62,19 @@ func UnwrapError(err error) error {
 		return errgoErr.Underlying()
 	}
 
-	if cause, ok := err.(causer); ok {
-		return cause.Cause()
+	c, ok := err.(interface {
+		Cause() error
+	})
+	if ok {
+		return c.Cause()
 	}
+
+	u, ok := err.(interface {
+		Unwrap() error
+	})
+	if ok {
+		return u.Unwrap()
+	}
+
 	return nil
 }

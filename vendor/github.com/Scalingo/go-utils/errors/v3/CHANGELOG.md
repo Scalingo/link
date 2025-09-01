@@ -2,6 +2,10 @@
 
 ## To be Released
 
+## v.3.1.0
+
+* feat(UnwrapError) `UnwrapError` now unwraps errors which implement an `Unwrap()` method.
+
 ## v3.0.0
 
 * fix(errors): `Build` returns `error` not `*ValidationErrors` (BREAKING CHANGE)
