@@ -92,6 +92,7 @@ LinK configuration is entirely done by setting environment variables.
 - `ETCD_TLS_KEY`: Path to the private key authenticating the certificate
 - `ETCD_CACERT`: Path to the CA cert signing the etcd member certificates
 - `PLUGIN_ENSURE_INTERVAL`: When an endpoint is ACTIVATED, time between two run of the plugin control loop.
+- `PLUGIN_ENSURE_MAX_BACKOFF_INTERVAL`: Maximum time between two run of the plugin control loop if the previous one failed.
 - `ARP_GRATUITOUS_INTERVAL`: (DEPRECATED: Use PLUGIN_ENSURE_INTERVAL)
 - `MAX_NUMBER_OF_ENDPOINTS`: (default: 1000) The maximum number of endpoints that can be configured on that LinK instance. Setting it to -1 disable the limit.
 

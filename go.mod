@@ -31,6 +31,7 @@ require (
 
 require (
 	github.com/aws/aws-sdk-go v1.55.8 // indirect
+	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect

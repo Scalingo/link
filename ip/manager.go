@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/cenkalti/backoff/v5"
 	"github.com/looplab/fsm"
 	etcdv3 "go.etcd.io/etcd/client/v3"
 
@@ -17,6 +18,10 @@ import (
 	"github.com/Scalingo/link/v3/models"
 	"github.com/Scalingo/link/v3/plugin"
 	"github.com/Scalingo/link/v3/watcher"
+)
+
+const (
+	pluginEnsureBackoffMultiplier = 2
 )
 
 type Manager interface {
@@ -41,6 +46,7 @@ type EndpointManager struct {
 	watcher                 watcher.Watcher
 	retry                   retry.Retry
 	plugin                  plugin.Plugin
+	ensureBackoff           *backoff.ExponentialBackOff
 	eventChan               chan string
 	keepaliveRetry          int
 	healthCheckFailingCount int
@@ -60,6 +66,11 @@ func NewManager(ctx context.Context, cfg config.Config, endpoint models.Endpoint
 		healthCheckFailingCount: 0,
 		retry:                   retry.New(retry.WithWaitDuration(10*time.Second), retry.WithMaxAttempts(5)),
 		plugin:                  plugin,
+		ensureBackoff: &backoff.ExponentialBackOff{
+			InitialInterval: cfg.PluginEnsureInterval,
+			Multiplier:      pluginEnsureBackoffMultiplier,
+			MaxInterval:     cfg.PluginEnsureMaxBackoffInterval,
+		},
 	}
 
 	// We need to keep the `/ips/` prefix in the watcher in order to keep backward compatibility.

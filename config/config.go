@@ -22,7 +22,8 @@ type Config struct {
 	HealthCheckInterval time.Duration `envconfig:"HEALTH_CHECK_INTERVAL" default:"5s"`
 	HealthCheckTimeout  time.Duration `envconfig:"HEALTH_CHECK_TIMEOUT" default:"5s"`
 
-	PluginEnsureInterval time.Duration `envconfig:"PLUGIN_ENSURE_INTERVAL" default:"1s"`
+	PluginEnsureInterval           time.Duration `envconfig:"PLUGIN_ENSURE_INTERVAL" default:"1s"`
+	PluginEnsureMaxBackoffInterval time.Duration `envconfig:"PLUGIN_ENSURE_MAX_BACKOFF_INTERVAL" default:"10m"`
 
 	ARPGratuitousInterval   time.Duration `envconfig:"ARP_GRATUITOUS_INTERVAL" default:"1s"` // Deprecated: Use PluginEnsureInterval
 	FailCountBeforeFailover int           `envconfig:"FAIL_COUNT_BEFORE_FAILOVER" default:"3"`
@@ -55,6 +56,10 @@ func Build(ctx context.Context) (Config, error) {
 	if _, ok := os.LookupEnv("ARP_GRATUITOUS_INTERVAL"); ok {
 		log.Error("ARP_GRATUITOUS_INTERVAL is deprecated, please use PLUGIN_ENSURE_INTERVAL instead")
 		config.PluginEnsureInterval = config.ARPGratuitousInterval
+	}
+
+	if config.PluginEnsureInterval >= config.PluginEnsureMaxBackoffInterval {
+		return config, errors.New(ctx, "PLUGIN_ENSURE_MAX_BACKOFF_INTERVAL must be greater than PLUGIN_ENSURE_INTERVAL")
 	}
 
 	return config, nil
