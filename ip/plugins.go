@@ -53,15 +53,25 @@ func (m *EndpointManager) startPluginEnsureLoop(ctx context.Context) {
 		}
 		currentState := m.Status()
 
+		hasFailed := false
+
 		if currentState == ACTIVATED {
 			log.Debug("Start plugin ensure")
 			err := m.plugin.Ensure(ctx)
 			if err != nil {
 				log.WithError(err).Error("Fail to run plugin ensure")
+				hasFailed = true
 			}
 		}
 
 		timeToSleep := config.RandomDurationAround(m.config.PluginEnsureInterval, 0.25)
+		if hasFailed {
+			timeToSleep = m.ensureBackoff.NextBackOff()
+			log.WithField("next_try_in", timeToSleep).Info("Ensure failed, applying backoff")
+		} else {
+			m.ensureBackoff.Reset()
+		}
+
 		time.Sleep(timeToSleep)
 	}
 }

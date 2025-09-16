@@ -2,6 +2,8 @@
 
 ## To be released
 
+- feature(ensure) Add a backoff policy if the plugin control loop fails
+
 ## [2025-08-11] v3.1.0
 
 - feature(client) Add an option to customize the User-Agent
