@@ -62,6 +62,10 @@
          "src_package": "services/outscale"
       },
       {
+         "interface": "Backoff",
+         "src_package": "ip"
+      },
+      {
          "external": true,
          "src_package": "go.etcd.io/etcd/client/v3",
          "interface": "KV",

@@ -12,6 +12,7 @@ require (
 	github.com/Scalingo/go-utils/logger v1.9.1
 	github.com/Scalingo/go-utils/retry v1.2.2
 	github.com/Scalingo/link/v2 v2.0.7
+	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/gofrs/uuid/v5 v5.3.2
 	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.1
@@ -31,7 +32,6 @@ require (
 
 require (
 	github.com/aws/aws-sdk-go v1.55.8 // indirect
-	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.1 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect

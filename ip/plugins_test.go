@@ -2,6 +2,7 @@ package ip
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"github.com/looplab/fsm"
 
 	"github.com/Scalingo/link/v3/config"
+	"github.com/Scalingo/link/v3/ip/ipmock"
 	"github.com/Scalingo/link/v3/locker/lockermock"
 	"github.com/Scalingo/link/v3/models"
 	"github.com/Scalingo/link/v3/plugin/pluginmock"
@@ -93,20 +95,22 @@ func Test_startPluginEnsureLoop(t *testing.T) {
 
 	t.Run("If the endpoint is activated", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
 
 		ctx := context.Background()
 
 		pluginMock := pluginmock.NewMockPlugin(ctrl)
 		pluginMock.EXPECT().Ensure(gomock.Any()).Return(nil).MinTimes(9)
+		backoffMock := ipmock.NewMockBackoff(ctrl)
+		backoffMock.EXPECT().Reset().MinTimes(1)
 
 		sm := NewStateMachine(ctx, NewStateMachineOpts{})
 		sm.SetState(ACTIVATED)
 		manager := &EndpointManager{
-			stateMachine: sm,
-			config:       config,
-			endpoint:     endpoint,
-			plugin:       pluginMock,
+			stateMachine:  sm,
+			config:        config,
+			endpoint:      endpoint,
+			plugin:        pluginMock,
+			ensureBackoff: backoffMock,
 		}
 
 		doneChan := make(chan bool)
@@ -130,17 +134,20 @@ func Test_startPluginEnsureLoop(t *testing.T) {
 
 	t.Run("If the endpoint is not activated", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
-		defer ctrl.Finish()
 
 		ctx := context.Background()
 		pluginMock := pluginmock.NewMockPlugin(ctrl)
+		backoffMock := ipmock.NewMockBackoff(ctrl)
+		backoffMock.EXPECT().Reset().MinTimes(1)
+
 		sm := NewStateMachine(ctx, NewStateMachineOpts{})
 		sm.SetState(FAILING)
 		manager := &EndpointManager{
-			plugin:       pluginMock,
-			stateMachine: sm,
-			config:       config,
-			endpoint:     endpoint,
+			plugin:        pluginMock,
+			stateMachine:  sm,
+			config:        config,
+			endpoint:      endpoint,
+			ensureBackoff: backoffMock,
 		}
 
 		doneChan := make(chan bool)
@@ -154,6 +161,46 @@ func Test_startPluginEnsureLoop(t *testing.T) {
 		manager.stopped = true
 		manager.stopMutex.Unlock()
 
+		timer := time.NewTimer(500 * time.Millisecond)
+		select {
+		case <-timer.C:
+			t.Fatal("NOT RESPONDING")
+		case <-doneChan:
+		}
+	})
+
+	t.Run("If the endpoint is activated but Ensure fails", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+
+		ctx := context.Background()
+
+		pluginMock := pluginmock.NewMockPlugin(ctrl)
+		pluginMock.EXPECT().Ensure(gomock.Any()).Return(fmt.Errorf("fail")).Times(1)
+		pluginMock.EXPECT().Ensure(gomock.Any()).Return(nil).MinTimes(1)
+		backoffMock := ipmock.NewMockBackoff(ctrl)
+		backoffMock.EXPECT().NextBackOff().Return(10 * time.Millisecond).Times(1)
+		backoffMock.EXPECT().Reset().MinTimes(1)
+
+		sm := NewStateMachine(ctx, NewStateMachineOpts{})
+		sm.SetState(ACTIVATED)
+		manager := &EndpointManager{
+			stateMachine:  sm,
+			config:        config,
+			endpoint:      endpoint,
+			plugin:        pluginMock,
+			ensureBackoff: backoffMock,
+		}
+
+		doneChan := make(chan bool)
+		go func() {
+			manager.startPluginEnsureLoop(ctx)
+			doneChan <- true
+		}()
+
+		time.Sleep(100 * time.Millisecond)
+		manager.stopMutex.Lock()
+		manager.stopped = true
+		manager.stopMutex.Unlock()
 		timer := time.NewTimer(500 * time.Millisecond)
 		select {
 		case <-timer.C:

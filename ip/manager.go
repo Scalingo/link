@@ -20,6 +20,11 @@ import (
 	"github.com/Scalingo/link/v3/watcher"
 )
 
+type Backoff interface {
+	NextBackOff() time.Duration
+	Reset()
+}
+
 const (
 	pluginEnsureBackoffMultiplier = 2
 )
@@ -46,7 +51,7 @@ type EndpointManager struct {
 	watcher                 watcher.Watcher
 	retry                   retry.Retry
 	plugin                  plugin.Plugin
-	ensureBackoff           *backoff.ExponentialBackOff
+	ensureBackoff           Backoff
 	eventChan               chan string
 	keepaliveRetry          int
 	healthCheckFailingCount int
