@@ -2,6 +2,10 @@
 
 ## To be Released
 
+## v1.9.1
+
+- build(go.mod): update github.com/Scalingo/go-utils/errors from v3.0.0 to v3.1.1
+
 ## v1.9.0
 
 - build(go.mod): update go to 1.24
