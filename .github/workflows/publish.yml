@@ -1,17 +1,32 @@
 name: Publish
 
 on:
+  pull_request:
   push:
 
 jobs:
+  linter:
+    name: Linter on a PR
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: Scalingo/actions/go-linter@main
+
+  tests:
+    name: Unit Tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: Scalingo/actions/go-tests@main
+
   publish:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       GOX_ARCHITECTURES: amd64 386
     steps:
       # Currently there is no possibility to get a tag name. Hence we filter the GITHUB_REF variable which contains something like "refs/tags/v2.0.0" if the tag is "v2.0.0". The value can be used with "steps.tag_name.outputs.TAG_NAME"
       - name: Get tag name
         if: startsWith(github.ref, 'refs/tags/')
+        needs: [linter, tests]
         id: tag_name
         run: |
           echo "::set-output name=TAG_NAME::${GITHUB_REF#refs/tags/}"
@@ -26,9 +41,6 @@ jobs:
           go-version-file: "go.mod"
           check-latest: true
       - run: go version
-
-      - name: Execute the tests
-        run: export CODE_PATH=/home/runner/work/link/link/; export $(cat .env.test); go test -race -p=1 ./...
 
       - name: Build the binaries
         if: startsWith(github.ref, 'refs/tags/')
