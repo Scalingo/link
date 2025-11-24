@@ -38,7 +38,7 @@ func Test_UpdateFrom2ToCurrent(t *testing.T) {
 		oldLink.Stop(t)
 
 		// Start a LinK v3
-		newBinPath := utils.BuildLinkBinary(t)
+		newBinPath := utils.BuildLinKBinary(t)
 		newLink := utils.StartLinK(t, newBinPath, utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", "a-very-long-encryption-key-1234567890abcdef-1234567890abcdef"))
 
 		// Check that the IP is still there

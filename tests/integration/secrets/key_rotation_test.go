@@ -22,7 +22,7 @@ func TestKeyRotation(t *testing.T) {
 
 	oldEncryptionKey := "a-very-long-encryption-key-1234567890abcdef-1234567890abcdef"
 
-	binPath := utils.BuildLinkBinary(t)
+	binPath := utils.BuildLinKBinary(t)
 	link := utils.StartLinK(t, binPath, utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", oldEncryptionKey))
 
 	client := api.NewHTTPClient(api.WithURL(link.URL()))
