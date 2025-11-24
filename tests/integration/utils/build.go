@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func BuildLinkBinary(t *testing.T) string {
+func BuildLinKBinary(t *testing.T) string {
 	t.Helper()
 
 	destPath := t.TempDir()
