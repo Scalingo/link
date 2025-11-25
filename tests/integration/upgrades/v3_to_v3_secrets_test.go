@@ -69,7 +69,7 @@ func Test_SecretStorageUpgrade(t *testing.T) {
 
 		// Start a LinK using the current version and the same encryption key
 
-		newBinPath := utils.BuildLinkBinary(t)
+		newBinPath := utils.BuildLinKBinary(t)
 		newLink := utils.StartLinK(t, newBinPath, utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", encryptionKey))
 
 		client = api.NewHTTPClient(api.WithURL(newLink.URL()))
