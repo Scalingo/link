@@ -23,10 +23,13 @@ func TestKeyRotation(t *testing.T) {
 	oldEncryptionKey := "a-very-long-encryption-key-1234567890abcdef-1234567890abcdef"
 
 	binPath := utils.BuildLinKBinary(t)
-	link := utils.StartLinK(t, binPath, utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", oldEncryptionKey))
+	linkProcess := utils.StartLinK(t, binPath,
+		utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", oldEncryptionKey),
+	)
 
-	client := api.NewHTTPClient(api.WithURL(link.URL()))
-	_, err := client.AddEndpoint(t.Context(), api.AddEndpointParams{
+	linkClient := api.NewHTTPClient(api.WithURL(linkProcess.URL()))
+
+	_, err := linkClient.AddEndpoint(t.Context(), api.AddEndpointParams{
 		Plugin: outscalepublicip.Name,
 		PluginConfig: outscalepublicip.PluginConfig{
 			AccessKey:  "TESTACCESSKEY",
@@ -37,33 +40,34 @@ func TestKeyRotation(t *testing.T) {
 		},
 	})
 	require.NoError(t, err)
-	endpoints, err := client.ListEndpoints(t.Context())
+
+	endpoints, err := linkClient.ListEndpoints(t.Context())
 	require.NoError(t, err)
 	require.Len(t, endpoints, 1)
 
-	link.Stop(t)
+	linkProcess.Stop(t)
 
 	newEncryptionKey := "another-very-long-encryption-key-1234567890abcdef-1234567890abcdef"
-	link = utils.StartLinK(t, binPath,
+	linkProcess = utils.StartLinK(t, binPath,
 		utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", newEncryptionKey),
 		utils.WithEnv("SECRET_STORAGE_ALTERNATE_KEYS", oldEncryptionKey),
 	)
-	client = api.NewHTTPClient(api.WithURL(link.URL()))
+	linkClient = api.NewHTTPClient(api.WithURL(linkProcess.URL()))
 
-	err = client.RotateEncryptionKey(t.Context())
+	err = linkClient.RotateEncryptionKey(t.Context())
 	require.NoError(t, err)
 
-	endpoints, err = client.ListEndpoints(t.Context())
+	endpoints, err = linkClient.ListEndpoints(t.Context())
 	require.NoError(t, err)
 	require.Len(t, endpoints, 1)
 
-	link.Stop(t)
+	linkProcess.Stop(t)
 
 	// Restart with the new key only
-	link = utils.StartLinK(t, binPath, utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", newEncryptionKey))
-	client = api.NewHTTPClient(api.WithURL(link.URL()))
+	linkProcess = utils.StartLinK(t, binPath, utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", newEncryptionKey))
+	linkClient = api.NewHTTPClient(api.WithURL(linkProcess.URL()))
 
-	endpoints, err = client.ListEndpoints(t.Context())
+	endpoints, err = linkClient.ListEndpoints(t.Context())
 	require.NoError(t, err)
 	require.Len(t, endpoints, 1)
 
