@@ -2,6 +2,7 @@ package secrets
 
 import (
 	"encoding/json"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -20,15 +21,15 @@ func TestKeyRotation(t *testing.T) {
 		utils.CleanupEtcdData(t)
 	})
 
-	oldEncryptionKey := "a-very-long-encryption-key-1234567890abcdef-1234567890abcdef"
-
 	binPath := utils.BuildLinKBinary(t)
+
+	oldEncryptionKey := "a-very-long-encryption-key-1234567890abcdef-1234567890abcdef"
 	linkProcess := utils.StartLinK(t, binPath,
 		utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", oldEncryptionKey),
 	)
 
+	// Initialize LinK with a endpoint
 	linkClient := api.NewHTTPClient(api.WithURL(linkProcess.URL()))
-
 	_, err := linkClient.AddEndpoint(t.Context(), api.AddEndpointParams{
 		Plugin: outscalepublicip.Name,
 		PluginConfig: outscalepublicip.PluginConfig{
@@ -44,9 +45,11 @@ func TestKeyRotation(t *testing.T) {
 	endpoints, err := linkClient.ListEndpoints(t.Context())
 	require.NoError(t, err)
 	require.Len(t, endpoints, 1)
+	expectedEndpointID := endpoints[0].ID
 
+	// Stop LinK...
 	linkProcess.Stop(t)
-
+	// ... and start it again with a new encryption key to test the key rotation
 	newEncryptionKey := "another-very-long-encryption-key-1234567890abcdef-1234567890abcdef"
 	linkProcess = utils.StartLinK(t, binPath,
 		utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", newEncryptionKey),
@@ -59,17 +62,25 @@ func TestKeyRotation(t *testing.T) {
 
 	endpoints, err = linkClient.ListEndpoints(t.Context())
 	require.NoError(t, err)
-	require.Len(t, endpoints, 1)
+	containsEndpoint := slices.ContainsFunc(endpoints, func(endpoint api.Endpoint) bool {
+		return expectedEndpointID == endpoint.ID
+	})
+	require.True(t, containsEndpoint)
 
+	// Stop Link again...
 	linkProcess.Stop(t)
-
-	// Restart with the new key only
-	linkProcess = utils.StartLinK(t, binPath, utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", newEncryptionKey))
+	// ... and restart it with the new encryption key only
+	linkProcess = utils.StartLinK(t, binPath,
+		utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", newEncryptionKey),
+	)
 	linkClient = api.NewHTTPClient(api.WithURL(linkProcess.URL()))
 
 	endpoints, err = linkClient.ListEndpoints(t.Context())
 	require.NoError(t, err)
-	require.Len(t, endpoints, 1)
+	containsEndpoint = slices.ContainsFunc(endpoints, func(endpoint api.Endpoint) bool {
+		return expectedEndpointID == endpoint.ID
+	})
+	require.True(t, containsEndpoint)
 
 	config := config.Config{
 		Hostname:                   "test-host",
@@ -77,9 +88,13 @@ func TestKeyRotation(t *testing.T) {
 	}
 	storage := models.NewEtcdStorage(config)
 
+	// Check in the storage that the data are still accessible despite the key rotation
 	storedEndpoints, err := storage.GetEndpoints(t.Context())
 	require.NoError(t, err)
-	require.Len(t, storedEndpoints, 1)
+	containsEndpoint = slices.ContainsFunc(endpoints, func(endpoint api.Endpoint) bool {
+		return expectedEndpointID == endpoint.ID
+	})
+	require.True(t, containsEndpoint)
 
 	var pluginConfig outscalepublicip.StorablePluginConfig
 	err = json.Unmarshal(storedEndpoints[0].PluginConfig, &pluginConfig)
