@@ -131,7 +131,6 @@ func (p LinKProcess) URL() string {
 
 func (p LinKProcess) Stop(t *testing.T) {
 	t.Helper()
-
 	t.Logf("Stopping LinK process with PID %d", p.cmd.Process.Pid)
 
 	err := p.cmd.Process.Kill()
