@@ -1,7 +1,8 @@
-package upgrades
+package integration
 
 import (
 	"encoding/json"
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -25,20 +26,22 @@ func Test_SecretStorageUpgrade(t *testing.T) {
 		})
 
 		encryptionKey := "a-very-long-encryption-key-1234567890abcdef-1234567890abcdef"
-		config := config.Config{
+		cfg := config.Config{
 			Hostname:                   "test-host",
 			SecretStorageEncryptionKey: encryptionKey,
 		}
-		storage := models.NewEtcdStorage(config)
+		storage := models.NewEtcdStorage(cfg)
 
 		// Start a LinK using the old version (3.0.1)
 		oldBinPath := utils.DownloadLinKVersion(t, "3.0.1")
-		oldLink := utils.StartLinK(t, oldBinPath, utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", encryptionKey))
+		oldLink := utils.StartLinK(t, oldBinPath,
+			utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", encryptionKey),
+		)
 
 		// Create an endpoint with the old version
 		// This will use the old encryption format.
-		client := api.NewHTTPClient(api.WithURL(oldLink.URL()))
-		_, err := client.AddEndpoint(t.Context(), api.AddEndpointParams{
+		linkClient := api.NewHTTPClient(api.WithURL(oldLink.URL()))
+		expectedEndpoint, err := linkClient.AddEndpoint(t.Context(), api.AddEndpointParams{
 			Plugin: outscalepublicip.Name,
 			PluginConfig: outscalepublicip.PluginConfig{
 				AccessKey: "TESTACCESSKEY",
@@ -54,10 +57,13 @@ func Test_SecretStorageUpgrade(t *testing.T) {
 		// Check that the endpoint is stored with the old encryption format
 		storedEndpoints, err := storage.GetEndpoints(t.Context())
 		require.NoError(t, err)
-		require.Len(t, storedEndpoints, 1)
+		endpointIndex := slices.IndexFunc(storedEndpoints, func(endpoint models.Endpoint) bool {
+			return expectedEndpoint.ID == endpoint.ID
+		})
+		require.NotEqual(t, -1, endpointIndex)
 
 		var pluginConfig outscalepublicip.StorablePluginConfig
-		err = json.Unmarshal(storedEndpoints[0].PluginConfig, &pluginConfig)
+		err = json.Unmarshal(storedEndpoints[endpointIndex].PluginConfig, &pluginConfig)
 		require.NoError(t, err)
 
 		assert.NotEmpty(t, pluginConfig.AccessKey.Data)
@@ -72,22 +78,28 @@ func Test_SecretStorageUpgrade(t *testing.T) {
 		newBinPath := utils.BuildLinKBinary(t)
 		newLink := utils.StartLinK(t, newBinPath, utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", encryptionKey))
 
-		client = api.NewHTTPClient(api.WithURL(newLink.URL()))
-		endpoints, err := client.ListEndpoints(t.Context())
+		linkClient = api.NewHTTPClient(api.WithURL(newLink.URL()))
+		endpoints, err := linkClient.ListEndpoints(t.Context())
 		require.NoError(t, err)
-		require.Len(t, endpoints, 1)
-		assert.Equal(t, outscalepublicip.Name, endpoints[0].Plugin)
+		endpointIndex = slices.IndexFunc(endpoints, func(endpoint api.Endpoint) bool {
+			return expectedEndpoint.ID == endpoint.ID
+		})
+		require.NotEqual(t, -1, endpointIndex)
+		assert.Equal(t, outscalepublicip.Name, endpoints[endpointIndex].Plugin)
 
-		encryptedStorage, err := models.NewEncryptedStorage(t.Context(), config, storage)
+		encryptedStorage, err := models.NewEncryptedStorage(t.Context(), cfg, storage)
 		require.NoError(t, err)
 
 		storedEndpoints, err = storage.GetEndpoints(t.Context())
 		require.NoError(t, err)
-		require.Len(t, storedEndpoints, 1)
+		endpointIndex = slices.IndexFunc(storedEndpoints, func(endpoint models.Endpoint) bool {
+			return expectedEndpoint.ID == endpoint.ID
+		})
+		require.NotEqual(t, -1, endpointIndex)
 
 		pluginConfig = outscalepublicip.StorablePluginConfig{}
 
-		err = json.Unmarshal(storedEndpoints[0].PluginConfig, &pluginConfig)
+		err = json.Unmarshal(storedEndpoints[endpointIndex].PluginConfig, &pluginConfig)
 		require.NoError(t, err)
 
 		assert.Empty(t, pluginConfig.AccessKey.Data)

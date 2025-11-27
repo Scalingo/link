@@ -1,4 +1,4 @@
-package secrets
+package integration
 
 import (
 	"encoding/json"
@@ -8,7 +8,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/Scalingo/link/v3/api"
+	linkapi "github.com/Scalingo/link/v3/api"
 	"github.com/Scalingo/link/v3/config"
 	"github.com/Scalingo/link/v3/models"
 	outscalepublicip "github.com/Scalingo/link/v3/plugin/outscale_public_ip"
@@ -29,8 +29,8 @@ func TestKeyRotation(t *testing.T) {
 	)
 
 	// Initialize LinK with a endpoint
-	linkClient := api.NewHTTPClient(api.WithURL(linkProcess.URL()))
-	_, err := linkClient.AddEndpoint(t.Context(), api.AddEndpointParams{
+	linkClient := linkapi.NewHTTPClient(linkapi.WithURL(linkProcess.URL()))
+	expectedEndpoint, err := linkClient.AddEndpoint(t.Context(), linkapi.AddEndpointParams{
 		Plugin: outscalepublicip.Name,
 		PluginConfig: outscalepublicip.PluginConfig{
 			AccessKey:  "TESTACCESSKEY",
@@ -44,8 +44,10 @@ func TestKeyRotation(t *testing.T) {
 
 	endpoints, err := linkClient.ListEndpoints(t.Context())
 	require.NoError(t, err)
-	require.Len(t, endpoints, 1)
-	expectedEndpointID := endpoints[0].ID
+	containsEndpoint := slices.ContainsFunc(endpoints, func(endpoint linkapi.Endpoint) bool {
+		return expectedEndpoint.ID == endpoint.ID
+	})
+	require.True(t, containsEndpoint)
 
 	// Stop LinK...
 	linkProcess.Stop(t)
@@ -55,15 +57,15 @@ func TestKeyRotation(t *testing.T) {
 		utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", newEncryptionKey),
 		utils.WithEnv("SECRET_STORAGE_ALTERNATE_KEYS", oldEncryptionKey),
 	)
-	linkClient = api.NewHTTPClient(api.WithURL(linkProcess.URL()))
+	linkClient = linkapi.NewHTTPClient(linkapi.WithURL(linkProcess.URL()))
 
 	err = linkClient.RotateEncryptionKey(t.Context())
 	require.NoError(t, err)
 
 	endpoints, err = linkClient.ListEndpoints(t.Context())
 	require.NoError(t, err)
-	containsEndpoint := slices.ContainsFunc(endpoints, func(endpoint api.Endpoint) bool {
-		return expectedEndpointID == endpoint.ID
+	containsEndpoint = slices.ContainsFunc(endpoints, func(endpoint linkapi.Endpoint) bool {
+		return expectedEndpoint.ID == endpoint.ID
 	})
 	require.True(t, containsEndpoint)
 
@@ -73,12 +75,12 @@ func TestKeyRotation(t *testing.T) {
 	linkProcess = utils.StartLinK(t, binPath,
 		utils.WithEnv("SECRET_STORAGE_ENCRYPTION_KEY", newEncryptionKey),
 	)
-	linkClient = api.NewHTTPClient(api.WithURL(linkProcess.URL()))
+	linkClient = linkapi.NewHTTPClient(linkapi.WithURL(linkProcess.URL()))
 
 	endpoints, err = linkClient.ListEndpoints(t.Context())
 	require.NoError(t, err)
-	containsEndpoint = slices.ContainsFunc(endpoints, func(endpoint api.Endpoint) bool {
-		return expectedEndpointID == endpoint.ID
+	containsEndpoint = slices.ContainsFunc(endpoints, func(endpoint linkapi.Endpoint) bool {
+		return expectedEndpoint.ID == endpoint.ID
 	})
 	require.True(t, containsEndpoint)
 
@@ -91,13 +93,13 @@ func TestKeyRotation(t *testing.T) {
 	// Check in the storage that the data are still accessible despite the key rotation
 	storedEndpoints, err := storage.GetEndpoints(t.Context())
 	require.NoError(t, err)
-	containsEndpoint = slices.ContainsFunc(endpoints, func(endpoint api.Endpoint) bool {
-		return expectedEndpointID == endpoint.ID
+	endpointIndex := slices.IndexFunc(storedEndpoints, func(endpoint models.Endpoint) bool {
+		return expectedEndpoint.ID == endpoint.ID
 	})
-	require.True(t, containsEndpoint)
+	require.NotEqual(t, -1, endpointIndex)
 
 	var pluginConfig outscalepublicip.StorablePluginConfig
-	err = json.Unmarshal(storedEndpoints[0].PluginConfig, &pluginConfig)
+	err = json.Unmarshal(storedEndpoints[endpointIndex].PluginConfig, &pluginConfig)
 	require.NoError(t, err)
 
 	var accessKey, secretKey string

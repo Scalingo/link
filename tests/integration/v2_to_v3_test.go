@@ -1,4 +1,4 @@
-package upgrades
+package integration
 
 import (
 	"slices"
@@ -27,6 +27,7 @@ func Test_UpdateFromV2ToV3(t *testing.T) {
 
 		expectedIP, err := v2client.AddIP(t.Context(), "10.20.0.1/32", v2api.AddIPParams{})
 		require.NoError(t, err)
+
 		ips, err := v2client.ListIPs(t.Context())
 		require.NoError(t, err)
 		containsIP := slices.ContainsFunc(ips, func(ip v2api.IP) bool {
