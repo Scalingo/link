@@ -44,11 +44,11 @@ func StartLinK(t *testing.T, binaryPath string, opts ...StartLinkOpt) LinKProces
 
 	cmd := exec.Command(binaryPath)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PORT=%d", port))
-	cmd.Env = append(cmd.Env, "ETCD_HOSTS=http://localhost:2379")
 	cmd.Env = append(cmd.Env, "INTERFACE=eth0")
 	cmd.Env = append(cmd.Env, "HOSTNAME=test-host")
 	cmd.Env = append(cmd.Env, "KEEPALIVE_INTERVAL=100ms")
-	cmd.Env = append(cmd.Env, "GO_ENV=test")
+	cmd.Env = append(cmd.Env, "ETCD_HOSTS="+os.Getenv("ETCD_HOSTS"))
+	cmd.Env = append(cmd.Env, "GO_ENV="+os.Getenv("GO_ENV"))
 
 	if verboseLinkLogging == nil || !*verboseLinkLogging {
 		cmd.Stdout = &stdout
@@ -131,7 +131,6 @@ func (p LinKProcess) URL() string {
 
 func (p LinKProcess) Stop(t *testing.T) {
 	t.Helper()
-
 	t.Logf("Stopping LinK process with PID %d", p.cmd.Process.Pid)
 
 	err := p.cmd.Process.Kill()

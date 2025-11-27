@@ -92,6 +92,8 @@ services:
       - ./_dev/go-cache:/root/.cache
     env_file:
       - .env.test
+    environment:
+      ETCD_HOSTS: http://172.17.0.1:32379
     stop_signal: SIGKILL
     command: "tail -F /dev/null"
 
