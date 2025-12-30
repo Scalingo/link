@@ -2,6 +2,10 @@
 
 ## To be released
 
+## [2025-12-30] v3.2.1
+
+- build: various dependencies updates
+
 ## [2025-09-16] v3.2.0
 
 - feature(ensure) Add a backoff policy if the plugin control loop fails
