@@ -1,4 +1,4 @@
-# Rollbar Hook for [Logrus](https://github.com/sirupsen/logrus) v1.4.2
+# Rollbar Hook for [Logrus](https://github.com/sirupsen/logrus) v1.4.3
 
 ## Setup
 
@@ -53,13 +53,13 @@ Bump new version number in:
 Commit, tag and create a new release:
 
 ```sh
-version="1.4.2"
+version="1.4.3"
 
 git switch --create release/${version}
 git add CHANGELOG.md README.md
 git commit --message="Bump v${version}"
 git push --set-upstream origin release/${version}
-gh pr create --reviewer=EtienneM --title "$(git log -1 --pretty=%B)"
+gh pr create --reviewer=Scalingo/team-ist --title "$(git log -1 --pretty=%B)"
 ```
 
 Once the pull request merged, you can tag the new release.
