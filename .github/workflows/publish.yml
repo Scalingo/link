@@ -4,6 +4,8 @@ on:
   pull_request:
   push:
     branches: [main, master, prod]
+    tags:
+      - "v*"
 
 jobs:
   linter:
