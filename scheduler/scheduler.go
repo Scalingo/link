@@ -85,11 +85,14 @@ func (s *EndpointScheduler) Start(ctx context.Context, endpoint models.Endpoint)
 
 	ctx, log = logger.WithFieldToCtx(ctx, "election_key", plugin.ElectionKey(ctx))
 
+	s.mapMutex.RLock()
 	for _, manager := range s.endpointManagers {
 		if manager.ElectionKey(ctx) == plugin.ElectionKey(ctx) {
+			s.mapMutex.RUnlock()
 			return endpoint, errors.Wrap(ctx, ErrEndpointAlreadyAssigned, "endpoint already assigned")
 		}
 	}
+	s.mapMutex.RUnlock()
 
 	log.Info("Initialize a new endpoint manager")
 
