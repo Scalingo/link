@@ -28,6 +28,10 @@ func (err RetryError) Error() string {
 	return fmt.Sprintf("retry error (%v): %v, last error %v", err.Scope, err.Err, err.LastErr)
 }
 
+func (err RetryError) Unwrap() error {
+	return err.Err
+}
+
 // RetryCancelError is a error wrapping type that the user of a Retry should
 // use to cancel retry operations before the end of maxAttempts/maxDuration
 // conditions
@@ -41,6 +45,10 @@ func NewRetryCancelError(err error) RetryCancelError {
 
 func (err RetryCancelError) Error() string {
 	return err.error.Error()
+}
+
+func (err RetryCancelError) Unwrap() error {
+	return err.error
 }
 
 type Retryable func(ctx context.Context) error

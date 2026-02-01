@@ -1,8 +1,8 @@
 # github.com/Scalingo/errgo-rollbar v0.2.1
 ## explicit; go 1.17
 github.com/Scalingo/errgo-rollbar
-# github.com/Scalingo/go-handlers v1.9.1
-## explicit; go 1.24
+# github.com/Scalingo/go-handlers v1.11.0
+## explicit; go 1.24.0
 github.com/Scalingo/go-handlers
 # github.com/Scalingo/go-philae/v4 v4.4.7
 ## explicit; go 1.17
@@ -18,7 +18,7 @@ github.com/Scalingo/go-utils/errors
 # github.com/Scalingo/go-utils/errors/v2 v2.5.1
 ## explicit; go 1.24
 github.com/Scalingo/go-utils/errors/v2
-# github.com/Scalingo/go-utils/errors/v3 v3.1.1
+# github.com/Scalingo/go-utils/errors/v3 v3.2.0
 ## explicit; go 1.24
 github.com/Scalingo/go-utils/errors/v3
 # github.com/Scalingo/go-utils/etcd v1.2.1
@@ -28,8 +28,8 @@ github.com/Scalingo/go-utils/etcd
 ## explicit; go 1.24.0
 github.com/Scalingo/go-utils/logger
 github.com/Scalingo/go-utils/logger/plugins/rollbarplugin
-# github.com/Scalingo/go-utils/retry v1.2.2
-## explicit; go 1.24
+# github.com/Scalingo/go-utils/retry v1.3.0
+## explicit; go 1.24.0
 github.com/Scalingo/go-utils/retry
 # github.com/Scalingo/go-utils/security v1.1.1
 ## explicit; go 1.24
@@ -64,20 +64,23 @@ github.com/aws/aws-sdk-go/private/protocol/rest
 # github.com/cenkalti/backoff/v5 v5.0.3
 ## explicit; go 1.23
 github.com/cenkalti/backoff/v5
-# github.com/clipperhouse/displaywidth v0.6.2
+# github.com/cespare/xxhash/v2 v2.3.0
+## explicit; go 1.11
+github.com/cespare/xxhash/v2
+# github.com/clipperhouse/displaywidth v0.8.0
 ## explicit; go 1.18
 github.com/clipperhouse/displaywidth
 # github.com/clipperhouse/stringish v0.1.1
 ## explicit; go 1.18
 github.com/clipperhouse/stringish
-# github.com/clipperhouse/uax29/v2 v2.3.0
+# github.com/clipperhouse/uax29/v2 v2.4.0
 ## explicit; go 1.18
 github.com/clipperhouse/uax29/v2/graphemes
 github.com/clipperhouse/uax29/v2/internal/iterators
 # github.com/coreos/go-semver v0.3.1
 ## explicit; go 1.8
 github.com/coreos/go-semver/semver
-# github.com/coreos/go-systemd/v22 v22.6.0
+# github.com/coreos/go-systemd/v22 v22.7.0
 ## explicit; go 1.23
 github.com/coreos/go-systemd/v22/journal
 # github.com/davecgh/go-spew v1.1.1
@@ -86,6 +89,16 @@ github.com/davecgh/go-spew/spew
 # github.com/fatih/color v1.18.0
 ## explicit; go 1.17
 github.com/fatih/color
+# github.com/felixge/httpsnoop v1.0.4
+## explicit; go 1.13
+github.com/felixge/httpsnoop
+# github.com/go-logr/logr v1.4.3
+## explicit; go 1.18
+github.com/go-logr/logr
+github.com/go-logr/logr/funcr
+# github.com/go-logr/stdr v1.2.2
+## explicit; go 1.16
+github.com/go-logr/stdr
 # github.com/gofrs/uuid/v5 v5.4.0
 ## explicit; go 1.19
 github.com/gofrs/uuid/v5
@@ -103,7 +116,7 @@ github.com/golang/protobuf/proto
 # github.com/gorilla/mux v1.8.1
 ## explicit; go 1.20
 github.com/gorilla/mux
-# github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.4
+# github.com/grpc-ecosystem/grpc-gateway/v2 v2.27.7
 ## explicit; go 1.24.0
 github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2/options
 # github.com/j-keck/arping v1.0.3
@@ -133,15 +146,15 @@ github.com/mattn/go-runewidth
 # github.com/olekukonko/cat v0.0.0-20250911104152-50322a0618f6
 ## explicit; go 1.21
 github.com/olekukonko/cat
-# github.com/olekukonko/errors v1.1.0
+# github.com/olekukonko/errors v1.2.0
 ## explicit; go 1.21
 github.com/olekukonko/errors
-# github.com/olekukonko/ll v0.1.3
+# github.com/olekukonko/ll v0.1.4-0.20260115111900-9e59c2286df0
 ## explicit; go 1.21
 github.com/olekukonko/ll
 github.com/olekukonko/ll/lh
 github.com/olekukonko/ll/lx
-# github.com/olekukonko/tablewriter v1.1.2
+# github.com/olekukonko/tablewriter v1.1.3
 ## explicit; go 1.21
 github.com/olekukonko/tablewriter
 github.com/olekukonko/tablewriter/pkg/twcache
@@ -149,7 +162,7 @@ github.com/olekukonko/tablewriter/pkg/twwarp
 github.com/olekukonko/tablewriter/pkg/twwidth
 github.com/olekukonko/tablewriter/renderer
 github.com/olekukonko/tablewriter/tw
-# github.com/outscale/osc-sdk-go/v2 v2.31.0
+# github.com/outscale/osc-sdk-go/v2 v2.32.0
 ## explicit; go 1.24.0
 github.com/outscale/osc-sdk-go/v2
 # github.com/pkg/errors v0.9.1
@@ -161,15 +174,15 @@ github.com/pmezard/go-difflib/difflib
 # github.com/rollbar/rollbar-go v1.4.8
 ## explicit; go 1.13
 github.com/rollbar/rollbar-go
-# github.com/sirupsen/logrus v1.9.3
-## explicit; go 1.13
+# github.com/sirupsen/logrus v1.9.4
+## explicit; go 1.17
 github.com/sirupsen/logrus
 # github.com/stretchr/testify v1.11.1
 ## explicit; go 1.17
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/assert/yaml
 github.com/stretchr/testify/require
-# github.com/urfave/cli/v3 v3.6.1
+# github.com/urfave/cli/v3 v3.6.2
 ## explicit; go 1.22
 github.com/urfave/cli/v3
 # github.com/urfave/negroni/v3 v3.1.1
@@ -206,6 +219,39 @@ go.etcd.io/etcd/client/v3
 go.etcd.io/etcd/client/v3/credentials
 go.etcd.io/etcd/client/v3/internal/endpoint
 go.etcd.io/etcd/client/v3/internal/resolver
+# go.opentelemetry.io/auto/sdk v1.2.1
+## explicit; go 1.24.0
+go.opentelemetry.io/auto/sdk
+go.opentelemetry.io/auto/sdk/internal/telemetry
+# go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux v0.64.0
+## explicit; go 1.24.0
+go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux
+go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux/internal/request
+go.opentelemetry.io/contrib/instrumentation/github.com/gorilla/mux/otelmux/internal/semconv
+# go.opentelemetry.io/otel v1.39.0
+## explicit; go 1.24.0
+go.opentelemetry.io/otel
+go.opentelemetry.io/otel/attribute
+go.opentelemetry.io/otel/attribute/internal
+go.opentelemetry.io/otel/attribute/internal/xxhash
+go.opentelemetry.io/otel/baggage
+go.opentelemetry.io/otel/codes
+go.opentelemetry.io/otel/internal/baggage
+go.opentelemetry.io/otel/internal/global
+go.opentelemetry.io/otel/propagation
+go.opentelemetry.io/otel/semconv/v1.37.0
+go.opentelemetry.io/otel/semconv/v1.37.0/httpconv
+# go.opentelemetry.io/otel/metric v1.39.0
+## explicit; go 1.24.0
+go.opentelemetry.io/otel/metric
+go.opentelemetry.io/otel/metric/embedded
+go.opentelemetry.io/otel/metric/noop
+# go.opentelemetry.io/otel/trace v1.39.0
+## explicit; go 1.24.0
+go.opentelemetry.io/otel/trace
+go.opentelemetry.io/otel/trace/embedded
+go.opentelemetry.io/otel/trace/internal/telemetry
+go.opentelemetry.io/otel/trace/noop
 # go.uber.org/multierr v1.11.0
 ## explicit; go 1.19
 go.uber.org/multierr
@@ -221,7 +267,7 @@ go.uber.org/zap/internal/pool
 go.uber.org/zap/internal/stacktrace
 go.uber.org/zap/zapcore
 go.uber.org/zap/zapgrpc
-# golang.org/x/net v0.48.0
+# golang.org/x/net v0.49.0
 ## explicit; go 1.24.0
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -234,21 +280,21 @@ golang.org/x/net/trace
 ## explicit; go 1.24.0
 golang.org/x/oauth2
 golang.org/x/oauth2/internal
-# golang.org/x/sys v0.39.0
+# golang.org/x/sys v0.40.0
 ## explicit; go 1.24.0
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.32.0
+# golang.org/x/text v0.33.0
 ## explicit; go 1.24.0
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
-# google.golang.org/genproto/googleapis/api v0.0.0-20251222181119-0a764e51fe1b
+# google.golang.org/genproto/googleapis/api v0.0.0-20260128011058-8636f8732409
 ## explicit; go 1.24.0
 google.golang.org/genproto/googleapis/api
 google.golang.org/genproto/googleapis/api/annotations
-# google.golang.org/genproto/googleapis/rpc v0.0.0-20251222181119-0a764e51fe1b
+# google.golang.org/genproto/googleapis/rpc v0.0.0-20260128011058-8636f8732409
 ## explicit; go 1.24.0
 google.golang.org/genproto/googleapis/rpc/status
 # google.golang.org/grpc v1.78.0

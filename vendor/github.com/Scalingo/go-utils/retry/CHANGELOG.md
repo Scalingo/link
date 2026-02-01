@@ -2,6 +2,10 @@
 
 ## To be Released
 
+## v1.3.0
+
+* feat(unwrap) Errors are now unwrappable by errors.Is/errors.As
+
 ## v1.2.2
 
 * feat(logging): Add `WithLoggingOnAttemptError` option allowing to log errors before the last attempt
