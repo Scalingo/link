@@ -1,6 +1,8 @@
 # Changelog
 
-## To be released
+## To be release>d
+
+- fix(parallelism) Fix a potential crash when starting a new endpoint
 
 ## [2025-12-30] v3.2.1
 
