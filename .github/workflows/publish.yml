@@ -36,7 +36,8 @@ jobs:
       - name: Get tag name
         id: tag_name
         run: |
-          echo "::set-output name=TAG_NAME::${GITHUB_REF#refs/tags/}"
+          TAG_NAME="${GITHUB_REF#refs/tags/}"
+          echo "TAG_NAME=${TAG_NAME}" >> "$GITHUB_OUTPUT"
           echo "$TAG_NAME"
 
       - name: Checkout the code
@@ -50,17 +51,21 @@ jobs:
       - run: go version
 
       - name: Build the binaries
+        env:
+          TAG_NAME: ${{ steps.tag_name.outputs.TAG_NAME }}
         run: |
           go install github.com/mitchellh/gox@latest
-          CGO_ENABLED=0 gox -os="linux" -arch="${{ env.GOX_ARCHITECTURES }}" -output="dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-{{.OS}}-{{.Arch}}/{{.Dir}}" -ldflags="-X main.Version=${{ steps.tag_name.outputs.TAG_NAME }}" . ./cmd/...
+          CGO_ENABLED=0 gox -os="linux" -arch="$GOX_ARCHITECTURES" -output="dist/link-${TAG_NAME}-{{.OS}}-{{.Arch}}/{{.Dir}}" -ldflags="-X main.Version=${TAG_NAME}" . ./cmd/...
 
       - name: Archive the built binaries
+        env:
+          TAG_NAME: ${{ steps.tag_name.outputs.TAG_NAME }}
         run: |
           for gox_archi in $GOX_ARCHITECTURES; do
             echo "Archive release targetted to $gox_archi"
             # Gox compiles link-client and an executable named "v3" instead of "link"..
-            mv dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}/v3 dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}/link
-            tar --directory=dist -czvf "dist/link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}.tar.gz" "link-${{ steps.tag_name.outputs.TAG_NAME }}-linux-${gox_archi}"
+            mv "dist/link-${TAG_NAME}-linux-${gox_archi}/v3" "dist/link-${TAG_NAME}-linux-${gox_archi}/link"
+            tar --directory=dist -czvf "dist/link-${TAG_NAME}-linux-${gox_archi}.tar.gz" "link-${TAG_NAME}-linux-${gox_archi}"
           done
 
       - name: Release the new version
