@@ -2,13 +2,18 @@
 
 ## To be Released
 
+## v1.4.0
+
+* feat(retry): add exponential backoff wait duration
+* refactor(retry): use `synctest.Test` for unit tests
+
 ## v1.3.0
 
-* feat(unwrap) Errors are now unwrappable by errors.Is/errors.As
+* feat(unwrap): errors are now unwrappable by errors.Is/errors.As
 
 ## v1.2.2
 
-* feat(logging): Add `WithLoggingOnAttemptError` option allowing to log errors before the last attempt
+* feat(logging): add `WithLoggingOnAttemptError` option allowing to log errors before the last attempt
 
 ## v1.2.1
 
