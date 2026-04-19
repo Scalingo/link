@@ -1,9 +1,17 @@
 package api
 
+import "time"
+
 const (
 	Activated = "ACTIVATED"
 	Standby   = "STANDBY"
 	Failing   = "FAILING"
+)
+
+const (
+	PluginARP              = "arp"
+	PluginWebhook          = "webhook"
+	PluginOutscalePublicIP = "outscale_public_ip"
 )
 
 type Endpoint struct {
@@ -53,4 +61,30 @@ type GetEndpointHostsResponse struct {
 
 type Host struct {
 	Hostname string `json:"hostname"`
+}
+
+type ARPPluginConfig struct {
+	IP string `json:"ip"`
+}
+
+type WebhookPluginConfig struct {
+	URL        string            `json:"url"`
+	Headers    map[string]string `json:"headers,omitempty"`
+	ResourceID string            `json:"resource_id"`
+}
+
+type OutscalePublicIPPluginConfig struct {
+	AccessKey string `json:"access_key"`
+	SecretKey string `json:"secret_key"`
+	Region    string `json:"region"`
+
+	PublicIPID string `json:"public_ip_id"`
+	NICID      string `json:"nic_id"`
+}
+
+type WebhookPluginStatusChangePayload struct {
+	EndpointID string    `json:"endpoint_id"`
+	Plugin     string    `json:"plugin"`
+	Status     string    `json:"status"`
+	ChangedAt  time.Time `json:"changed_at"`
 }

@@ -8,30 +8,43 @@ import (
 	"strings"
 	"time"
 
+	"github.com/kelseyhightower/envconfig"
+
 	"github.com/Scalingo/go-utils/errors/v2"
+	"github.com/Scalingo/link/v3/api"
 	"github.com/Scalingo/link/v3/models"
 	"github.com/Scalingo/link/v3/plugin"
 )
 
-const Name = "webhook"
+const Name = api.PluginWebhook
+
+type Config struct {
+	RefreshEvery time.Duration `envconfig:"WEBHOOK_REFRESH_INTERVAL" default:"5m"`
+}
 
 type Factory struct {
+	config           Config
 	httpClient       *http.Client
 	encryptedStorage models.EncryptedStorage
 }
 
-type PluginConfig struct {
-	URL     string            `json:"url"`
-	Headers map[string]string `json:"headers,omitempty"`
-}
+type PluginConfig = api.WebhookPluginConfig
 
 type StorablePluginConfig struct {
-	URL     string                              `json:"url"`
-	Headers map[string]models.EncryptedDataLink `json:"headers,omitempty"`
+	URL        string                              `json:"url"`
+	Headers    map[string]models.EncryptedDataLink `json:"headers,omitempty"`
+	ResourceID string                              `json:"resource_id"`
 }
 
 func Register(ctx context.Context, registry plugin.Registry, encryptedStorage models.EncryptedStorage) error {
+	var config Config
+	err := envconfig.Process("", &config)
+	if err != nil {
+		return errors.Wrap(ctx, err, "parse environment")
+	}
+
 	registry.Register(ctx, Name, Factory{
+		config:           config,
 		httpClient:       &http.Client{Timeout: 5 * time.Second},
 		encryptedStorage: encryptedStorage,
 	})
@@ -49,34 +62,68 @@ func (f Factory) Create(ctx context.Context, endpoint models.Endpoint) (plugin.P
 		httpClient = &http.Client{Timeout: 5 * time.Second}
 	}
 
+	refreshEvery := f.config.RefreshEvery
+	if refreshEvery <= 0 {
+		refreshEvery = 5 * time.Minute
+	}
+
 	return &Plugin{
-		endpoint:   endpoint,
-		cfg:        cfg,
-		httpClient: httpClient,
+		endpoint:     endpoint,
+		cfg:          cfg,
+		httpClient:   httpClient,
+		refreshEvery: refreshEvery,
 	}, nil
 }
 
-func (f Factory) Validate(ctx context.Context, endpoint models.Endpoint) error {
-	_, err := parseConfig(ctx, endpoint)
+func (f Factory) Validate(_ context.Context, endpoint models.Endpoint) error {
+	validations := errors.NewValidationErrorsBuilder()
+	var cfg PluginConfig
+	err := json.Unmarshal(endpoint.PluginConfig, &cfg)
 	if err != nil {
-		return errors.Wrap(ctx, err, "invalid plugin config")
+		validations.Set("plugin_config", "invalid JSON: "+err.Error())
+		return validations.Build()
+	}
+
+	if cfg.ResourceID == "" {
+		validations.Set("plugin_config.resource_id", "missing resource ID")
+	}
+
+	if cfg.URL == "" {
+		validations.Set("plugin_config.url", "missing URL")
+	} else {
+		parsedURL, err := url.ParseRequestURI(cfg.URL)
+		if err != nil {
+			validations.Set("plugin_config.url", "invalid URL")
+		} else {
+			scheme := strings.ToLower(parsedURL.Scheme)
+			if scheme != "http" && scheme != "https" {
+				validations.Set("plugin_config.url", "invalid URL scheme")
+			}
+		}
+	}
+
+	validationErr := validations.Build()
+	if validationErr != nil {
+		return validationErr
 	}
 
 	return nil
 }
 
 func (f Factory) Mutate(ctx context.Context, endpoint models.Endpoint) (json.RawMessage, error) {
-	cfg, err := parseConfig(ctx, endpoint)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err, "parse config")
-	}
-
 	if f.encryptedStorage == nil {
 		return nil, errors.New(ctx, "encrypted storage is required")
 	}
 
+	var cfg PluginConfig
+	err := json.Unmarshal(endpoint.PluginConfig, &cfg)
+	if err != nil {
+		return nil, errors.Wrap(ctx, err, "unmarshal plugin config")
+	}
+
 	storable := StorablePluginConfig{
-		URL: cfg.URL,
+		URL:        cfg.URL,
+		ResourceID: cfg.ResourceID,
 	}
 
 	if len(cfg.Headers) > 0 {
@@ -91,31 +138,9 @@ func (f Factory) Mutate(ctx context.Context, endpoint models.Endpoint) (json.Raw
 		storable.Headers[name] = encryptedHeader
 	}
 
-	raw, err := json.Marshal(storable)
-	if err != nil {
-		return nil, errors.Wrap(ctx, err, "marshal storable config")
-	}
+	raw, _ := json.Marshal(storable)
 
 	return raw, nil
-}
-
-func parseConfig(ctx context.Context, endpoint models.Endpoint) (PluginConfig, error) {
-	cfg := PluginConfig{}
-	err := json.Unmarshal(endpoint.PluginConfig, &cfg)
-	if err != nil {
-		return cfg, errors.Wrap(ctx, err, "unmarshal plugin config")
-	}
-
-	err = validateURL(ctx, cfg.URL)
-	if err != nil {
-		return cfg, err
-	}
-
-	if cfg.Headers == nil {
-		cfg.Headers = make(map[string]string)
-	}
-
-	return cfg, nil
 }
 
 func (f Factory) parseStorableConfig(ctx context.Context, endpoint models.Endpoint) (PluginConfig, error) {
@@ -125,14 +150,10 @@ func (f Factory) parseStorableConfig(ctx context.Context, endpoint models.Endpoi
 		return PluginConfig{}, errors.Wrap(ctx, err, "unmarshal plugin config")
 	}
 
-	err = validateURL(ctx, storable.URL)
-	if err != nil {
-		return PluginConfig{}, err
-	}
-
 	cfg := PluginConfig{
-		URL:     storable.URL,
-		Headers: make(map[string]string),
+		URL:        storable.URL,
+		Headers:    make(map[string]string),
+		ResourceID: storable.ResourceID,
 	}
 
 	if len(storable.Headers) == 0 {
@@ -153,27 +174,4 @@ func (f Factory) parseStorableConfig(ctx context.Context, endpoint models.Endpoi
 	}
 
 	return cfg, nil
-}
-
-func validateURL(ctx context.Context, configURL string) error {
-	builder := errors.NewValidationErrorsBuilder()
-	if configURL == "" {
-		builder.Set("url", "URL is required")
-	} else {
-		parsedURL, err := url.ParseRequestURI(configURL)
-		if err != nil {
-			builder.Set("url", "URL should be valid")
-		} else {
-			scheme := strings.ToLower(parsedURL.Scheme)
-			if scheme != "http" && scheme != "https" {
-				builder.Set("url", "URL scheme must be http or https")
-			}
-		}
-	}
-
-	if verr := builder.Build(); verr != nil {
-		return errors.Wrap(ctx, verr, "validate config")
-	}
-
-	return nil
 }

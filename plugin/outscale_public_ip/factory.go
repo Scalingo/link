@@ -11,12 +11,13 @@ import (
 	"github.com/kelseyhightower/envconfig"
 
 	"github.com/Scalingo/go-utils/errors/v2"
+	"github.com/Scalingo/link/v3/api"
 	"github.com/Scalingo/link/v3/models"
 	"github.com/Scalingo/link/v3/plugin"
 	"github.com/Scalingo/link/v3/services/outscale"
 )
 
-const Name = "outscale_public_ip"
+const Name = api.PluginOutscalePublicIP
 
 var outscaleRegions = []string{
 	"ap-northeast-1",
@@ -81,14 +82,7 @@ func (f Factory) Create(ctx context.Context, endpoint models.Endpoint) (plugin.P
 	}, nil
 }
 
-type PluginConfig struct {
-	AccessKey string `json:"access_key"`
-	SecretKey string `json:"secret_key"`
-	Region    string `json:"region"`
-
-	PublicIPID string `json:"public_ip_id"`
-	NICID      string `json:"nic_id"`
-}
+type PluginConfig = api.OutscalePublicIPPluginConfig
 
 func (f Factory) Validate(_ context.Context, endpoint models.Endpoint) error {
 	validations := errors.NewValidationErrorsBuilder()

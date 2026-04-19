@@ -21,7 +21,8 @@ func TestFactoryValidate(t *testing.T) {
 		{
 			name: "valid config",
 			cfg: PluginConfig{
-				URL: "https://example.com/webhook",
+				URL:        "https://example.com/webhook",
+				ResourceID: "resource-1",
 				Headers: map[string]string{
 					"Authorization": "Bearer token",
 				},
@@ -30,28 +31,38 @@ func TestFactoryValidate(t *testing.T) {
 		{
 			name:          "invalid json",
 			cfg:           `{"url":`,
-			expectedError: "unmarshal plugin config",
+			expectedError: "invalid JSON",
 		},
 		{
 			name: "missing URL",
 			cfg: PluginConfig{
-				Headers: map[string]string{"X-Test": "x"},
+				ResourceID: "resource-1",
+				Headers:    map[string]string{"X-Test": "x"},
 			},
-			expectedError: "URL is required",
+			expectedError: "missing URL",
+		},
+		{
+			name: "missing resource id",
+			cfg: PluginConfig{
+				URL: "https://example.com/webhook",
+			},
+			expectedError: "missing resource ID",
 		},
 		{
 			name: "invalid URL",
 			cfg: PluginConfig{
-				URL: "::::",
+				URL:        "::::",
+				ResourceID: "resource-1",
 			},
-			expectedError: "URL should be valid",
+			expectedError: "invalid URL",
 		},
 		{
 			name: "invalid scheme",
 			cfg: PluginConfig{
-				URL: "ftp://example.com",
+				URL:        "ftp://example.com",
+				ResourceID: "resource-1",
 			},
-			expectedError: "URL scheme must be http or https",
+			expectedError: "invalid URL scheme",
 		},
 	}
 
@@ -62,13 +73,11 @@ func TestFactoryValidate(t *testing.T) {
 			case string:
 				raw = []byte(v)
 			default:
-				var err error
-				raw, err = json.Marshal(tt.cfg)
-				require.NoError(t, err)
+				raw, _ = json.Marshal(tt.cfg)
 			}
 
 			endpoint := models.Endpoint{PluginConfig: raw}
-			err := Factory{}.Validate(context.Background(), endpoint)
+			err := Factory{}.Validate(t.Context(), endpoint)
 
 			if tt.expectedError != "" {
 				require.Error(t, err)
@@ -81,8 +90,7 @@ func TestFactoryValidate(t *testing.T) {
 }
 
 func TestFactoryCreate(t *testing.T) {
-	raw, err := json.Marshal(StorablePluginConfig{URL: "https://example.com/hook"})
-	require.NoError(t, err)
+	raw, _ := json.Marshal(StorablePluginConfig{URL: "https://example.com/hook", ResourceID: "resource-123"})
 
 	endpoint := models.Endpoint{
 		ID:           "vip-test-id",
@@ -90,26 +98,26 @@ func TestFactoryCreate(t *testing.T) {
 		PluginConfig: raw,
 	}
 
-	p, err := Factory{}.Create(context.Background(), endpoint)
+	p, err := Factory{}.Create(t.Context(), endpoint)
 	require.NoError(t, err)
 	require.NotNil(t, p)
 
-	assert.Equal(t, "vip-test-id", p.ElectionKey(context.Background()))
+	assert.Equal(t, "webhook/resource-123", p.ElectionKey(t.Context()))
 }
 
 func TestFactoryCreateWithEncryptedHeaders(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctrl := gomock.NewController(t)
 	mockStorage := models.NewMockEncryptedStorage(ctrl)
 
-	raw, err := json.Marshal(StorablePluginConfig{
-		URL: "https://example.com/hook",
+	raw, _ := json.Marshal(StorablePluginConfig{
+		URL:        "https://example.com/hook",
+		ResourceID: "resource-123",
 		Headers: map[string]models.EncryptedDataLink{
 			"Authorization": {ID: "auth-id", EndpointID: "vip-test-id"},
 			"X-App":         {ID: "x-app-id", EndpointID: "vip-test-id"},
 		},
 	})
-	require.NoError(t, err)
 
 	endpoint := models.Endpoint{
 		ID:           "vip-test-id",
@@ -120,34 +128,43 @@ func TestFactoryCreateWithEncryptedHeaders(t *testing.T) {
 	mockStorage.EXPECT().
 		Decrypt(ctx, models.EncryptedDataLink{ID: "auth-id", EndpointID: "vip-test-id"}, gomock.Any()).
 		DoAndReturn(func(_ context.Context, _ models.EncryptedDataLink, out any) error {
-			*(out.(*string)) = "Bearer token"
+			outStr, ok := out.(*string)
+			if !ok {
+				return assert.AnError
+			}
+			*outStr = "Bearer token"
 			return nil
 		})
 	mockStorage.EXPECT().
 		Decrypt(ctx, models.EncryptedDataLink{ID: "x-app-id", EndpointID: "vip-test-id"}, gomock.Any()).
 		DoAndReturn(func(_ context.Context, _ models.EncryptedDataLink, out any) error {
-			*(out.(*string)) = "link"
+			outStr, ok := out.(*string)
+			if !ok {
+				return assert.AnError
+			}
+			*outStr = "link"
 			return nil
 		})
 
 	p, err := Factory{encryptedStorage: mockStorage}.Create(ctx, endpoint)
 	require.NoError(t, err)
 	require.NotNil(t, p)
+	assert.Equal(t, "webhook/resource-123", p.ElectionKey(ctx))
 }
 
 func TestFactoryMutate(t *testing.T) {
-	ctx := context.Background()
+	ctx := t.Context()
 	ctrl := gomock.NewController(t)
 	mockStorage := models.NewMockEncryptedStorage(ctrl)
 
-	raw, err := json.Marshal(PluginConfig{
-		URL: "https://example.com/hook",
+	raw, _ := json.Marshal(PluginConfig{
+		URL:        "https://example.com/hook",
+		ResourceID: "resource-123",
 		Headers: map[string]string{
 			"Authorization": "Bearer token",
 			"X-App":         "link",
 		},
 	})
-	require.NoError(t, err)
 
 	endpoint := models.Endpoint{
 		ID:           "vip-test-id",
@@ -169,6 +186,7 @@ func TestFactoryMutate(t *testing.T) {
 	err = json.Unmarshal(mutated, &stored)
 	require.NoError(t, err)
 	assert.Equal(t, "https://example.com/hook", stored.URL)
+	assert.Equal(t, "resource-123", stored.ResourceID)
 	assert.Equal(t, "auth-id", stored.Headers["Authorization"].ID)
 	assert.Equal(t, "x-app-id", stored.Headers["X-App"].ID)
 	assert.Equal(t, "vip-test-id", stored.Headers["Authorization"].EndpointID)

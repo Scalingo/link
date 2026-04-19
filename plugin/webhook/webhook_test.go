@@ -1,10 +1,10 @@
 package webhook
 
 import (
-	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -24,13 +24,24 @@ func TestPluginOnStatusChange(t *testing.T) {
 
 			var body map[string]any
 			err := json.NewDecoder(r.Body).Decode(&body)
-			require.NoError(t, err)
+			if !assert.NoError(t, err) {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
 
 			assert.Equal(t, "vip-1", body["endpoint_id"])
 			assert.Equal(t, Name, body["plugin"])
 			assert.Equal(t, "ACTIVATED", body["status"])
-			_, err = time.Parse(time.RFC3339Nano, body["changed_at"].(string))
-			require.NoError(t, err)
+			changedAt, ok := body["changed_at"].(string)
+			if !assert.True(t, ok) {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
+			_, err = time.Parse(time.RFC3339Nano, changedAt)
+			if !assert.NoError(t, err) {
+				w.WriteHeader(http.StatusBadRequest)
+				return
+			}
 
 			w.WriteHeader(http.StatusNoContent)
 		}))
@@ -39,7 +50,8 @@ func TestPluginOnStatusChange(t *testing.T) {
 		p := &Plugin{
 			endpoint: models.Endpoint{ID: "vip-1", Plugin: Name},
 			cfg: PluginConfig{
-				URL: server.URL,
+				URL:        server.URL,
+				ResourceID: "resource-activate",
 				Headers: map[string]string{
 					"Authorization": "token-123",
 					"X-App":         "link",
@@ -48,7 +60,7 @@ func TestPluginOnStatusChange(t *testing.T) {
 			httpClient: server.Client(),
 		}
 
-		err := p.Activate(context.Background())
+		err := p.Activate(t.Context())
 		require.NoError(t, err)
 	})
 
@@ -60,12 +72,80 @@ func TestPluginOnStatusChange(t *testing.T) {
 
 		p := &Plugin{
 			endpoint:   models.Endpoint{ID: "vip-2", Plugin: Name},
-			cfg:        PluginConfig{URL: server.URL},
+			cfg:        PluginConfig{URL: server.URL, ResourceID: "resource-default"},
 			httpClient: server.Client(),
 		}
 
-		err := p.Deactivate(context.Background())
+		err := p.Deactivate(t.Context())
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "webhook returned non-success status code")
+	})
+}
+
+func TestPluginEnsure(t *testing.T) {
+	t.Run("already refreshed recently", func(t *testing.T) {
+		var calls atomic.Int32
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			calls.Add(1)
+			w.WriteHeader(http.StatusNoContent)
+		}))
+		defer server.Close()
+
+		p := &Plugin{
+			endpoint:        models.Endpoint{ID: "vip-ensure-1", Plugin: Name},
+			cfg:             PluginConfig{URL: server.URL, ResourceID: "resource-default"},
+			httpClient:      server.Client(),
+			refreshEvery:    time.Minute,
+			lastRefreshedAt: time.Now(),
+		}
+
+		err := p.Ensure(t.Context())
+		require.NoError(t, err)
+		assert.Equal(t, int32(0), calls.Load())
+	})
+
+	t.Run("send once in refresh window", func(t *testing.T) {
+		var calls atomic.Int32
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			calls.Add(1)
+			w.WriteHeader(http.StatusNoContent)
+		}))
+		defer server.Close()
+
+		p := &Plugin{
+			endpoint:     models.Endpoint{ID: "vip-ensure-2", Plugin: Name},
+			cfg:          PluginConfig{URL: server.URL, ResourceID: "resource-default"},
+			httpClient:   server.Client(),
+			refreshEvery: 30 * time.Minute,
+		}
+
+		err := p.Ensure(t.Context())
+		require.NoError(t, err)
+		err = p.Ensure(t.Context())
+		require.NoError(t, err)
+
+		assert.Equal(t, int32(1), calls.Load())
+	})
+
+	t.Run("refresh again after interval", func(t *testing.T) {
+		var calls atomic.Int32
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			calls.Add(1)
+			w.WriteHeader(http.StatusNoContent)
+		}))
+		defer server.Close()
+
+		p := &Plugin{
+			endpoint:        models.Endpoint{ID: "vip-ensure-3", Plugin: Name},
+			cfg:             PluginConfig{URL: server.URL, ResourceID: "resource-default"},
+			httpClient:      server.Client(),
+			refreshEvery:    time.Minute,
+			lastRefreshedAt: time.Now().Add(-2 * time.Minute),
+		}
+
+		err := p.Ensure(t.Context())
+		require.NoError(t, err)
+
+		assert.Equal(t, int32(1), calls.Load())
 	})
 }
