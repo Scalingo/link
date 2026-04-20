@@ -3,21 +3,26 @@ package webhook
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
+	cryptoutils "github.com/Scalingo/go-utils/crypto"
 	"github.com/Scalingo/go-utils/errors/v2"
 	"github.com/Scalingo/go-utils/logger"
 	"github.com/Scalingo/link/v3/api"
 	"github.com/Scalingo/link/v3/models"
+	"github.com/Scalingo/link/v3/utils"
 )
 
 type Plugin struct {
 	endpoint   models.Endpoint
 	cfg        PluginConfig
 	httpClient *http.Client
+	clock      utils.Clock
 
 	refreshEvery    time.Duration
 	lastRefreshedAt time.Time
@@ -36,7 +41,7 @@ func (p *Plugin) Activate(ctx context.Context) error {
 		return errors.Wrap(ctx, err, "send webhook")
 	}
 
-	p.lastRefreshedAt = time.Now()
+	p.lastRefreshedAt = p.clock.Now()
 	log.Info("Activation webhook sent successfully")
 
 	return nil
@@ -61,7 +66,7 @@ func (p *Plugin) Deactivate(ctx context.Context) error {
 
 func (p *Plugin) Ensure(ctx context.Context) error {
 	log := logger.Get(ctx)
-	if p.lastRefreshedAt.Add(p.refreshEvery).After(time.Now()) {
+	if p.lastRefreshedAt.Add(p.refreshEvery).After(p.clock.Now()) {
 		log.Debug("No need to refresh webhook yet")
 		return nil
 	}
@@ -81,9 +86,10 @@ func (p *Plugin) ElectionKey(_ context.Context) string {
 func (p *Plugin) buildPayload(status string) ([]byte, error) {
 	return json.Marshal(api.WebhookPluginStatusChangePayload{
 		EndpointID: p.endpoint.ID,
+		ResourceID: p.cfg.ResourceID,
 		Plugin:     p.endpoint.Plugin,
 		Status:     status,
-		ChangedAt:  time.Now().UTC(),
+		ChangedAt:  p.clock.Now().UTC(),
 	})
 }
 
@@ -96,6 +102,14 @@ func (p *Plugin) sendWebhook(ctx context.Context, payload []byte) error {
 	req.Header.Set("Content-Type", "application/json")
 	for name, value := range p.cfg.Headers {
 		req.Header.Set(name, value)
+	}
+
+	if p.cfg.Secret != "" {
+		timestamp := strconv.FormatInt(p.clock.Now().UTC().Unix(), 10)
+		signature := cryptoutils.HMAC256([]byte(p.cfg.Secret), []byte(timestamp+"."+string(payload)))
+
+		req.Header.Set("X-Link-Webhook-Timestamp", timestamp)
+		req.Header.Set("X-Link-Webhook-Signature", hex.EncodeToString(signature))
 	}
 
 	res, err := p.httpClient.Do(req)

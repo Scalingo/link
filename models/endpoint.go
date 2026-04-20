@@ -36,7 +36,7 @@ func (i Endpoint) ToAPIType() api.Endpoint {
 	// Retro Compatibility: Can be removed when all LinK switched to the v3 API and storage.
 	plugin := i.Plugin
 	if plugin == "" {
-		plugin = "arp"
+		plugin = api.PluginARP
 	}
 
 	return api.Endpoint{
