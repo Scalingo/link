@@ -1,7 +1,5 @@
 package api
 
-import "time"
-
 const (
 	Activated = "ACTIVATED"
 	Standby   = "STANDBY"
@@ -84,9 +82,8 @@ type OutscalePublicIPPluginConfig struct {
 }
 
 type WebhookPluginStatusChangePayload struct {
-	EndpointID string    `json:"endpoint_id"`
-	ResourceID string    `json:"resource_id"`
-	Plugin     string    `json:"plugin"`
-	Status     string    `json:"status"`
-	ChangedAt  time.Time `json:"changed_at"`
+	EndpointID string `json:"endpoint_id"`
+	ResourceID string `json:"resource_id"`
+	Plugin     string `json:"plugin"`
+	Status     string `json:"status"`
 }

@@ -14,7 +14,6 @@ import (
 	"github.com/Scalingo/link/v3/api"
 	"github.com/Scalingo/link/v3/models"
 	"github.com/Scalingo/link/v3/plugin"
-	"github.com/Scalingo/link/v3/utils"
 )
 
 const Name = api.PluginWebhook
@@ -26,7 +25,6 @@ type Config struct {
 type Factory struct {
 	config           Config
 	httpClient       *http.Client
-	clock            utils.Clock
 	encryptedStorage models.EncryptedStorage
 }
 
@@ -35,7 +33,7 @@ type PluginConfig = api.WebhookPluginConfig
 type StorablePluginConfig struct {
 	URL        string                              `json:"url"`
 	Headers    map[string]models.EncryptedDataLink `json:"headers,omitempty"`
-	Secret     models.EncryptedDataLink            `json:"secret,omitempty"`
+	Secret     models.EncryptedDataLink            `json:"secret"`
 	ResourceID string                              `json:"resource_id"`
 }
 
@@ -49,7 +47,6 @@ func Register(ctx context.Context, registry plugin.Registry, encryptedStorage mo
 	registry.Register(ctx, Name, Factory{
 		config:           config,
 		httpClient:       &http.Client{Timeout: 5 * time.Second},
-		clock:            utils.RealClock{},
 		encryptedStorage: encryptedStorage,
 	})
 	return nil
@@ -71,16 +68,10 @@ func (f Factory) Create(ctx context.Context, endpoint models.Endpoint) (plugin.P
 		refreshEvery = 5 * time.Minute
 	}
 
-	clock := f.clock
-	if clock == nil {
-		clock = utils.RealClock{}
-	}
-
 	return &Plugin{
 		endpoint:     endpoint,
 		cfg:          cfg,
 		httpClient:   httpClient,
-		clock:        clock,
 		refreshEvery: refreshEvery,
 	}, nil
 }

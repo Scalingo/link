@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/Scalingo/go-utils/errors/v2"
+	"github.com/Scalingo/go-utils/logger"
 )
 
 var _ Client = HTTPClient{}
@@ -67,6 +68,7 @@ func WithUserAgent(userAgent string) ClientOpt {
 }
 
 func (c HTTPClient) Version(ctx context.Context) (string, error) {
+	log := logger.Get(ctx)
 	req, err := c.getRequest(ctx, http.MethodGet, "/version", nil)
 	if err != nil {
 		return "", err
@@ -76,7 +78,12 @@ func (c HTTPClient) Version(ctx context.Context) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(ctx, err, "do request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("Fail to close response body")
+		}
+	}()
 	if resp.StatusCode != http.StatusOK {
 		return "", getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
@@ -90,6 +97,7 @@ func (c HTTPClient) Version(ctx context.Context) (string, error) {
 }
 
 func (c HTTPClient) ListEndpoints(ctx context.Context) ([]Endpoint, error) {
+	log := logger.Get(ctx)
 	req, err := c.getRequest(ctx, http.MethodGet, "/endpoints", nil)
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "create request")
@@ -99,7 +107,12 @@ func (c HTTPClient) ListEndpoints(ctx context.Context) ([]Endpoint, error) {
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "do request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("Fail to close response body")
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
@@ -116,6 +129,7 @@ func (c HTTPClient) ListEndpoints(ctx context.Context) ([]Endpoint, error) {
 }
 
 func (c HTTPClient) GetEndpoint(ctx context.Context, id string) (Endpoint, error) {
+	log := logger.Get(ctx)
 	req, err := c.getRequest(ctx, http.MethodGet, "/endpoints/"+id, nil)
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "create request")
@@ -125,7 +139,12 @@ func (c HTTPClient) GetEndpoint(ctx context.Context, id string) (Endpoint, error
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "do request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("Fail to close response body")
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
@@ -142,6 +161,7 @@ func (c HTTPClient) GetEndpoint(ctx context.Context, id string) (Endpoint, error
 }
 
 func (c HTTPClient) Failover(ctx context.Context, id string) error {
+	log := logger.Get(ctx)
 	req, err := c.getRequest(ctx, http.MethodPost, fmt.Sprintf("/endpoints/%s/failover", id), nil)
 	if err != nil {
 		return err
@@ -151,7 +171,12 @@ func (c HTTPClient) Failover(ctx context.Context, id string) error {
 	if err != nil {
 		return errors.Wrap(ctx, err, "do request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("Fail to close response body")
+		}
+	}()
 
 	if resp.StatusCode != http.StatusNoContent {
 		return getErrorFromBody(ctx, resp.StatusCode, resp.Body)
@@ -161,6 +186,7 @@ func (c HTTPClient) Failover(ctx context.Context, id string) error {
 }
 
 func (c HTTPClient) RotateEncryptionKey(ctx context.Context) error {
+	log := logger.Get(ctx)
 	req, err := c.getRequest(ctx, http.MethodPost, "/encrypted_storage/key_rotation", nil)
 	if err != nil {
 		return errors.Wrap(ctx, err, "create request")
@@ -170,7 +196,12 @@ func (c HTTPClient) RotateEncryptionKey(ctx context.Context) error {
 	if err != nil {
 		return errors.Wrap(ctx, err, "do request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("Fail to close response body")
+		}
+	}()
 	if resp.StatusCode != http.StatusNoContent {
 		return getErrorFromBody(ctx, resp.StatusCode, resp.Body)
 	}
@@ -179,6 +210,7 @@ func (c HTTPClient) RotateEncryptionKey(ctx context.Context) error {
 }
 
 func (c HTTPClient) AddEndpoint(ctx context.Context, params AddEndpointParams) (Endpoint, error) {
+	log := logger.Get(ctx)
 	buffer := &bytes.Buffer{}
 	err := json.NewEncoder(buffer).Encode(params)
 	if err != nil {
@@ -194,7 +226,12 @@ func (c HTTPClient) AddEndpoint(ctx context.Context, params AddEndpointParams) (
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "do request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("Fail to close response body")
+		}
+	}()
 
 	if resp.StatusCode != http.StatusCreated {
 		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
@@ -211,6 +248,7 @@ func (c HTTPClient) AddEndpoint(ctx context.Context, params AddEndpointParams) (
 }
 
 func (c HTTPClient) UpdateEndpoint(ctx context.Context, id string, params UpdateEndpointParams) (Endpoint, error) {
+	log := logger.Get(ctx)
 	buffer := &bytes.Buffer{}
 	err := json.NewEncoder(buffer).Encode(params)
 	if err != nil {
@@ -226,7 +264,12 @@ func (c HTTPClient) UpdateEndpoint(ctx context.Context, id string, params Update
 	if err != nil {
 		return Endpoint{}, errors.Wrap(ctx, err, "do request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("Fail to close response body")
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return Endpoint{}, getErrorFromBody(ctx, resp.StatusCode, resp.Body)
@@ -242,6 +285,7 @@ func (c HTTPClient) UpdateEndpoint(ctx context.Context, id string, params Update
 }
 
 func (c HTTPClient) RemoveEndpoint(ctx context.Context, id string) error {
+	log := logger.Get(ctx)
 	req, err := c.getRequest(ctx, http.MethodDelete, "/endpoints/"+id, nil)
 	if err != nil {
 		return errors.Wrap(ctx, err, "create request")
@@ -251,7 +295,12 @@ func (c HTTPClient) RemoveEndpoint(ctx context.Context, id string) error {
 	if err != nil {
 		return errors.Wrap(ctx, err, "do request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("Fail to close response body")
+		}
+	}()
 
 	if resp.StatusCode != http.StatusNoContent {
 		return getErrorFromBody(ctx, resp.StatusCode, resp.Body)
@@ -261,6 +310,7 @@ func (c HTTPClient) RemoveEndpoint(ctx context.Context, id string) error {
 }
 
 func (c HTTPClient) GetEndpointHosts(ctx context.Context, id string) ([]Host, error) {
+	log := logger.Get(ctx)
 	req, err := c.getRequest(ctx, http.MethodGet, "/endpoints/"+id+"/hosts", nil)
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "create request")
@@ -270,7 +320,12 @@ func (c HTTPClient) GetEndpointHosts(ctx context.Context, id string) ([]Host, er
 	if err != nil {
 		return nil, errors.Wrap(ctx, err, "do request")
 	}
-	defer resp.Body.Close()
+	defer func() {
+		err := resp.Body.Close()
+		if err != nil {
+			log.WithError(err).Error("Fail to close response body")
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, getErrorFromBody(ctx, resp.StatusCode, resp.Body)

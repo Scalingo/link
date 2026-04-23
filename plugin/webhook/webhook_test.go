@@ -14,19 +14,9 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
+	"github.com/Scalingo/link/v3/api"
 	"github.com/Scalingo/link/v3/models"
-	"github.com/Scalingo/link/v3/utils"
 )
-
-type staticClock struct {
-	now time.Time
-}
-
-func (c staticClock) Now() time.Time {
-	return c.now
-}
-
-var testClock = staticClock{now: time.Unix(1713616496, 0).UTC()}
 
 func TestPluginOnStatusChange(t *testing.T) {
 	t.Run("activate sends payload and configured headers", func(t *testing.T) {
@@ -35,7 +25,6 @@ func TestPluginOnStatusChange(t *testing.T) {
 			assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
 			assert.Equal(t, "token-123", r.Header.Get("Authorization"))
 			assert.Equal(t, "link", r.Header.Get("X-App"))
-			assert.Equal(t, "1713616496", r.Header.Get("X-Link-Webhook-Timestamp"))
 
 			payloadBytes, err := io.ReadAll(r.Body)
 			if !assert.NoError(t, err) {
@@ -43,31 +32,27 @@ func TestPluginOnStatusChange(t *testing.T) {
 				return
 			}
 
-			var body map[string]any
+			var body api.WebhookPluginStatusChangePayload
 			err = json.Unmarshal(payloadBytes, &body)
 			if !assert.NoError(t, err) {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
 
-			assert.Equal(t, "vip-1", body["endpoint_id"])
-			assert.Equal(t, "resource-activate", body["resource_id"])
-			assert.Equal(t, Name, body["plugin"])
-			assert.Equal(t, "ACTIVATED", body["status"])
-			changedAt, ok := body["changed_at"].(string)
-			if !assert.True(t, ok) {
+			assert.Equal(t, "vip-1", body.EndpointID)
+			assert.Equal(t, "resource-activate", body.ResourceID)
+			assert.Equal(t, Name, body.Plugin)
+			assert.Equal(t, api.Activated, body.Status)
+			timestamp := r.Header.Get(api.HeaderWebhookTimestamp)
+			if !assert.NotEmpty(t, timestamp) {
 				w.WriteHeader(http.StatusBadRequest)
 				return
 			}
-			_, err = time.Parse(time.RFC3339Nano, changedAt)
-			if !assert.NoError(t, err) {
-				w.WriteHeader(http.StatusBadRequest)
-				return
-			}
+
 			assert.Equal(
 				t,
-				hex.EncodeToString(cryptoutils.HMAC256([]byte("webhook-secret"), []byte("1713616496."+string(payloadBytes)))),
-				r.Header.Get("X-Link-Webhook-Signature"),
+				hex.EncodeToString(cryptoutils.HMAC256([]byte("webhook-secret"), []byte(timestamp+"."+string(payloadBytes)))),
+				r.Header.Get(api.HeaderWebhookSignature),
 			)
 
 			w.WriteHeader(http.StatusNoContent)
@@ -86,9 +71,7 @@ func TestPluginOnStatusChange(t *testing.T) {
 				},
 			},
 			httpClient: server.Client(),
-			clock:      utils.RealClock{},
 		}
-		p.clock = staticClock{now: time.Unix(1713616496, 0).UTC()}
 
 		err := p.Activate(t.Context())
 		require.NoError(t, err)
@@ -104,7 +87,6 @@ func TestPluginOnStatusChange(t *testing.T) {
 			endpoint:   models.Endpoint{ID: "vip-2", Plugin: Name},
 			cfg:        PluginConfig{URL: server.URL, ResourceID: "resource-default"},
 			httpClient: server.Client(),
-			clock:      staticClock{now: time.Unix(1713616496, 0).UTC()},
 		}
 
 		err := p.Deactivate(t.Context())
@@ -126,9 +108,8 @@ func TestPluginEnsure(t *testing.T) {
 			endpoint:        models.Endpoint{ID: "vip-ensure-1", Plugin: Name},
 			cfg:             PluginConfig{URL: server.URL, ResourceID: "resource-default"},
 			httpClient:      server.Client(),
-			clock:           testClock,
 			refreshEvery:    time.Minute,
-			lastRefreshedAt: testClock.Now(),
+			lastRefreshedAt: time.Now(),
 		}
 
 		err := p.Ensure(t.Context())
@@ -148,7 +129,6 @@ func TestPluginEnsure(t *testing.T) {
 			endpoint:     models.Endpoint{ID: "vip-ensure-2", Plugin: Name},
 			cfg:          PluginConfig{URL: server.URL, ResourceID: "resource-default"},
 			httpClient:   server.Client(),
-			clock:        testClock,
 			refreshEvery: 30 * time.Minute,
 		}
 
@@ -169,17 +149,20 @@ func TestPluginEnsure(t *testing.T) {
 		defer server.Close()
 
 		p := &Plugin{
-			endpoint:        models.Endpoint{ID: "vip-ensure-3", Plugin: Name},
-			cfg:             PluginConfig{URL: server.URL, ResourceID: "resource-default"},
-			httpClient:      server.Client(),
-			clock:           testClock,
-			refreshEvery:    time.Minute,
-			lastRefreshedAt: testClock.Now().Add(-2 * time.Minute),
+			endpoint:     models.Endpoint{ID: "vip-ensure-3", Plugin: Name},
+			cfg:          PluginConfig{URL: server.URL, ResourceID: "resource-default"},
+			httpClient:   server.Client(),
+			refreshEvery: time.Minute,
 		}
 
 		err := p.Ensure(t.Context())
 		require.NoError(t, err)
 
-		assert.Equal(t, int32(1), calls.Load())
+		p.lastRefreshedAt = time.Now().Add(-2 * time.Minute)
+
+		err = p.Ensure(t.Context())
+		require.NoError(t, err)
+
+		assert.Equal(t, int32(2), calls.Load())
 	})
 }
