@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	HeaderWebhookTimestamp = "X-Link-Webhook-Timestamp"
-	HeaderWebhookSignature = "X-Link-Webhook-Signature"
+	HeaderWebhookTimestamp  = "X-Link-Webhook-Timestamp"
+	HeaderWebhookSignature  = "X-Link-Webhook-Signature"
+	HeaderWebhookResourceID = "X-Link-Webhook-Resource-ID"
 )
 
 // ValidateWebhookRequest validates the webhook signature and decodes the payload.

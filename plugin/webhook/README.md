@@ -35,7 +35,8 @@ The plugin sends a `POST` request to `url` with a JSON body:
 }
 ```
 
-Requests include these authentication headers:
+Requests include these Link headers:
 
+- `X-Link-Webhook-Resource-ID`: the `resource_id` from the plugin config. Consumers can use it to derive the webhook key before reading the request body.
 - `X-Link-Webhook-Timestamp`: Unix timestamp in seconds.
 - `X-Link-Webhook-Signature`: hex-encoded HMAC-SHA256 of `"<timestamp>.<body>"`.

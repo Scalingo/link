@@ -23,6 +23,7 @@ func TestPluginOnStatusChange(t *testing.T) {
 		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			assert.Equal(t, http.MethodPost, r.Method)
 			assert.Equal(t, "application/json", r.Header.Get("Content-Type"))
+			assert.Equal(t, "resource-activate", r.Header.Get(api.HeaderWebhookResourceID))
 			assert.Equal(t, "token-123", r.Header.Get("Authorization"))
 			assert.Equal(t, "link", r.Header.Get("X-App"))
 

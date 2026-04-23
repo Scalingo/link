@@ -98,6 +98,7 @@ func (p *Plugin) sendWebhook(ctx context.Context, payload []byte) error {
 	}
 
 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set(api.HeaderWebhookResourceID, p.cfg.ResourceID)
 	for name, value := range p.cfg.Headers {
 		req.Header.Set(name, value)
 	}
