@@ -9,6 +9,7 @@ var (
 	ErrWebhookTimestampMissing   = errors.New("missing X-Link-Webhook-Timestamp header")
 	ErrWebhookSignatureMissing   = errors.New("missing X-Link-Webhook-Signature header")
 	ErrWebhookSignatureInvalid   = errors.New("invalid X-Link-Webhook-Signature header")
+	ErrWebhookSignatureMismatch  = errors.New("webhook signature does not match")
 	ErrWebhookPayloadInvalid     = errors.New("invalid webhook payload")
 )
 

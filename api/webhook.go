@@ -20,60 +20,62 @@ const (
 	HeaderWebhookResourceID = "X-Link-Webhook-Resource-ID"
 )
 
-// ValidateWebhookRequest validates the webhook signature and decodes the payload.
-// It returns whether the signature matches, the decoded payload, and an error for malformed requests.
+// ParseAndValidateWebhook decodes the payload and validates the webhook signature.
 // The request body is restored before returning so callers can read it again if needed.
-func ValidateWebhookRequest(
+func ParseAndValidateWebhook(
 	ctx context.Context,
 	req *http.Request,
 	secret string,
-) (bool, WebhookPluginStatusChangePayload, error) {
+) (WebhookPluginStatusChangePayload, error) {
 	if req == nil {
-		return false, WebhookPluginStatusChangePayload{}, ErrWebhookRequestNil
+		return WebhookPluginStatusChangePayload{}, ErrWebhookRequestNil
 	}
 
 	log := logger.Get(ctx)
 
 	if secret == "" {
-		return false, WebhookPluginStatusChangePayload{}, ErrWebhookSecretMissing
+		return WebhookPluginStatusChangePayload{}, ErrWebhookSecretMissing
 	}
 
 	if req.Body == nil {
-		return false, WebhookPluginStatusChangePayload{}, ErrWebhookRequestBodyMissing
+		return WebhookPluginStatusChangePayload{}, ErrWebhookRequestBodyMissing
 	}
 
 	body, err := io.ReadAll(req.Body)
 	closeErr := req.Body.Close()
 	if closeErr != nil {
-		log.WithError(closeErr).Error("fail to close webhook request body")
+		log.WithError(closeErr).Error("Close webhook request body")
 	}
 	req.Body = io.NopCloser(bytes.NewReader(body))
 	if err != nil {
-		return false, WebhookPluginStatusChangePayload{}, errors.Wrap(ctx, err, "read webhook body")
+		return WebhookPluginStatusChangePayload{}, errors.Wrap(ctx, err, "read webhook body")
 	}
 
 	var payload WebhookPluginStatusChangePayload
 	err = json.Unmarshal(body, &payload)
 	if err != nil {
-		return false, WebhookPluginStatusChangePayload{}, errors.Wrap(ctx, ErrWebhookPayloadInvalid, err.Error())
+		return WebhookPluginStatusChangePayload{}, errors.Wrap(ctx, ErrWebhookPayloadInvalid, err.Error())
 	}
 
 	timestamp := req.Header.Get(HeaderWebhookTimestamp)
 	if timestamp == "" {
-		return false, payload, ErrWebhookTimestampMissing
+		return payload, ErrWebhookTimestampMissing
 	}
 
 	signature := req.Header.Get(HeaderWebhookSignature)
 	if signature == "" {
-		return false, payload, ErrWebhookSignatureMissing
+		return payload, ErrWebhookSignatureMissing
 	}
 
 	signatureBytes, err := hex.DecodeString(signature)
 	if err != nil {
-		return false, payload, errors.Wrap(ctx, ErrWebhookSignatureInvalid, err.Error())
+		return payload, errors.Wrap(ctx, ErrWebhookSignatureInvalid, err.Error())
 	}
 
 	expectedSignature := cryptoutils.HMAC256([]byte(secret), []byte(timestamp+"."+string(body)))
+	if subtle.ConstantTimeCompare(signatureBytes, expectedSignature) != 1 {
+		return payload, ErrWebhookSignatureMismatch
+	}
 
-	return subtle.ConstantTimeCompare(signatureBytes, expectedSignature) == 1, payload, nil
+	return payload, nil
 }

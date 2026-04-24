@@ -13,7 +13,7 @@ import (
 	cryptoutils "github.com/Scalingo/go-utils/crypto"
 )
 
-func TestValidateWebhookRequest(t *testing.T) {
+func TestParseAndValidateWebhook(t *testing.T) {
 	payload := WebhookPluginStatusChangePayload{
 		EndpointID: "vip-1",
 		ResourceID: "resource-123",
@@ -26,10 +26,9 @@ func TestValidateWebhookRequest(t *testing.T) {
 	t.Run("validate matching signature", func(t *testing.T) {
 		req := newWebhookRequest(t, body)
 
-		valid, gotPayload, err := ValidateWebhookRequest(t.Context(), req, "shared-secret")
+		gotPayload, err := ParseAndValidateWebhook(t.Context(), req, "shared-secret")
 
 		require.NoError(t, err)
-		assert.True(t, valid)
 		assert.Equal(t, payload, gotPayload)
 
 		bodyAfterValidation, err := io.ReadAll(req.Body)
@@ -37,31 +36,28 @@ func TestValidateWebhookRequest(t *testing.T) {
 		assert.Equal(t, body, bodyAfterValidation)
 	})
 
-	t.Run("return payload on signature mismatch", func(t *testing.T) {
+	t.Run("reject signature mismatch", func(t *testing.T) {
 		req := newWebhookRequest(t, body)
 
-		valid, gotPayload, err := ValidateWebhookRequest(t.Context(), req, "wrong-secret")
+		gotPayload, err := ParseAndValidateWebhook(t.Context(), req, "wrong-secret")
 
-		require.NoError(t, err)
-		assert.False(t, valid)
+		require.ErrorIs(t, err, ErrWebhookSignatureMismatch)
 		assert.Equal(t, payload, gotPayload)
 	})
 
 	t.Run("reject nil request", func(t *testing.T) {
-		valid, gotPayload, err := ValidateWebhookRequest(t.Context(), nil, "shared-secret")
+		gotPayload, err := ParseAndValidateWebhook(t.Context(), nil, "shared-secret")
 
 		require.ErrorIs(t, err, ErrWebhookRequestNil)
-		assert.False(t, valid)
 		assert.Equal(t, WebhookPluginStatusChangePayload{}, gotPayload)
 	})
 
 	t.Run("reject missing secret", func(t *testing.T) {
 		req := newWebhookRequest(t, body)
 
-		valid, gotPayload, err := ValidateWebhookRequest(t.Context(), req, "")
+		gotPayload, err := ParseAndValidateWebhook(t.Context(), req, "")
 
 		require.ErrorIs(t, err, ErrWebhookSecretMissing)
-		assert.False(t, valid)
 		assert.Equal(t, WebhookPluginStatusChangePayload{}, gotPayload)
 	})
 
@@ -70,20 +66,18 @@ func TestValidateWebhookRequest(t *testing.T) {
 		require.NoError(t, err)
 		req.Body = nil
 
-		valid, gotPayload, err := ValidateWebhookRequest(t.Context(), req, "shared-secret")
+		gotPayload, err := ParseAndValidateWebhook(t.Context(), req, "shared-secret")
 
 		require.ErrorIs(t, err, ErrWebhookRequestBodyMissing)
-		assert.False(t, valid)
 		assert.Equal(t, WebhookPluginStatusChangePayload{}, gotPayload)
 	})
 
 	t.Run("reject invalid payload", func(t *testing.T) {
 		req := newWebhookRequest(t, []byte(`{"endpoint_id"`))
 
-		valid, gotPayload, err := ValidateWebhookRequest(t.Context(), req, "shared-secret")
+		gotPayload, err := ParseAndValidateWebhook(t.Context(), req, "shared-secret")
 
 		require.ErrorIs(t, err, ErrWebhookPayloadInvalid)
-		assert.False(t, valid)
 		assert.Equal(t, WebhookPluginStatusChangePayload{}, gotPayload)
 	})
 
@@ -91,10 +85,9 @@ func TestValidateWebhookRequest(t *testing.T) {
 		req := newWebhookRequest(t, body)
 		req.Header.Del(HeaderWebhookTimestamp)
 
-		valid, gotPayload, err := ValidateWebhookRequest(t.Context(), req, "shared-secret")
+		gotPayload, err := ParseAndValidateWebhook(t.Context(), req, "shared-secret")
 
 		require.ErrorIs(t, err, ErrWebhookTimestampMissing)
-		assert.False(t, valid)
 		assert.Equal(t, payload, gotPayload)
 	})
 
@@ -102,10 +95,9 @@ func TestValidateWebhookRequest(t *testing.T) {
 		req := newWebhookRequest(t, body)
 		req.Header.Del(HeaderWebhookSignature)
 
-		valid, gotPayload, err := ValidateWebhookRequest(t.Context(), req, "shared-secret")
+		gotPayload, err := ParseAndValidateWebhook(t.Context(), req, "shared-secret")
 
 		require.ErrorIs(t, err, ErrWebhookSignatureMissing)
-		assert.False(t, valid)
 		assert.Equal(t, payload, gotPayload)
 	})
 
@@ -113,10 +105,9 @@ func TestValidateWebhookRequest(t *testing.T) {
 		req := newWebhookRequest(t, body)
 		req.Header.Set(HeaderWebhookSignature, "not-hex")
 
-		valid, gotPayload, err := ValidateWebhookRequest(t.Context(), req, "shared-secret")
+		gotPayload, err := ParseAndValidateWebhook(t.Context(), req, "shared-secret")
 
 		require.ErrorIs(t, err, ErrWebhookSignatureInvalid)
-		assert.False(t, valid)
 		assert.Equal(t, payload, gotPayload)
 	})
 }
