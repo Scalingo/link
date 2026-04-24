@@ -8,13 +8,13 @@ import (
 	"github.com/vishvananda/netlink"
 
 	"github.com/Scalingo/go-utils/errors/v2"
-
+	"github.com/Scalingo/link/v3/api"
 	"github.com/Scalingo/link/v3/models"
 	"github.com/Scalingo/link/v3/network"
 	"github.com/Scalingo/link/v3/plugin"
 )
 
-const Name = "arp"
+const Name = api.PluginARP
 
 type Config struct {
 	// Number of gratuitous ARP (GARP) packets sent when the state becomes 'ACTIVATED'
@@ -47,9 +47,7 @@ type Factory struct {
 	netInterface network.Interface
 }
 
-type PluginConfig struct {
-	IP string `json:"ip"`
-}
+type PluginConfig = api.ARPPluginConfig
 
 func (f Factory) Create(ctx context.Context, endpoint models.Endpoint) (plugin.Plugin, error) {
 	var cfg PluginConfig

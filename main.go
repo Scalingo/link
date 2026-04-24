@@ -22,6 +22,7 @@ import (
 	"github.com/Scalingo/link/v3/plugin"
 	"github.com/Scalingo/link/v3/plugin/arp"
 	outscalepublicip "github.com/Scalingo/link/v3/plugin/outscale_public_ip"
+	"github.com/Scalingo/link/v3/plugin/webhook"
 	"github.com/Scalingo/link/v3/scheduler"
 	"github.com/Scalingo/link/v3/web"
 )
@@ -178,6 +179,11 @@ func initPlugins(ctx context.Context, registry plugin.Registry, encryptedStorage
 	err = outscalepublicip.Register(ctx, registry, encryptedStorage)
 	if err != nil {
 		return errors.Wrap(ctx, err, "register outscale public ip plugin")
+	}
+
+	err = webhook.Register(ctx, registry, encryptedStorage)
+	if err != nil {
+		return errors.Wrap(ctx, err, "register webhook plugin")
 	}
 
 	return nil

@@ -108,6 +108,7 @@ LinK configuration is entirely done by setting environment variables.
 
 - [ARP Plugin](plugin/arp/README.md): This plugin manages IPs and announces them on the local network using ARP.
 - [Outscale Public IP Plugin](plugin/outscale_public_ip/README.md): This plugin manages the Outscale Public IPs.
+- [Webhook Plugin](plugin/webhook/README.md): This plugin sends HTTP notifications on endpoint status changes.
 
 ## Encrypted storage
 
