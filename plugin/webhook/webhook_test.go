@@ -10,9 +10,10 @@ import (
 	"testing"
 	"time"
 
-	cryptoutils "github.com/Scalingo/go-utils/crypto"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	cryptoutils "github.com/Scalingo/go-utils/crypto"
 
 	"github.com/Scalingo/link/v3/api"
 	"github.com/Scalingo/link/v3/models"
