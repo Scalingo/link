@@ -2,6 +2,12 @@
 
 ## To be Released
 
+## v1.2.2
+
+* chore(go): upgrade to Go 1.25.0
+* build(deps): bump etcd client packages from 3.6.0 to 3.6.10
+* build(deps): update indirect dependencies, including `google.golang.org/grpc` to 1.80.0
+
 ## v1.2.1
 
 * chore(go): corrective bump - Go version regression from 1.24.3 to 1.24
