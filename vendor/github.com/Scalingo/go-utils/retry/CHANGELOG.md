@@ -2,6 +2,10 @@
 
 ## To be Released
 
+## v1.4.1
+
+* chore(deps): bump multiple dependencies
+
 ## v1.4.0
 
 * feat(retry): add exponential backoff wait duration
