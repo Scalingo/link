@@ -46,7 +46,7 @@ func Register(ctx context.Context, registry plugin.Registry, encryptedStorage mo
 
 	registry.Register(ctx, Name, Factory{
 		config:           config,
-		httpClient:       &http.Client{Timeout: 5 * time.Second},
+		httpClient:       newHTTPClient(),
 		encryptedStorage: encryptedStorage,
 	})
 	return nil
@@ -60,7 +60,7 @@ func (f Factory) Create(ctx context.Context, endpoint models.Endpoint) (plugin.P
 
 	httpClient := f.httpClient
 	if httpClient == nil {
-		httpClient = &http.Client{Timeout: 5 * time.Second}
+		httpClient = newHTTPClient()
 	}
 
 	refreshEvery := f.config.RefreshEvery
@@ -74,6 +74,15 @@ func (f Factory) Create(ctx context.Context, endpoint models.Endpoint) (plugin.P
 		httpClient:   httpClient,
 		refreshEvery: refreshEvery,
 	}, nil
+}
+
+func newHTTPClient() *http.Client {
+	return &http.Client{
+		Timeout: 5 * time.Second,
+		CheckRedirect: func(_ *http.Request, _ []*http.Request) error {
+			return http.ErrUseLastResponse
+		},
+	}
 }
 
 func (f Factory) Validate(_ context.Context, endpoint models.Endpoint) error {

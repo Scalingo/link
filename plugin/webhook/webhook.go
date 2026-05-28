@@ -92,6 +92,8 @@ func (p *Plugin) buildPayload(status string) ([]byte, error) {
 
 func (p *Plugin) sendWebhook(ctx context.Context, payload []byte) error {
 	log := logger.Get(ctx)
+	// URL should be trusted and should be validated by the entity
+	// creating the endpoint with plugin webhook
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, p.cfg.URL, bytes.NewReader(payload))
 	if err != nil {
 		return errors.Wrap(ctx, err, "create webhook request")
