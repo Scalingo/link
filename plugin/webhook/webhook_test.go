@@ -95,6 +95,34 @@ func TestPluginOnStatusChange(t *testing.T) {
 		require.Error(t, err)
 		assert.Contains(t, err.Error(), "webhook returned non-success status code")
 	})
+
+	t.Run("does not follow redirects", func(t *testing.T) {
+		var redirectCalls atomic.Int32
+		var targetCalls atomic.Int32
+		target := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			targetCalls.Add(1)
+			w.WriteHeader(http.StatusNoContent)
+		}))
+		defer target.Close()
+
+		redirect := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			redirectCalls.Add(1)
+			http.Redirect(w, r, target.URL, http.StatusFound)
+		}))
+		defer redirect.Close()
+
+		p := &Plugin{
+			endpoint:   models.Endpoint{ID: "vip-redirect", Plugin: Name},
+			cfg:        PluginConfig{URL: redirect.URL, ResourceID: "resource-redirect"},
+			httpClient: newHTTPClient(),
+		}
+
+		err := p.Activate(t.Context())
+		require.Error(t, err)
+		assert.Contains(t, err.Error(), "webhook returned non-success status code: 302")
+		assert.Equal(t, int32(1), redirectCalls.Load())
+		assert.Equal(t, int32(0), targetCalls.Load())
+	})
 }
 
 func TestPluginEnsure(t *testing.T) {
