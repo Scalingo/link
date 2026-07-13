@@ -15,7 +15,8 @@ services:
       PORT: 1313
     command: reflex -r '\.go$$' -R '_test\.go$$' -s -- sh -c 'go build -buildvcs=false && ./link'
     depends_on:
-      - etcd
+      etcd:
+        condition: service_healthy
   link-2:
     build: .
     volumes:
@@ -32,7 +33,8 @@ services:
       PORT: 1314
     command: reflex --all -r 'link' -s -- sh -c './link'
     depends_on:
-      - etcd
+      etcd:
+        condition: service_healthy
   link-3:
     build: .
     volumes:
@@ -49,7 +51,8 @@ services:
       PORT: 1315
     command: reflex --all -r 'link' -s -- sh -c './link'
     depends_on:
-      - etcd
+      etcd:
+        condition: service_healthy
   link-4:
     build: .
     volumes:
@@ -66,7 +69,8 @@ services:
       PORT: 1316
     command: reflex --all -r 'link' -s -- sh -c './link'
     depends_on:
-      - etcd
+      etcd:
+        condition: service_healthy
   link-5:
     build: .
     volumes:
@@ -83,7 +87,8 @@ services:
       PORT: 1317
     command: reflex --all -r 'link' -s -- sh -c './link'
     depends_on:
-      - etcd
+      etcd:
+        condition: service_healthy
   link-6:
     build: .
     volumes:
@@ -100,7 +105,8 @@ services:
       PORT: 1318
     command: reflex --all -r 'link' -s -- sh -c './link'
     depends_on:
-      - etcd
+      etcd:
+        condition: service_healthy
 
   test:
     build: .
@@ -121,3 +127,9 @@ services:
     command: etcd --name etcd-cluster --data-dir /data/etcd --listen-client-urls http://0.0.0.0:2379 --listen-peer-urls http://0.0.0.0:2380 --advertise-client-urls http://172.17.0.1:32379
     ports:
       - 32379:2379
+    healthcheck:
+      test: ["CMD", "etcdctl", "--endpoints=http://127.0.0.1:2379", "endpoint", "health"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+      start_period: 10s
