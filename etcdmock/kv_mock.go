@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockKV is a mock of KV interface.
 type MockKV struct {
 	ctrl     *gomock.Controller
 	recorder *MockKVMockRecorder
+	isgomock struct{}
 }
 
 // MockKVMockRecorder is the mock recorder for MockKV.
@@ -36,10 +37,10 @@ func (m *MockKV) EXPECT() *MockKVMockRecorder {
 }
 
 // Compact mocks base method.
-func (m *MockKV) Compact(arg0 context.Context, arg1 int64, arg2 ...clientv3.CompactOption) (*clientv3.CompactResponse, error) {
+func (m *MockKV) Compact(ctx context.Context, rev int64, opts ...clientv3.CompactOption) (*clientv3.CompactResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, rev}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Compact", varargs...)
@@ -49,17 +50,17 @@ func (m *MockKV) Compact(arg0 context.Context, arg1 int64, arg2 ...clientv3.Comp
 }
 
 // Compact indicates an expected call of Compact.
-func (mr *MockKVMockRecorder) Compact(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+func (mr *MockKVMockRecorder) Compact(ctx, rev any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, rev}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Compact", reflect.TypeOf((*MockKV)(nil).Compact), varargs...)
 }
 
 // Delete mocks base method.
-func (m *MockKV) Delete(arg0 context.Context, arg1 string, arg2 ...clientv3.OpOption) (*clientv3.DeleteResponse, error) {
+func (m *MockKV) Delete(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.DeleteResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, key}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Delete", varargs...)
@@ -69,32 +70,32 @@ func (m *MockKV) Delete(arg0 context.Context, arg1 string, arg2 ...clientv3.OpOp
 }
 
 // Delete indicates an expected call of Delete.
-func (mr *MockKVMockRecorder) Delete(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+func (mr *MockKVMockRecorder) Delete(ctx, key any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, key}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockKV)(nil).Delete), varargs...)
 }
 
 // Do mocks base method.
-func (m *MockKV) Do(arg0 context.Context, arg1 clientv3.Op) (clientv3.OpResponse, error) {
+func (m *MockKV) Do(ctx context.Context, op clientv3.Op) (clientv3.OpResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Do", arg0, arg1)
+	ret := m.ctrl.Call(m, "Do", ctx, op)
 	ret0, _ := ret[0].(clientv3.OpResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Do indicates an expected call of Do.
-func (mr *MockKVMockRecorder) Do(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockKVMockRecorder) Do(ctx, op any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockKV)(nil).Do), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Do", reflect.TypeOf((*MockKV)(nil).Do), ctx, op)
 }
 
 // Get mocks base method.
-func (m *MockKV) Get(arg0 context.Context, arg1 string, arg2 ...clientv3.OpOption) (*clientv3.GetResponse, error) {
+func (m *MockKV) Get(ctx context.Context, key string, opts ...clientv3.OpOption) (*clientv3.GetResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
+	varargs := []any{ctx, key}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Get", varargs...)
@@ -104,17 +105,17 @@ func (m *MockKV) Get(arg0 context.Context, arg1 string, arg2 ...clientv3.OpOptio
 }
 
 // Get indicates an expected call of Get.
-func (mr *MockKVMockRecorder) Get(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+func (mr *MockKVMockRecorder) Get(ctx, key any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	varargs := append([]any{ctx, key}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockKV)(nil).Get), varargs...)
 }
 
 // Put mocks base method.
-func (m *MockKV) Put(arg0 context.Context, arg1, arg2 string, arg3 ...clientv3.OpOption) (*clientv3.PutResponse, error) {
+func (m *MockKV) Put(ctx context.Context, key, val string, opts ...clientv3.OpOption) (*clientv3.PutResponse, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1, arg2}
-	for _, a := range arg3 {
+	varargs := []any{ctx, key, val}
+	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "Put", varargs...)
@@ -124,22 +125,22 @@ func (m *MockKV) Put(arg0 context.Context, arg1, arg2 string, arg3 ...clientv3.O
 }
 
 // Put indicates an expected call of Put.
-func (mr *MockKVMockRecorder) Put(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+func (mr *MockKVMockRecorder) Put(ctx, key, val any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	varargs := append([]any{ctx, key, val}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Put", reflect.TypeOf((*MockKV)(nil).Put), varargs...)
 }
 
 // Txn mocks base method.
-func (m *MockKV) Txn(arg0 context.Context) clientv3.Txn {
+func (m *MockKV) Txn(ctx context.Context) clientv3.Txn {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Txn", arg0)
+	ret := m.ctrl.Call(m, "Txn", ctx)
 	ret0, _ := ret[0].(clientv3.Txn)
 	return ret0
 }
 
 // Txn indicates an expected call of Txn.
-func (mr *MockKVMockRecorder) Txn(arg0 interface{}) *gomock.Call {
+func (mr *MockKVMockRecorder) Txn(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Txn", reflect.TypeOf((*MockKV)(nil).Txn), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Txn", reflect.TypeOf((*MockKV)(nil).Txn), ctx)
 }

@@ -8,13 +8,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockWatcher is a mock of Watcher interface.
 type MockWatcher struct {
 	ctrl     *gomock.Controller
 	recorder *MockWatcherMockRecorder
+	isgomock struct{}
 }
 
 // MockWatcherMockRecorder is the mock recorder for MockWatcher.
@@ -35,25 +36,25 @@ func (m *MockWatcher) EXPECT() *MockWatcherMockRecorder {
 }
 
 // Start mocks base method.
-func (m *MockWatcher) Start(arg0 context.Context) {
+func (m *MockWatcher) Start(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Start", arg0)
+	m.ctrl.Call(m, "Start", ctx)
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockWatcherMockRecorder) Start(arg0 interface{}) *gomock.Call {
+func (mr *MockWatcherMockRecorder) Start(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockWatcher)(nil).Start), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockWatcher)(nil).Start), ctx)
 }
 
 // Stop mocks base method.
-func (m *MockWatcher) Stop(arg0 context.Context) {
+func (m *MockWatcher) Stop(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Stop", arg0)
+	m.ctrl.Call(m, "Stop", ctx)
 }
 
 // Stop indicates an expected call of Stop.
-func (mr *MockWatcherMockRecorder) Stop(arg0 interface{}) *gomock.Call {
+func (mr *MockWatcherMockRecorder) Stop(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockWatcher)(nil).Stop), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockWatcher)(nil).Stop), ctx)
 }

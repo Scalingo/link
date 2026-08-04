@@ -11,13 +11,14 @@ import (
 
 	models "github.com/Scalingo/link/v3/models"
 	plugin "github.com/Scalingo/link/v3/plugin"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockRegistry is a mock of Registry interface.
 type MockRegistry struct {
 	ctrl     *gomock.Controller
 	recorder *MockRegistryMockRecorder
+	isgomock struct{}
 }
 
 // MockRegistryMockRecorder is the mock recorder for MockRegistry.
@@ -38,57 +39,57 @@ func (m *MockRegistry) EXPECT() *MockRegistryMockRecorder {
 }
 
 // Create mocks base method.
-func (m *MockRegistry) Create(arg0 context.Context, arg1 models.Endpoint) (plugin.Plugin, error) {
+func (m *MockRegistry) Create(ctx context.Context, endpoint models.Endpoint) (plugin.Plugin, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Create", arg0, arg1)
+	ret := m.ctrl.Call(m, "Create", ctx, endpoint)
 	ret0, _ := ret[0].(plugin.Plugin)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Create indicates an expected call of Create.
-func (mr *MockRegistryMockRecorder) Create(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRegistryMockRecorder) Create(ctx, endpoint any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRegistry)(nil).Create), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Create", reflect.TypeOf((*MockRegistry)(nil).Create), ctx, endpoint)
 }
 
 // Mutate mocks base method.
-func (m *MockRegistry) Mutate(arg0 context.Context, arg1 models.Endpoint) (json.RawMessage, error) {
+func (m *MockRegistry) Mutate(ctx context.Context, endpoint models.Endpoint) (json.RawMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Mutate", arg0, arg1)
+	ret := m.ctrl.Call(m, "Mutate", ctx, endpoint)
 	ret0, _ := ret[0].(json.RawMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Mutate indicates an expected call of Mutate.
-func (mr *MockRegistryMockRecorder) Mutate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRegistryMockRecorder) Mutate(ctx, endpoint any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Mutate", reflect.TypeOf((*MockRegistry)(nil).Mutate), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Mutate", reflect.TypeOf((*MockRegistry)(nil).Mutate), ctx, endpoint)
 }
 
 // Register mocks base method.
-func (m *MockRegistry) Register(arg0 context.Context, arg1 string, arg2 plugin.Factory) {
+func (m *MockRegistry) Register(ctx context.Context, pluginName string, factory plugin.Factory) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Register", arg0, arg1, arg2)
+	m.ctrl.Call(m, "Register", ctx, pluginName, factory)
 }
 
 // Register indicates an expected call of Register.
-func (mr *MockRegistryMockRecorder) Register(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockRegistryMockRecorder) Register(ctx, pluginName, factory any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockRegistry)(nil).Register), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockRegistry)(nil).Register), ctx, pluginName, factory)
 }
 
 // Validate mocks base method.
-func (m *MockRegistry) Validate(arg0 context.Context, arg1 models.Endpoint) error {
+func (m *MockRegistry) Validate(ctx context.Context, endpoint models.Endpoint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Validate", arg0, arg1)
+	ret := m.ctrl.Call(m, "Validate", ctx, endpoint)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Validate indicates an expected call of Validate.
-func (mr *MockRegistryMockRecorder) Validate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockRegistryMockRecorder) Validate(ctx, endpoint any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockRegistry)(nil).Validate), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockRegistry)(nil).Validate), ctx, endpoint)
 }

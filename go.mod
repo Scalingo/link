@@ -15,7 +15,6 @@ require (
 	github.com/Scalingo/link/v2 v2.0.7
 	github.com/cenkalti/backoff/v5 v5.0.3
 	github.com/gofrs/uuid/v5 v5.4.0
-	github.com/golang/mock v1.6.0
 	github.com/gorilla/mux v1.8.1
 	github.com/j-keck/arping v1.0.3
 	github.com/kelseyhightower/envconfig v1.4.0
@@ -30,6 +29,7 @@ require (
 	github.com/vishvananda/netlink v1.3.1
 	go.etcd.io/etcd/api/v3 v3.6.12
 	go.etcd.io/etcd/client/v3 v3.6.12
+	go.uber.org/mock v0.6.0
 )
 
 require (

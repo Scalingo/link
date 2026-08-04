@@ -8,13 +8,14 @@ import (
 	reflect "reflect"
 	time "time"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockBackoff is a mock of Backoff interface.
 type MockBackoff struct {
 	ctrl     *gomock.Controller
 	recorder *MockBackoffMockRecorder
+	isgomock struct{}
 }
 
 // MockBackoffMockRecorder is the mock recorder for MockBackoff.

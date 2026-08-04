@@ -1,5 +1,4 @@
 {
-   "base_directory": "github.com/Scalingo/link",
    "base_package": "github.com/Scalingo/link/v3",
    "mocks": [
       {

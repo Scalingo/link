@@ -10,13 +10,14 @@ import (
 
 	endpoint "github.com/Scalingo/link/v3/endpoint"
 	models "github.com/Scalingo/link/v3/models"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockCreator is a mock of Creator interface.
 type MockCreator struct {
 	ctrl     *gomock.Controller
 	recorder *MockCreatorMockRecorder
+	isgomock struct{}
 }
 
 // MockCreatorMockRecorder is the mock recorder for MockCreator.
@@ -37,16 +38,16 @@ func (m *MockCreator) EXPECT() *MockCreatorMockRecorder {
 }
 
 // CreateEndpoint mocks base method.
-func (m *MockCreator) CreateEndpoint(arg0 context.Context, arg1 endpoint.CreateEndpointParams) (models.Endpoint, error) {
+func (m *MockCreator) CreateEndpoint(ctx context.Context, params endpoint.CreateEndpointParams) (models.Endpoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CreateEndpoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "CreateEndpoint", ctx, params)
 	ret0, _ := ret[0].(models.Endpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // CreateEndpoint indicates an expected call of CreateEndpoint.
-func (mr *MockCreatorMockRecorder) CreateEndpoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockCreatorMockRecorder) CreateEndpoint(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEndpoint", reflect.TypeOf((*MockCreator)(nil).CreateEndpoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateEndpoint", reflect.TypeOf((*MockCreator)(nil).CreateEndpoint), ctx, params)
 }

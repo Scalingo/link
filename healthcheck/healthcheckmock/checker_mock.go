@@ -8,13 +8,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockChecker is a mock of Checker interface.
 type MockChecker struct {
 	ctrl     *gomock.Controller
 	recorder *MockCheckerMockRecorder
+	isgomock struct{}
 }
 
 // MockCheckerMockRecorder is the mock recorder for MockChecker.
@@ -35,16 +36,16 @@ func (m *MockChecker) EXPECT() *MockCheckerMockRecorder {
 }
 
 // IsHealthy mocks base method.
-func (m *MockChecker) IsHealthy(arg0 context.Context) (bool, error) {
+func (m *MockChecker) IsHealthy(ctx context.Context) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IsHealthy", arg0)
+	ret := m.ctrl.Call(m, "IsHealthy", ctx)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // IsHealthy indicates an expected call of IsHealthy.
-func (mr *MockCheckerMockRecorder) IsHealthy(arg0 interface{}) *gomock.Call {
+func (mr *MockCheckerMockRecorder) IsHealthy(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsHealthy", reflect.TypeOf((*MockChecker)(nil).IsHealthy), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsHealthy", reflect.TypeOf((*MockChecker)(nil).IsHealthy), ctx)
 }

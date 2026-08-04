@@ -9,13 +9,14 @@ import (
 	reflect "reflect"
 
 	api "github.com/Scalingo/link/v3/api"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockClient is a mock of Client interface.
 type MockClient struct {
 	ctrl     *gomock.Controller
 	recorder *MockClientMockRecorder
+	isgomock struct{}
 }
 
 // MockClientMockRecorder is the mock recorder for MockClient.
@@ -36,133 +37,133 @@ func (m *MockClient) EXPECT() *MockClientMockRecorder {
 }
 
 // AddEndpoint mocks base method.
-func (m *MockClient) AddEndpoint(arg0 context.Context, arg1 api.AddEndpointParams) (api.Endpoint, error) {
+func (m *MockClient) AddEndpoint(ctx context.Context, params api.AddEndpointParams) (api.Endpoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddEndpoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddEndpoint", ctx, params)
 	ret0, _ := ret[0].(api.Endpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddEndpoint indicates an expected call of AddEndpoint.
-func (mr *MockClientMockRecorder) AddEndpoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) AddEndpoint(ctx, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEndpoint", reflect.TypeOf((*MockClient)(nil).AddEndpoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEndpoint", reflect.TypeOf((*MockClient)(nil).AddEndpoint), ctx, params)
 }
 
 // Failover mocks base method.
-func (m *MockClient) Failover(arg0 context.Context, arg1 string) error {
+func (m *MockClient) Failover(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Failover", arg0, arg1)
+	ret := m.ctrl.Call(m, "Failover", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Failover indicates an expected call of Failover.
-func (mr *MockClientMockRecorder) Failover(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) Failover(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Failover", reflect.TypeOf((*MockClient)(nil).Failover), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Failover", reflect.TypeOf((*MockClient)(nil).Failover), ctx, id)
 }
 
 // GetEndpoint mocks base method.
-func (m *MockClient) GetEndpoint(arg0 context.Context, arg1 string) (api.Endpoint, error) {
+func (m *MockClient) GetEndpoint(ctx context.Context, id string) (api.Endpoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEndpoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetEndpoint", ctx, id)
 	ret0, _ := ret[0].(api.Endpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEndpoint indicates an expected call of GetEndpoint.
-func (mr *MockClientMockRecorder) GetEndpoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) GetEndpoint(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpoint", reflect.TypeOf((*MockClient)(nil).GetEndpoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpoint", reflect.TypeOf((*MockClient)(nil).GetEndpoint), ctx, id)
 }
 
 // GetEndpointHosts mocks base method.
-func (m *MockClient) GetEndpointHosts(arg0 context.Context, arg1 string) ([]api.Host, error) {
+func (m *MockClient) GetEndpointHosts(ctx context.Context, id string) ([]api.Host, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEndpointHosts", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetEndpointHosts", ctx, id)
 	ret0, _ := ret[0].([]api.Host)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEndpointHosts indicates an expected call of GetEndpointHosts.
-func (mr *MockClientMockRecorder) GetEndpointHosts(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) GetEndpointHosts(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpointHosts", reflect.TypeOf((*MockClient)(nil).GetEndpointHosts), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpointHosts", reflect.TypeOf((*MockClient)(nil).GetEndpointHosts), ctx, id)
 }
 
 // ListEndpoints mocks base method.
-func (m *MockClient) ListEndpoints(arg0 context.Context) ([]api.Endpoint, error) {
+func (m *MockClient) ListEndpoints(ctx context.Context) ([]api.Endpoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListEndpoints", arg0)
+	ret := m.ctrl.Call(m, "ListEndpoints", ctx)
 	ret0, _ := ret[0].([]api.Endpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListEndpoints indicates an expected call of ListEndpoints.
-func (mr *MockClientMockRecorder) ListEndpoints(arg0 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) ListEndpoints(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEndpoints", reflect.TypeOf((*MockClient)(nil).ListEndpoints), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEndpoints", reflect.TypeOf((*MockClient)(nil).ListEndpoints), ctx)
 }
 
 // RemoveEndpoint mocks base method.
-func (m *MockClient) RemoveEndpoint(arg0 context.Context, arg1 string) error {
+func (m *MockClient) RemoveEndpoint(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveEndpoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "RemoveEndpoint", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveEndpoint indicates an expected call of RemoveEndpoint.
-func (mr *MockClientMockRecorder) RemoveEndpoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) RemoveEndpoint(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveEndpoint", reflect.TypeOf((*MockClient)(nil).RemoveEndpoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveEndpoint", reflect.TypeOf((*MockClient)(nil).RemoveEndpoint), ctx, id)
 }
 
 // RotateEncryptionKey mocks base method.
-func (m *MockClient) RotateEncryptionKey(arg0 context.Context) error {
+func (m *MockClient) RotateEncryptionKey(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RotateEncryptionKey", arg0)
+	ret := m.ctrl.Call(m, "RotateEncryptionKey", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RotateEncryptionKey indicates an expected call of RotateEncryptionKey.
-func (mr *MockClientMockRecorder) RotateEncryptionKey(arg0 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) RotateEncryptionKey(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RotateEncryptionKey", reflect.TypeOf((*MockClient)(nil).RotateEncryptionKey), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RotateEncryptionKey", reflect.TypeOf((*MockClient)(nil).RotateEncryptionKey), ctx)
 }
 
 // UpdateEndpoint mocks base method.
-func (m *MockClient) UpdateEndpoint(arg0 context.Context, arg1 string, arg2 api.UpdateEndpointParams) (api.Endpoint, error) {
+func (m *MockClient) UpdateEndpoint(ctx context.Context, id string, params api.UpdateEndpointParams) (api.Endpoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateEndpoint", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpdateEndpoint", ctx, id, params)
 	ret0, _ := ret[0].(api.Endpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpdateEndpoint indicates an expected call of UpdateEndpoint.
-func (mr *MockClientMockRecorder) UpdateEndpoint(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) UpdateEndpoint(ctx, id, params any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEndpoint", reflect.TypeOf((*MockClient)(nil).UpdateEndpoint), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEndpoint", reflect.TypeOf((*MockClient)(nil).UpdateEndpoint), ctx, id, params)
 }
 
 // Version mocks base method.
-func (m *MockClient) Version(arg0 context.Context) (string, error) {
+func (m *MockClient) Version(ctx context.Context) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Version", arg0)
+	ret := m.ctrl.Call(m, "Version", ctx)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Version indicates an expected call of Version.
-func (mr *MockClientMockRecorder) Version(arg0 interface{}) *gomock.Call {
+func (mr *MockClientMockRecorder) Version(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Version", reflect.TypeOf((*MockClient)(nil).Version), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Version", reflect.TypeOf((*MockClient)(nil).Version), ctx)
 }

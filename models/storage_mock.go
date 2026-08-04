@@ -8,13 +8,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockStorage is a mock of Storage interface.
 type MockStorage struct {
 	ctrl     *gomock.Controller
 	recorder *MockStorageMockRecorder
+	isgomock struct{}
 }
 
 // MockStorageMockRecorder is the mock recorder for MockStorage.
@@ -35,190 +36,190 @@ func (m *MockStorage) EXPECT() *MockStorageMockRecorder {
 }
 
 // AddEndpoint mocks base method.
-func (m *MockStorage) AddEndpoint(arg0 context.Context, arg1 Endpoint) (Endpoint, error) {
+func (m *MockStorage) AddEndpoint(ctx context.Context, endpoint Endpoint) (Endpoint, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddEndpoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "AddEndpoint", ctx, endpoint)
 	ret0, _ := ret[0].(Endpoint)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AddEndpoint indicates an expected call of AddEndpoint.
-func (mr *MockStorageMockRecorder) AddEndpoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) AddEndpoint(ctx, endpoint any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEndpoint", reflect.TypeOf((*MockStorage)(nil).AddEndpoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddEndpoint", reflect.TypeOf((*MockStorage)(nil).AddEndpoint), ctx, endpoint)
 }
 
 // GetCurrentHost mocks base method.
-func (m *MockStorage) GetCurrentHost(arg0 context.Context) (Host, error) {
+func (m *MockStorage) GetCurrentHost(ctx context.Context) (Host, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetCurrentHost", arg0)
+	ret := m.ctrl.Call(m, "GetCurrentHost", ctx)
 	ret0, _ := ret[0].(Host)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetCurrentHost indicates an expected call of GetCurrentHost.
-func (mr *MockStorageMockRecorder) GetCurrentHost(arg0 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) GetCurrentHost(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentHost", reflect.TypeOf((*MockStorage)(nil).GetCurrentHost), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentHost", reflect.TypeOf((*MockStorage)(nil).GetCurrentHost), ctx)
 }
 
 // GetEncryptedData mocks base method.
-func (m *MockStorage) GetEncryptedData(arg0 context.Context, arg1, arg2 string) (EncryptedData, error) {
+func (m *MockStorage) GetEncryptedData(ctx context.Context, endpointID, encryptedDataId string) (EncryptedData, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEncryptedData", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "GetEncryptedData", ctx, endpointID, encryptedDataId)
 	ret0, _ := ret[0].(EncryptedData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEncryptedData indicates an expected call of GetEncryptedData.
-func (mr *MockStorageMockRecorder) GetEncryptedData(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) GetEncryptedData(ctx, endpointID, encryptedDataId any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEncryptedData", reflect.TypeOf((*MockStorage)(nil).GetEncryptedData), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEncryptedData", reflect.TypeOf((*MockStorage)(nil).GetEncryptedData), ctx, endpointID, encryptedDataId)
 }
 
 // GetEndpointHosts mocks base method.
-func (m *MockStorage) GetEndpointHosts(arg0 context.Context, arg1 string) ([]string, error) {
+func (m *MockStorage) GetEndpointHosts(ctx context.Context, key string) ([]string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEndpointHosts", arg0, arg1)
+	ret := m.ctrl.Call(m, "GetEndpointHosts", ctx, key)
 	ret0, _ := ret[0].([]string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEndpointHosts indicates an expected call of GetEndpointHosts.
-func (mr *MockStorageMockRecorder) GetEndpointHosts(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) GetEndpointHosts(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpointHosts", reflect.TypeOf((*MockStorage)(nil).GetEndpointHosts), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpointHosts", reflect.TypeOf((*MockStorage)(nil).GetEndpointHosts), ctx, key)
 }
 
 // GetEndpoints mocks base method.
-func (m *MockStorage) GetEndpoints(arg0 context.Context) (Endpoints, error) {
+func (m *MockStorage) GetEndpoints(ctx context.Context) (Endpoints, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetEndpoints", arg0)
+	ret := m.ctrl.Call(m, "GetEndpoints", ctx)
 	ret0, _ := ret[0].(Endpoints)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetEndpoints indicates an expected call of GetEndpoints.
-func (mr *MockStorageMockRecorder) GetEndpoints(arg0 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) GetEndpoints(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpoints", reflect.TypeOf((*MockStorage)(nil).GetEndpoints), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetEndpoints", reflect.TypeOf((*MockStorage)(nil).GetEndpoints), ctx)
 }
 
 // LinkEndpointWithCurrentHost mocks base method.
-func (m *MockStorage) LinkEndpointWithCurrentHost(arg0 context.Context, arg1 string) error {
+func (m *MockStorage) LinkEndpointWithCurrentHost(ctx context.Context, key string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "LinkEndpointWithCurrentHost", arg0, arg1)
+	ret := m.ctrl.Call(m, "LinkEndpointWithCurrentHost", ctx, key)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // LinkEndpointWithCurrentHost indicates an expected call of LinkEndpointWithCurrentHost.
-func (mr *MockStorageMockRecorder) LinkEndpointWithCurrentHost(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) LinkEndpointWithCurrentHost(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkEndpointWithCurrentHost", reflect.TypeOf((*MockStorage)(nil).LinkEndpointWithCurrentHost), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LinkEndpointWithCurrentHost", reflect.TypeOf((*MockStorage)(nil).LinkEndpointWithCurrentHost), ctx, key)
 }
 
 // ListEncryptedDataForHost mocks base method.
-func (m *MockStorage) ListEncryptedDataForHost(arg0 context.Context) ([]EncryptedData, error) {
+func (m *MockStorage) ListEncryptedDataForHost(ctx context.Context) ([]EncryptedData, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ListEncryptedDataForHost", arg0)
+	ret := m.ctrl.Call(m, "ListEncryptedDataForHost", ctx)
 	ret0, _ := ret[0].([]EncryptedData)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ListEncryptedDataForHost indicates an expected call of ListEncryptedDataForHost.
-func (mr *MockStorageMockRecorder) ListEncryptedDataForHost(arg0 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) ListEncryptedDataForHost(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEncryptedDataForHost", reflect.TypeOf((*MockStorage)(nil).ListEncryptedDataForHost), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListEncryptedDataForHost", reflect.TypeOf((*MockStorage)(nil).ListEncryptedDataForHost), ctx)
 }
 
 // RemoveEncryptedDataForEndpoint mocks base method.
-func (m *MockStorage) RemoveEncryptedDataForEndpoint(arg0 context.Context, arg1 string) error {
+func (m *MockStorage) RemoveEncryptedDataForEndpoint(ctx context.Context, endpointID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveEncryptedDataForEndpoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "RemoveEncryptedDataForEndpoint", ctx, endpointID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveEncryptedDataForEndpoint indicates an expected call of RemoveEncryptedDataForEndpoint.
-func (mr *MockStorageMockRecorder) RemoveEncryptedDataForEndpoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) RemoveEncryptedDataForEndpoint(ctx, endpointID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveEncryptedDataForEndpoint", reflect.TypeOf((*MockStorage)(nil).RemoveEncryptedDataForEndpoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveEncryptedDataForEndpoint", reflect.TypeOf((*MockStorage)(nil).RemoveEncryptedDataForEndpoint), ctx, endpointID)
 }
 
 // RemoveEndpoint mocks base method.
-func (m *MockStorage) RemoveEndpoint(arg0 context.Context, arg1 string) error {
+func (m *MockStorage) RemoveEndpoint(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveEndpoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "RemoveEndpoint", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveEndpoint indicates an expected call of RemoveEndpoint.
-func (mr *MockStorageMockRecorder) RemoveEndpoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) RemoveEndpoint(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveEndpoint", reflect.TypeOf((*MockStorage)(nil).RemoveEndpoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveEndpoint", reflect.TypeOf((*MockStorage)(nil).RemoveEndpoint), ctx, id)
 }
 
 // SaveHost mocks base method.
-func (m *MockStorage) SaveHost(arg0 context.Context, arg1 Host) error {
+func (m *MockStorage) SaveHost(ctx context.Context, host Host) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SaveHost", arg0, arg1)
+	ret := m.ctrl.Call(m, "SaveHost", ctx, host)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // SaveHost indicates an expected call of SaveHost.
-func (mr *MockStorageMockRecorder) SaveHost(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) SaveHost(ctx, host any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveHost", reflect.TypeOf((*MockStorage)(nil).SaveHost), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SaveHost", reflect.TypeOf((*MockStorage)(nil).SaveHost), ctx, host)
 }
 
 // UnlinkEndpointFromCurrentHost mocks base method.
-func (m *MockStorage) UnlinkEndpointFromCurrentHost(arg0 context.Context, arg1 string) error {
+func (m *MockStorage) UnlinkEndpointFromCurrentHost(ctx context.Context, key string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UnlinkEndpointFromCurrentHost", arg0, arg1)
+	ret := m.ctrl.Call(m, "UnlinkEndpointFromCurrentHost", ctx, key)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UnlinkEndpointFromCurrentHost indicates an expected call of UnlinkEndpointFromCurrentHost.
-func (mr *MockStorageMockRecorder) UnlinkEndpointFromCurrentHost(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) UnlinkEndpointFromCurrentHost(ctx, key any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnlinkEndpointFromCurrentHost", reflect.TypeOf((*MockStorage)(nil).UnlinkEndpointFromCurrentHost), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnlinkEndpointFromCurrentHost", reflect.TypeOf((*MockStorage)(nil).UnlinkEndpointFromCurrentHost), ctx, key)
 }
 
 // UpdateEndpoint mocks base method.
-func (m *MockStorage) UpdateEndpoint(arg0 context.Context, arg1 Endpoint) error {
+func (m *MockStorage) UpdateEndpoint(ctx context.Context, endpoint Endpoint) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateEndpoint", arg0, arg1)
+	ret := m.ctrl.Call(m, "UpdateEndpoint", ctx, endpoint)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateEndpoint indicates an expected call of UpdateEndpoint.
-func (mr *MockStorageMockRecorder) UpdateEndpoint(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) UpdateEndpoint(ctx, endpoint any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEndpoint", reflect.TypeOf((*MockStorage)(nil).UpdateEndpoint), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEndpoint", reflect.TypeOf((*MockStorage)(nil).UpdateEndpoint), ctx, endpoint)
 }
 
 // UpsertEncryptedData mocks base method.
-func (m *MockStorage) UpsertEncryptedData(arg0 context.Context, arg1 string, arg2 EncryptedData) (EncryptedDataLink, error) {
+func (m *MockStorage) UpsertEncryptedData(ctx context.Context, endpointID string, data EncryptedData) (EncryptedDataLink, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpsertEncryptedData", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "UpsertEncryptedData", ctx, endpointID, data)
 	ret0, _ := ret[0].(EncryptedDataLink)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UpsertEncryptedData indicates an expected call of UpsertEncryptedData.
-func (mr *MockStorageMockRecorder) UpsertEncryptedData(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockStorageMockRecorder) UpsertEncryptedData(ctx, endpointID, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertEncryptedData", reflect.TypeOf((*MockStorage)(nil).UpsertEncryptedData), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpsertEncryptedData", reflect.TypeOf((*MockStorage)(nil).UpsertEncryptedData), ctx, endpointID, data)
 }

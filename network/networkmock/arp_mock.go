@@ -8,13 +8,14 @@ import (
 	reflect "reflect"
 
 	network "github.com/Scalingo/link/v3/network"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockARP is a mock of ARP interface.
 type MockARP struct {
 	ctrl     *gomock.Controller
 	recorder *MockARPMockRecorder
+	isgomock struct{}
 }
 
 // MockARPMockRecorder is the mock recorder for MockARP.
@@ -35,15 +36,15 @@ func (m *MockARP) EXPECT() *MockARPMockRecorder {
 }
 
 // GratuitousArp mocks base method.
-func (m *MockARP) GratuitousArp(arg0 network.GratuitousArpRequest) error {
+func (m *MockARP) GratuitousArp(req network.GratuitousArpRequest) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GratuitousArp", arg0)
+	ret := m.ctrl.Call(m, "GratuitousArp", req)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // GratuitousArp indicates an expected call of GratuitousArp.
-func (mr *MockARPMockRecorder) GratuitousArp(arg0 interface{}) *gomock.Call {
+func (mr *MockARPMockRecorder) GratuitousArp(req any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GratuitousArp", reflect.TypeOf((*MockARP)(nil).GratuitousArp), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GratuitousArp", reflect.TypeOf((*MockARP)(nil).GratuitousArp), req)
 }

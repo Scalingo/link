@@ -8,14 +8,15 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	v3 "go.etcd.io/etcd/client/v3"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockEtcdLeaseManager is a mock of EtcdLeaseManager interface.
 type MockEtcdLeaseManager struct {
 	ctrl     *gomock.Controller
 	recorder *MockEtcdLeaseManagerMockRecorder
+	isgomock struct{}
 }
 
 // MockEtcdLeaseManagerMockRecorder is the mock recorder for MockEtcdLeaseManager.
@@ -36,85 +37,85 @@ func (m *MockEtcdLeaseManager) EXPECT() *MockEtcdLeaseManagerMockRecorder {
 }
 
 // GetLease mocks base method.
-func (m *MockEtcdLeaseManager) GetLease(arg0 context.Context) (v3.LeaseID, error) {
+func (m *MockEtcdLeaseManager) GetLease(ctx context.Context) (v3.LeaseID, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLease", arg0)
+	ret := m.ctrl.Call(m, "GetLease", ctx)
 	ret0, _ := ret[0].(v3.LeaseID)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetLease indicates an expected call of GetLease.
-func (mr *MockEtcdLeaseManagerMockRecorder) GetLease(arg0 interface{}) *gomock.Call {
+func (mr *MockEtcdLeaseManagerMockRecorder) GetLease(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLease", reflect.TypeOf((*MockEtcdLeaseManager)(nil).GetLease), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLease", reflect.TypeOf((*MockEtcdLeaseManager)(nil).GetLease), ctx)
 }
 
 // MarkLeaseAsDirty mocks base method.
-func (m *MockEtcdLeaseManager) MarkLeaseAsDirty(arg0 context.Context, arg1 v3.LeaseID) error {
+func (m *MockEtcdLeaseManager) MarkLeaseAsDirty(ctx context.Context, leaseID v3.LeaseID) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MarkLeaseAsDirty", arg0, arg1)
+	ret := m.ctrl.Call(m, "MarkLeaseAsDirty", ctx, leaseID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // MarkLeaseAsDirty indicates an expected call of MarkLeaseAsDirty.
-func (mr *MockEtcdLeaseManagerMockRecorder) MarkLeaseAsDirty(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockEtcdLeaseManagerMockRecorder) MarkLeaseAsDirty(ctx, leaseID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkLeaseAsDirty", reflect.TypeOf((*MockEtcdLeaseManager)(nil).MarkLeaseAsDirty), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MarkLeaseAsDirty", reflect.TypeOf((*MockEtcdLeaseManager)(nil).MarkLeaseAsDirty), ctx, leaseID)
 }
 
 // Start mocks base method.
-func (m *MockEtcdLeaseManager) Start(arg0 context.Context) error {
+func (m *MockEtcdLeaseManager) Start(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Start", arg0)
+	ret := m.ctrl.Call(m, "Start", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Start indicates an expected call of Start.
-func (mr *MockEtcdLeaseManagerMockRecorder) Start(arg0 interface{}) *gomock.Call {
+func (mr *MockEtcdLeaseManagerMockRecorder) Start(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockEtcdLeaseManager)(nil).Start), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Start", reflect.TypeOf((*MockEtcdLeaseManager)(nil).Start), ctx)
 }
 
 // Stop mocks base method.
-func (m *MockEtcdLeaseManager) Stop(arg0 context.Context) {
+func (m *MockEtcdLeaseManager) Stop(ctx context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "Stop", arg0)
+	m.ctrl.Call(m, "Stop", ctx)
 }
 
 // Stop indicates an expected call of Stop.
-func (mr *MockEtcdLeaseManagerMockRecorder) Stop(arg0 interface{}) *gomock.Call {
+func (mr *MockEtcdLeaseManagerMockRecorder) Stop(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockEtcdLeaseManager)(nil).Stop), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stop", reflect.TypeOf((*MockEtcdLeaseManager)(nil).Stop), ctx)
 }
 
 // SubscribeToLeaseChange mocks base method.
-func (m *MockEtcdLeaseManager) SubscribeToLeaseChange(arg0 context.Context, arg1 LeaseChangedCallback) (string, error) {
+func (m *MockEtcdLeaseManager) SubscribeToLeaseChange(ctx context.Context, callback LeaseChangedCallback) (string, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SubscribeToLeaseChange", arg0, arg1)
+	ret := m.ctrl.Call(m, "SubscribeToLeaseChange", ctx, callback)
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // SubscribeToLeaseChange indicates an expected call of SubscribeToLeaseChange.
-func (mr *MockEtcdLeaseManagerMockRecorder) SubscribeToLeaseChange(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockEtcdLeaseManagerMockRecorder) SubscribeToLeaseChange(ctx, callback any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeToLeaseChange", reflect.TypeOf((*MockEtcdLeaseManager)(nil).SubscribeToLeaseChange), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SubscribeToLeaseChange", reflect.TypeOf((*MockEtcdLeaseManager)(nil).SubscribeToLeaseChange), ctx, callback)
 }
 
 // UnsubscribeToLeaseChange mocks base method.
-func (m *MockEtcdLeaseManager) UnsubscribeToLeaseChange(arg0 context.Context, arg1 string) error {
+func (m *MockEtcdLeaseManager) UnsubscribeToLeaseChange(ctx context.Context, id string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UnsubscribeToLeaseChange", arg0, arg1)
+	ret := m.ctrl.Call(m, "UnsubscribeToLeaseChange", ctx, id)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UnsubscribeToLeaseChange indicates an expected call of UnsubscribeToLeaseChange.
-func (mr *MockEtcdLeaseManagerMockRecorder) UnsubscribeToLeaseChange(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockEtcdLeaseManagerMockRecorder) UnsubscribeToLeaseChange(ctx, id any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsubscribeToLeaseChange", reflect.TypeOf((*MockEtcdLeaseManager)(nil).UnsubscribeToLeaseChange), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnsubscribeToLeaseChange", reflect.TypeOf((*MockEtcdLeaseManager)(nil).UnsubscribeToLeaseChange), ctx, id)
 }

@@ -7,13 +7,14 @@ package networkmock
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockInterface is a mock of Interface interface.
 type MockInterface struct {
 	ctrl     *gomock.Controller
 	recorder *MockInterfaceMockRecorder
+	isgomock struct{}
 }
 
 // MockInterfaceMockRecorder is the mock recorder for MockInterface.
@@ -34,29 +35,29 @@ func (m *MockInterface) EXPECT() *MockInterfaceMockRecorder {
 }
 
 // EnsureIP mocks base method.
-func (m *MockInterface) EnsureIP(arg0 string) error {
+func (m *MockInterface) EnsureIP(ip string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "EnsureIP", arg0)
+	ret := m.ctrl.Call(m, "EnsureIP", ip)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // EnsureIP indicates an expected call of EnsureIP.
-func (mr *MockInterfaceMockRecorder) EnsureIP(arg0 interface{}) *gomock.Call {
+func (mr *MockInterfaceMockRecorder) EnsureIP(ip any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureIP", reflect.TypeOf((*MockInterface)(nil).EnsureIP), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EnsureIP", reflect.TypeOf((*MockInterface)(nil).EnsureIP), ip)
 }
 
 // RemoveIP mocks base method.
-func (m *MockInterface) RemoveIP(arg0 string) error {
+func (m *MockInterface) RemoveIP(ip string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RemoveIP", arg0)
+	ret := m.ctrl.Call(m, "RemoveIP", ip)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RemoveIP indicates an expected call of RemoveIP.
-func (mr *MockInterfaceMockRecorder) RemoveIP(arg0 interface{}) *gomock.Call {
+func (mr *MockInterfaceMockRecorder) RemoveIP(ip any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveIP", reflect.TypeOf((*MockInterface)(nil).RemoveIP), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveIP", reflect.TypeOf((*MockInterface)(nil).RemoveIP), ip)
 }

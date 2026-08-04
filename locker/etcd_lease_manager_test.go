@@ -7,11 +7,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"go.etcd.io/etcd/api/v3/v3rpc/rpctypes"
 	etcdv3 "go.etcd.io/etcd/client/v3"
+	"go.uber.org/mock/gomock"
 
 	"github.com/Scalingo/link/v3/config"
 	"github.com/Scalingo/link/v3/etcdmock"
