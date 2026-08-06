@@ -111,6 +111,26 @@ func (mr *MockKVMockRecorder) Get(ctx, key any, opts ...any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Get", reflect.TypeOf((*MockKV)(nil).Get), varargs...)
 }
 
+// GetStream mocks base method.
+func (m *MockKV) GetStream(ctx context.Context, key string, opts ...clientv3.OpOption) (clientv3.GetStreamChan, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{ctx, key}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetStream", varargs...)
+	ret0, _ := ret[0].(clientv3.GetStreamChan)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetStream indicates an expected call of GetStream.
+func (mr *MockKVMockRecorder) GetStream(ctx, key any, opts ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]any{ctx, key}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetStream", reflect.TypeOf((*MockKV)(nil).GetStream), varargs...)
+}
+
 // Put mocks base method.
 func (m *MockKV) Put(ctx context.Context, key, val string, opts ...clientv3.OpOption) (*clientv3.PutResponse, error) {
 	m.ctrl.T.Helper()

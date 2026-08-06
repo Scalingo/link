@@ -2,6 +2,10 @@
 
 ## To be Released
 
+## 1.4.5
+
+* feat(errors): allow non-error values in Rollbar error fields
+
 ## 1.4.4
 
 * fix(errors): restore Rollbar fallback to runtime callers when wrapped errors have no stack trace

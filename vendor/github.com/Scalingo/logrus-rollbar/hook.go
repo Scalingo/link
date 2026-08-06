@@ -72,7 +72,12 @@ func (h hook) Fire(entry *logrus.Entry) error {
 	}
 
 	if entry.Data["error"] != nil {
-		err = entry.Data["error"].(error)
+		switch errorField := entry.Data["error"].(type) {
+		case error:
+			err = errorField
+		default:
+			err = errors.New(fmt.Sprint(errorField))
+		}
 
 		errorTxt := new(bytes.Buffer)
 		errorTxt.WriteString(err.Error())
