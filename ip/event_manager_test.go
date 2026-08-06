@@ -5,11 +5,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/looplab/fsm"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"go.uber.org/mock/gomock"
 
 	"github.com/Scalingo/link/v3/config"
 	"github.com/Scalingo/link/v3/locker/lockermock"

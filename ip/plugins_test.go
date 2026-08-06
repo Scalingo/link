@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/looplab/fsm"
+	"go.uber.org/mock/gomock"
 
 	"github.com/Scalingo/link/v3/config"
 	"github.com/Scalingo/link/v3/ip/ipmock"

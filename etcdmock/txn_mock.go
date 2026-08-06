@@ -7,8 +7,8 @@ package etcdmock
 import (
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	clientv3 "go.etcd.io/etcd/client/v3"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockTxn is a mock of Txn interface.

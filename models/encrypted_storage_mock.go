@@ -8,13 +8,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockEncryptedStorage is a mock of EncryptedStorage interface.
 type MockEncryptedStorage struct {
 	ctrl     *gomock.Controller
 	recorder *MockEncryptedStorageMockRecorder
+	isgomock struct{}
 }
 
 // MockEncryptedStorageMockRecorder is the mock recorder for MockEncryptedStorage.
@@ -35,58 +36,58 @@ func (m *MockEncryptedStorage) EXPECT() *MockEncryptedStorageMockRecorder {
 }
 
 // Cleanup mocks base method.
-func (m *MockEncryptedStorage) Cleanup(arg0 context.Context, arg1 string) error {
+func (m *MockEncryptedStorage) Cleanup(ctx context.Context, endpointID string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Cleanup", arg0, arg1)
+	ret := m.ctrl.Call(m, "Cleanup", ctx, endpointID)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Cleanup indicates an expected call of Cleanup.
-func (mr *MockEncryptedStorageMockRecorder) Cleanup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockEncryptedStorageMockRecorder) Cleanup(ctx, endpointID any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cleanup", reflect.TypeOf((*MockEncryptedStorage)(nil).Cleanup), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Cleanup", reflect.TypeOf((*MockEncryptedStorage)(nil).Cleanup), ctx, endpointID)
 }
 
 // Decrypt mocks base method.
-func (m *MockEncryptedStorage) Decrypt(arg0 context.Context, arg1 EncryptedDataLink, arg2 interface{}) error {
+func (m *MockEncryptedStorage) Decrypt(ctx context.Context, data EncryptedDataLink, v any) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Decrypt", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Decrypt", ctx, data, v)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Decrypt indicates an expected call of Decrypt.
-func (mr *MockEncryptedStorageMockRecorder) Decrypt(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockEncryptedStorageMockRecorder) Decrypt(ctx, data, v any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Decrypt", reflect.TypeOf((*MockEncryptedStorage)(nil).Decrypt), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Decrypt", reflect.TypeOf((*MockEncryptedStorage)(nil).Decrypt), ctx, data, v)
 }
 
 // Encrypt mocks base method.
-func (m *MockEncryptedStorage) Encrypt(arg0 context.Context, arg1 string, arg2 interface{}) (EncryptedDataLink, error) {
+func (m *MockEncryptedStorage) Encrypt(ctx context.Context, endpointID string, data any) (EncryptedDataLink, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Encrypt", arg0, arg1, arg2)
+	ret := m.ctrl.Call(m, "Encrypt", ctx, endpointID, data)
 	ret0, _ := ret[0].(EncryptedDataLink)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // Encrypt indicates an expected call of Encrypt.
-func (mr *MockEncryptedStorageMockRecorder) Encrypt(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockEncryptedStorageMockRecorder) Encrypt(ctx, endpointID, data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encrypt", reflect.TypeOf((*MockEncryptedStorage)(nil).Encrypt), arg0, arg1, arg2)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Encrypt", reflect.TypeOf((*MockEncryptedStorage)(nil).Encrypt), ctx, endpointID, data)
 }
 
 // RotateEncryptionKey mocks base method.
-func (m *MockEncryptedStorage) RotateEncryptionKey(arg0 context.Context) error {
+func (m *MockEncryptedStorage) RotateEncryptionKey(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RotateEncryptionKey", arg0)
+	ret := m.ctrl.Call(m, "RotateEncryptionKey", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // RotateEncryptionKey indicates an expected call of RotateEncryptionKey.
-func (mr *MockEncryptedStorageMockRecorder) RotateEncryptionKey(arg0 interface{}) *gomock.Call {
+func (mr *MockEncryptedStorageMockRecorder) RotateEncryptionKey(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RotateEncryptionKey", reflect.TypeOf((*MockEncryptedStorage)(nil).RotateEncryptionKey), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RotateEncryptionKey", reflect.TypeOf((*MockEncryptedStorage)(nil).RotateEncryptionKey), ctx)
 }

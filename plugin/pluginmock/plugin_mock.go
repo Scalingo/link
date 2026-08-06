@@ -8,13 +8,14 @@ import (
 	context "context"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockPlugin is a mock of Plugin interface.
 type MockPlugin struct {
 	ctrl     *gomock.Controller
 	recorder *MockPluginMockRecorder
+	isgomock struct{}
 }
 
 // MockPluginMockRecorder is the mock recorder for MockPlugin.
@@ -35,57 +36,57 @@ func (m *MockPlugin) EXPECT() *MockPluginMockRecorder {
 }
 
 // Activate mocks base method.
-func (m *MockPlugin) Activate(arg0 context.Context) error {
+func (m *MockPlugin) Activate(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Activate", arg0)
+	ret := m.ctrl.Call(m, "Activate", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Activate indicates an expected call of Activate.
-func (mr *MockPluginMockRecorder) Activate(arg0 interface{}) *gomock.Call {
+func (mr *MockPluginMockRecorder) Activate(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Activate", reflect.TypeOf((*MockPlugin)(nil).Activate), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Activate", reflect.TypeOf((*MockPlugin)(nil).Activate), ctx)
 }
 
 // Deactivate mocks base method.
-func (m *MockPlugin) Deactivate(arg0 context.Context) error {
+func (m *MockPlugin) Deactivate(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Deactivate", arg0)
+	ret := m.ctrl.Call(m, "Deactivate", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Deactivate indicates an expected call of Deactivate.
-func (mr *MockPluginMockRecorder) Deactivate(arg0 interface{}) *gomock.Call {
+func (mr *MockPluginMockRecorder) Deactivate(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deactivate", reflect.TypeOf((*MockPlugin)(nil).Deactivate), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Deactivate", reflect.TypeOf((*MockPlugin)(nil).Deactivate), ctx)
 }
 
 // ElectionKey mocks base method.
-func (m *MockPlugin) ElectionKey(arg0 context.Context) string {
+func (m *MockPlugin) ElectionKey(ctx context.Context) string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ElectionKey", arg0)
+	ret := m.ctrl.Call(m, "ElectionKey", ctx)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
 // ElectionKey indicates an expected call of ElectionKey.
-func (mr *MockPluginMockRecorder) ElectionKey(arg0 interface{}) *gomock.Call {
+func (mr *MockPluginMockRecorder) ElectionKey(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ElectionKey", reflect.TypeOf((*MockPlugin)(nil).ElectionKey), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ElectionKey", reflect.TypeOf((*MockPlugin)(nil).ElectionKey), ctx)
 }
 
 // Ensure mocks base method.
-func (m *MockPlugin) Ensure(arg0 context.Context) error {
+func (m *MockPlugin) Ensure(ctx context.Context) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Ensure", arg0)
+	ret := m.ctrl.Call(m, "Ensure", ctx)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // Ensure indicates an expected call of Ensure.
-func (mr *MockPluginMockRecorder) Ensure(arg0 interface{}) *gomock.Call {
+func (mr *MockPluginMockRecorder) Ensure(ctx any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ensure", reflect.TypeOf((*MockPlugin)(nil).Ensure), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Ensure", reflect.TypeOf((*MockPlugin)(nil).Ensure), ctx)
 }

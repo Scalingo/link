@@ -2,6 +2,10 @@
 
 ## To be released
 
+- chore(deps/mocks) migrate mocks from golang to uber
+- chore(mocks.json) remove base_directory from mocks.json
+- chore(docker-compose/test) use docker-compose's etcd service instead of one running locally for test service
+
 ## [2026-04-24] v3.3.0
 
 - feat(plugin) add webhook plugin to have link calling a webhook on status change/ensuring status
