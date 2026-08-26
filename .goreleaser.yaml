@@ -1,0 +1,46 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: link
+    binary: link
+    main: .
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - 386
+    ldflags: -X main.Version={{ .Tag }}
+
+  - id: link-client
+    binary: link-client
+    main: ./cmd/link-client
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+    goarch:
+      - amd64
+      - 386
+    ldflags: -X main.Version={{ .Tag }}
+
+archives:
+  - formats: ["tar.gz"]
+    name_template: "{{ .ProjectName }}-{{ .Tag }}-{{ .Os }}-{{ .Arch }}"
+    wrap_in_directory: true
+
+checksum:
+  name_template: checksums.txt
+
+changelog:
+  sort: asc
+  use: github-native
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
