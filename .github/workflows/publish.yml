@@ -7,6 +7,14 @@ on:
     tags:
       - "v*"
 
+# The list of permissions is explained on the GitHub doc:
+# https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#repository-permissions
+permissions:
+  # Write permission is needed to create a new release.
+  contents: write
+  # Allow read access to pull requests. Used by the linter action.
+  pull-requests: read
+
 jobs:
   linter:
     name: Linter on a PR
@@ -25,51 +33,24 @@ jobs:
         env:
           CODE_PATH: ${{ github.workspace }}
 
-  publish:
-    runs-on: ubuntu-24.04
+  releases:
     needs: [tests]
+    name: GoReleaser Build on Linux
     if: ${{ github.ref_type == 'tag' }}
-    env:
-      GOX_ARCHITECTURES: amd64 386
+    runs-on: ubuntu-24.04
     steps:
-      # Currently there is no possibility to get a tag name. Hence we filter the GITHUB_REF variable which contains something like "refs/tags/v2.0.0" if the tag is "v2.0.0". The value can be used with "steps.tag_name.outputs.TAG_NAME"
-      - name: Get tag name
-        id: tag_name
-        run: |
-          TAG_NAME="${GITHUB_REF#refs/tags/}"
-          echo "TAG_NAME=${TAG_NAME}" >> "$GITHUB_OUTPUT"
-          echo "$TAG_NAME"
-
-      - name: Checkout the code
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup Go environment
-        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0 # required by GoReleaser (https://goreleaser.com/ci/actions/#fetch-all-history)
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: "go.mod"
           check-latest: true
-      - run: go version
-
-      - name: Build the binaries
-        env:
-          TAG_NAME: ${{ steps.tag_name.outputs.TAG_NAME }}
-        run: |
-          go install github.com/mitchellh/gox@latest
-          CGO_ENABLED=0 gox -os="linux" -arch="$GOX_ARCHITECTURES" -output="dist/link-${TAG_NAME}-{{.OS}}-{{.Arch}}/{{.Dir}}" -ldflags="-X main.Version=${TAG_NAME}" . ./cmd/...
-
-      - name: Archive the built binaries
-        env:
-          TAG_NAME: ${{ steps.tag_name.outputs.TAG_NAME }}
-        run: |
-          for gox_archi in $GOX_ARCHITECTURES; do
-            echo "Archive release targetted to $gox_archi"
-            # Gox compiles link-client and an executable named "v3" instead of "link"..
-            mv "dist/link-${TAG_NAME}-linux-${gox_archi}/v3" "dist/link-${TAG_NAME}-linux-${gox_archi}/link"
-            tar --directory=dist -czvf "dist/link-${TAG_NAME}-linux-${gox_archi}.tar.gz" "link-${TAG_NAME}-linux-${gox_archi}"
-          done
-
-      - name: Release the new version
-        uses: softprops/action-gh-release@v3
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@f06c13b6b1a9625abc9e6e439d9c05a8f2190e94 # v7.2.3
         with:
-          generate_release_notes: true
-          files: dist/*.tar.gz
+          version: "~> v2"
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CGO_ENABLED: 0

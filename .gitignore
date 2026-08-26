@@ -3,5 +3,6 @@
 /link-client
 generate-mock
 cmd/link-client/link-client
-/dist/link*
+# dist contains the archives created by GoReleaser
+dist
 .vscode
