@@ -1,9 +1,9 @@
 /*
  * 3DS OUTSCALE API
  *
- * Welcome to the OUTSCALE API documentation.<br /> The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br /> Throttling: To protect against overloads, the number of identical requests allowed in a given time period is limited.<br /> Brute force: To protect against brute force attacks, the number of failed authentication attempts in a given time period is limited.<br /><br /> Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but there are [differences in resource names](https://docs.outscale.com/en/userguide/About-the-APIs.html) between AWS and the OUTSCALE API.<br /> You can also manage your resources using the [Cockpit](https://docs.outscale.com/en/userguide/About-Cockpit.html) web interface.<br /><br /> An OpenAPI description of this API is also available for download: <button>[GitHub repository](https://github.com/outscale/osc-api)</button><br /> # Authentication Schemes ### Access Key/Secret Key The main way to authenticate your requests to the OUTSCALE API is to use an access key and a secret key.<br /> The mechanism behind this is based on AWS Signature Version 4, whose technical implementation details are described in [Signature of API Requests](https://docs.outscale.com/en/userguide/Signature-of-API-Requests.html).<br /><br /> In practice, the way to specify your access key and secret key depends on the tool or SDK you want to use to interact with the API.<br />  > For example, if you use OSC CLI: > 1. You need to create an **~/.osc/config.json** file to specify your access key, secret key, and the Region of your account. > 2. You then specify the `--profile` option when executing OSC CLI commands. > > For more information, see [Installing and Configuring OSC CLI](https://docs.outscale.com/en/userguide/Installing-and-Configuring-OSC-CLI.html).  See the code samples in each section of this documentation for specific examples in different programming languages.<br /> For more information about access keys, see [About Access Keys](https://docs.outscale.com/en/userguide/About-Access-Keys.html).  > If you try to sign requests with an invalid access key four times in a row, further authentication attempts will be prevented for 1 minute. This lockout time increases 1 minute every four failed attempts, for up to 10 minutes.  ### Login/Password For certain API actions, you can also use basic authentication with the login (email address) and password of your OUTSCALE account.<br /> This is useful only in special circumstances, for example if you do not know your access key/secret key and want to retrieve them programmatically.<br /> In most cases, however, you can use the Cockpit web interface to retrieve them.<br />  > For example, if you use OSC CLI: > 1. You need to create an **~/.osc/config.json** file to specify the Region of your account, but you leave the access key value and secret key value empty (`&quot;&quot;`). > 2. You then specify the `--profile`, `--authentication-method`, `--login`, and `--password` options when executing OSC CLI commands.  See the code samples in each section of this documentation for specific examples in different programming languages.  > If you try to sign requests with an invalid password four times in a row, further authentication attempts will be prevented for 1 minute. This lockout time increases 1 minute every four failed attempts, for up to 10 minutes.  ### No Authentication A few API actions do not require any authentication. They are indicated as such in this documentation.<br /> ### Other Security Mechanisms In parallel with the authentication schemes, you can add other security mechanisms to your OUTSCALE account, for example to restrict API requests by IP or other criteria.<br /> For more information, see [Managing Your API Accesses](https://docs.outscale.com/en/userguide/Managing-Your-API-Accesses.html). # Pagination Tutorial You can learn more about the pagination methods for read calls in the dedicated [pagination tutorial](https://docs.outscale.com/en/userguide/Tutorial-Paginating-an-API-Request.html). # Error Codes Reference You can learn more about errors returned by the API in the dedicated [errors page](api-errors.html).
+ * Welcome to the OUTSCALE API documentation.<br /> The OUTSCALE API enables you to manage your resources in the OUTSCALE Cloud. This documentation describes the different actions available along with code examples.<br /><br /> Throttling: To protect against overloads, the number of identical requests allowed in a given time period is limited.<br /> Brute force: To protect against brute force attacks, the number of failed authentication attempts in a given time period is limited.<br /><br /> Note that the OUTSCALE Cloud is compatible with Amazon Web Services (AWS) APIs, but there are [differences in resource names](https://docs.outscale.com/en/userguide/About-the-APIs.html) between AWS and the OUTSCALE API.<br /> You can also manage your resources using the [Cockpit](https://docs.outscale.com/en/userguide/About-Cockpit.html) web interface.<br /><br /> An OpenAPI description of this API is also available for download: <button>[GitHub repository](https://github.com/outscale/osc-api)</button><br /> # Authentication Schemes ### Access Key/Secret Key The main way to authenticate your requests to the OUTSCALE API is to use an access key and a secret key.<br /> The mechanism behind this is based on AWS Signature Version 4, whose technical implementation details are described in [Signature of API Requests](https://docs.outscale.com/en/userguide/Signature-of-API-Requests.html).<br /><br /> In practice, the way to specify your access key and secret key depends on the tool or SDK you want to use to interact with the API.<br />  > For example, to authenticate with access key/secret key when using octl: > * You can specify the following environment variables: `OSC_ACCESS_KEY`, `OSC_SECRET_KEY`, and `OSC_REGION`. > * Or you can store a profile in a **~/.osc/config.json** file, with the following fields specified: `access_key`, `secret_key`, and `region`. Then you select the profile by specifying the `--profile` option when executing octl commands. > > For more information, see [Installing and Configuring octl](https://docs.outscale.com/en/userguide/Installing-and-Configuring-octl.html).  See the code samples in each section of this documentation for specific examples in different programming languages.<br /> For more information about access keys, see [About Access Keys](https://docs.outscale.com/en/userguide/About-Access-Keys.html).  > If you try to sign requests with an invalid access key four times in a row, further authentication attempts will be prevented for 1 minute. This lockout time increases 1 minute every four failed attempts, for up to 10 minutes.  ### Login/Password For certain API actions, you can also use basic authentication with the login (email address) and password of your OUTSCALE account.<br /> This is useful only in special circumstances, for example if you do not know your access key/secret key and want to retrieve them programmatically.<br /> In most cases, however, you can use the Cockpit web interface to retrieve them.<br />  > For example, to authenticate with login/password when using octl: > * You can specify the following environment variables: `OSC_LOGIN`, `OSC_PASSWORD`, and `OSC_REGION`. > * Or you can store a profile in a **~/.osc/config.json** file, with the following fields specified: `login`, `password`, and `region`. Then you select the profile by specifying the `--profile` option when executing octl commands. > > For more information, see [Installing and Configuring octl](https://docs.outscale.com/en/userguide/Installing-and-Configuring-octl.html).  See the code samples in each section of this documentation for specific examples in different programming languages.  > If you try to sign requests with an invalid password four times in a row, further authentication attempts will be prevented for 1 minute. This lockout time increases 1 minute every four failed attempts, for up to 10 minutes.  ### No Authentication A few API actions do not require any authentication. They are indicated as such in this documentation.<br /> ### Other Security Mechanisms In parallel with the authentication schemes, you can add other security mechanisms to your OUTSCALE account, for example to restrict API requests by IP or other criteria.<br /> For more information, see [Managing Your API Accesses](https://docs.outscale.com/en/userguide/Managing-Your-API-Accesses.html). # Pagination Tutorial You can learn more about the pagination methods for read calls in the dedicated [pagination tutorial](https://docs.outscale.com/en/userguide/Tutorial-Paginating-an-API-Request.html). # Error Codes Reference You can learn more about errors returned by the API in the dedicated [errors page](api-errors.html).
  *
- * API version: 1.41.0
+ * API version: 1.42.0
  * Contact: support@outscale.com
  */
 
@@ -25,7 +25,7 @@ type CreateVmsRequest struct {
 	BootOnCreation *bool `json:"BootOnCreation,omitempty"`
 	// This parameter is not available. It is present in our API for the sake of historical compatibility with AWS.
 	BsuOptimized *bool `json:"BsuOptimized,omitempty"`
-	// A unique identifier which enables you to manage the idempotency.
+	// A unique identifier which enables you to manage the idempotency.<br />With OSC CLI, if you want to specify a number for this value, you must wrap it in two pairs of quotes to make sure the value is parsed as a string: `--ClientToken '&quot;12345678&quot;'`.
 	ClientToken *string `json:"ClientToken,omitempty"`
 	// If true, you cannot delete the VM unless you change this parameter back to false.
 	DeletionProtection *bool `json:"DeletionProtection,omitempty"`
@@ -51,7 +51,8 @@ type CreateVmsRequest struct {
 	// One or more IDs of security group for the VMs.
 	SecurityGroupIds *[]string `json:"SecurityGroupIds,omitempty"`
 	// One or more names of security groups for the VMs.
-	SecurityGroups *[]string `json:"SecurityGroups,omitempty"`
+	SecurityGroups                *[]string                      `json:"SecurityGroups,omitempty"`
+	ShutdownBehaviorConfiguration *ShutdownBehaviorConfiguration `json:"ShutdownBehaviorConfiguration,omitempty"`
 	// The ID of the Subnet in which you want to create the VM.
 	SubnetId *string `json:"SubnetId,omitempty"`
 	// If true, a virtual Trusted Platform Module (vTPM) is enabled on the VM. If false, it is not.<br />The default behavior for this parameter varies depending on the source OMI of the VM.<br />If the `TpmMandatory` parameter of the source OMI is true, a vTPM has to be attached to the VM and it will be created by default. Setting `TpmEnabled` to false will cause the creation request to fail.<br />If the `TpmMandatory` parameter of the source OMI is false, only setting `TpmEnabled` to true will create and attach a vTPM to the VM.
@@ -77,8 +78,6 @@ func NewCreateVmsRequest(imageId string) *CreateVmsRequest {
 	this.NestedVirtualization = &nestedVirtualization
 	var performance string = "high"
 	this.Performance = &performance
-	var vmInitiatedShutdownBehavior string = "stop"
-	this.VmInitiatedShutdownBehavior = &vmInitiatedShutdownBehavior
 	return &this
 }
 
@@ -93,8 +92,6 @@ func NewCreateVmsRequestWithDefaults() *CreateVmsRequest {
 	this.NestedVirtualization = &nestedVirtualization
 	var performance string = "high"
 	this.Performance = &performance
-	var vmInitiatedShutdownBehavior string = "stop"
-	this.VmInitiatedShutdownBehavior = &vmInitiatedShutdownBehavior
 	return &this
 }
 
@@ -698,6 +695,38 @@ func (o *CreateVmsRequest) SetSecurityGroups(v []string) {
 	o.SecurityGroups = &v
 }
 
+// GetShutdownBehaviorConfiguration returns the ShutdownBehaviorConfiguration field value if set, zero value otherwise.
+func (o *CreateVmsRequest) GetShutdownBehaviorConfiguration() ShutdownBehaviorConfiguration {
+	if o == nil || o.ShutdownBehaviorConfiguration == nil {
+		var ret ShutdownBehaviorConfiguration
+		return ret
+	}
+	return *o.ShutdownBehaviorConfiguration
+}
+
+// GetShutdownBehaviorConfigurationOk returns a tuple with the ShutdownBehaviorConfiguration field value if set, nil otherwise
+// and a boolean to check if the value has been set.
+func (o *CreateVmsRequest) GetShutdownBehaviorConfigurationOk() (*ShutdownBehaviorConfiguration, bool) {
+	if o == nil || o.ShutdownBehaviorConfiguration == nil {
+		return nil, false
+	}
+	return o.ShutdownBehaviorConfiguration, true
+}
+
+// HasShutdownBehaviorConfiguration returns a boolean if a field has been set.
+func (o *CreateVmsRequest) HasShutdownBehaviorConfiguration() bool {
+	if o != nil && o.ShutdownBehaviorConfiguration != nil {
+		return true
+	}
+
+	return false
+}
+
+// SetShutdownBehaviorConfiguration gets a reference to the given ShutdownBehaviorConfiguration and assigns it to the ShutdownBehaviorConfiguration field.
+func (o *CreateVmsRequest) SetShutdownBehaviorConfiguration(v ShutdownBehaviorConfiguration) {
+	o.ShutdownBehaviorConfiguration = &v
+}
+
 // GetSubnetId returns the SubnetId field value if set, zero value otherwise.
 func (o *CreateVmsRequest) GetSubnetId() string {
 	if o == nil || o.SubnetId == nil {
@@ -916,6 +945,9 @@ func (o CreateVmsRequest) MarshalJSON() ([]byte, error) {
 	}
 	if o.SecurityGroups != nil {
 		toSerialize["SecurityGroups"] = o.SecurityGroups
+	}
+	if o.ShutdownBehaviorConfiguration != nil {
+		toSerialize["ShutdownBehaviorConfiguration"] = o.ShutdownBehaviorConfiguration
 	}
 	if o.SubnetId != nil {
 		toSerialize["SubnetId"] = o.SubnetId
