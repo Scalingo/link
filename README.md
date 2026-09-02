@@ -1,4 +1,4 @@
-# LinK v3.3.0
+# LinK v3.3.1
 
 ![publish workflow](https://github.com/Scalingo/link/actions/workflows/publish.yml/badge.svg)
 
@@ -48,7 +48,7 @@ In order to be able to run LinK, you must have a working etcd cluster.
 Installation and configuration instructions are available on the [etcd
 website](https://coreos.com/etcd/docs/latest/getting-started-with-etcd.html).
 
-> LinK uses etcd v3 API and makes use of `LeaseValue` comparison in transactions. Hence you need etcd version 3.3.0 or higher.
+> LinK uses etcd v3 API and makes use of `LeaseValue` comparison in transactions. Hence you need etcd version 3.3.1 or higher.
 
 The easiest way to get LinK up and running is to use pre-build binary available
 on the [release pages](https://github.com/Scalingo/link/releases).
@@ -162,7 +162,7 @@ Bump new version number in:
 Commit, tag and create a new release:
 
 ```sh
-version="3.3.0"
+version="3.3.1"
 
 git switch --create release/${version}
 git add CHANGELOG.md README.md
