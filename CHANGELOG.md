@@ -2,6 +2,8 @@
 
 ## To be released
 
+## [2026-09-02] v3.3.1
+
 - build(go): use go 1.26
 - chore(deps/mocks) migrate mocks from golang to uber
 - chore(mocks.json) remove base_directory from mocks.json
