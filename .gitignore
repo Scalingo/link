@@ -6,3 +6,4 @@ cmd/link-client/link-client
 # dist contains the archives created by GoReleaser
 dist
 .vscode
+.idea/
