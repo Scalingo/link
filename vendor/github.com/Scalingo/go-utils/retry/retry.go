@@ -166,6 +166,14 @@ func (r Retryer) Do(ctx context.Context, method Retryable) error {
 
 	var err error
 	for attempt := 0; attempt < r.maxAttempts; attempt++ {
+		if ctx.Err() != nil {
+			return RetryError{
+				Scope:   ContextScope,
+				Err:     ctx.Err(),
+				LastErr: err,
+			}
+		}
+
 		err = method(ctx)
 		if err == nil {
 			return nil
