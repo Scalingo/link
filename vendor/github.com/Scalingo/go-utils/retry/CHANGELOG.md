@@ -2,6 +2,10 @@
 
 ## To be Released
 
+## v1.4.2
+
+* fix(retry): do not call the method if the context is already done
+
 ## v1.4.1
 
 * chore(deps): bump multiple dependencies
